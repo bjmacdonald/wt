@@ -10,10 +10,8 @@ class ConanFileImpl(base.ConanCMake):
   
     def requirements(self):
         self.requires("conancmake/1.0@capitis/stable")
-        self.requires("boost/1.69.0@capitis/stable")
-        #self.requires("win64-db2/11.1.1010.160@capitis/stable")
+        self.requires("boost/1.70.0@capitis/stable")
         self.requires("win64-openssl/1.0.2k@capitis/stable")
-        #self.requires("spdlog/1.3.1@capitis/stable")
         self.requires("zlib/1.2.11@capitis/stable")
 
     def build_requirements(self):

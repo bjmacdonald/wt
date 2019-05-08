@@ -1,3 +1,10 @@
+# rd /s /q c:\Y-Work\wt-build
+# md c:\Y-Work\wt-build
+# cd c:\Y-Work\wt-build
+# conan install ..\wt
+# cmake -G"Visual Studio 15 2017 Win64" -Thost=x64 ..\wt
+
+
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 PROJECT(Wt VERSION 4.0.5)
