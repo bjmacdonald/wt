@@ -1,15 +1,16 @@
-SUBDIRS(web Wt)
+add_subdirectory(web)
+add_subdirectory(Wt)
 
-INCLUDE_DIRECTORIES(
-  ${CMAKE_CURRENT_SOURCE_DIR}/web
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include
-  ${CMAKE_CURRENT_BINARY_DIR} # for WConfig.h
-  ${BOOST_INCLUDE_DIRS}
-  Wt/Dbo/backend/amalgamation # for sqlite3.h
-)
+add_library(wt)
 
-LINK_DIRECTORIES(${BOOST_LIB_DIRS})
+target_compile_definitions(wt PRIVATE WT_BUILDING)
+
+target_include_directories(wt
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/web
+    ${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include
+    ${CMAKE_CURRENT_BINARY_DIR} # for WConfig.h
+)  
 
 MACRO (FILE_TO_STRING infile outfile var)
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
@@ -29,392 +30,377 @@ FILE_TO_STRING(web/skeleton/Boot.html     Boot_html.C       Boot_html)
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
   FILE_TO_STRING(web/skeleton/Wt.js     Wt_js.C Wt_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Wt.min.js Wt_js.C Wt_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
   FILE_TO_STRING(web/skeleton/Boot.js     Boot_js.C Boot_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Boot.min.js Boot_js.C Boot_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
   FILE_TO_STRING(js/WCartesianChart.js WCartesianChart_js.C WCartesianChart_js)
 ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  FILE_TO_STRING(web/skeleton/Wt.min.js Wt_js.C Wt_js)
+  FILE_TO_STRING(web/skeleton/Boot.min.js Boot_js.C Boot_js)
   FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_js.C WCartesianChart_js)
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C JQuery_js)
-
 FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
 FILE_TO_STRING(xml/auth_strings.xml AuthStrings_xml.C AuthStrings_xml)
-FILE_TO_STRING(xml/bootstrap_theme.xml
-    BootstrapTheme_xml.C BootstrapTheme_xml)
-FILE_TO_STRING(xml/bootstrap3_theme.xml
-    Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
-FILE_TO_STRING(xml/auth_css_theme.xml
-    AuthCssTheme_xml.C AuthCssTheme_xml)
+FILE_TO_STRING(xml/bootstrap_theme.xml BootstrapTheme_xml.C BootstrapTheme_xml)
+FILE_TO_STRING(xml/bootstrap3_theme.xml Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
+FILE_TO_STRING(xml/auth_css_theme.xml AuthCssTheme_xml.C AuthCssTheme_xml)
 
-SET(libsources
-Wt/FlexLayoutImpl.C
-Wt/FlexItemImpl.C
-Wt/PopupWindow.C
-Wt/Resizable.C
-Wt/ResizeSensor.C
-Wt/ServerSideFontMetrics.C
-Wt/SizeHandle.C
-Wt/StdGridLayoutImpl2.C
-Wt/StdLayoutImpl.C
-Wt/StdLayoutItemImpl.C
-Wt/StdWidgetItemImpl.C
-Wt/Utils.C
-Wt/WAbstractArea.C
-Wt/WAbstractItemDelegate.C
-Wt/WAbstractItemModel.C
-Wt/WAbstractItemView.C
-Wt/WAbstractListModel.C
-Wt/WAbstractMedia.C
-Wt/WAbstractProxyModel.C
-Wt/WAbstractSpinBox.C
-Wt/WAbstractTableModel.C
-Wt/WAbstractToggleButton.C
-Wt/WAggregateProxyModel.C
-Wt/WAnchor.C
-Wt/WAnimation.C
-Wt/WAny.C
-Wt/WApplication.C
-Wt/WAudio.C
-Wt/WBatchEditProxyModel.C
-Wt/WBootstrapTheme.C
-Wt/WBorder.C
-Wt/WBorderLayout.C
-Wt/WBoxLayout.C
-Wt/WBreak.C
-Wt/WBrush.C
-Wt/WButtonGroup.C
-Wt/WCalendar.C
-Wt/WCanvasPaintDevice.C
-Wt/WCheckBox.C
-Wt/WCircleArea.C
-Wt/WColor.C
-Wt/WCombinedLocalizedStrings.C
-Wt/WComboBox.C
-Wt/WCompositeWidget.C
-Wt/WContainerWidget.C
-Wt/WCssDecorationStyle.C
-Wt/WCssStyleSheet.C
-Wt/WCssTheme.C
-Wt/WDate.C
-Wt/WDateEdit.C
-Wt/WDatePicker.C
-Wt/WDateTime.C
-Wt/WDateValidator.C
-Wt/WDefaultLoadingIndicator.C
-Wt/WDialog.C
-Wt/WDoubleSpinBox.C
-Wt/WDoubleValidator.C
-Wt/WEnvironment.C
-Wt/WEvent.C
-Wt/WException.C
-Wt/WFileDropWidget.C
-Wt/WFileResource.C
-Wt/WFileUpload.C
-Wt/WFitLayout.C
-Wt/WFlashObject.C
-Wt/WFont.C
-Wt/WFontMetrics.C
-Wt/WFormModel.C
-Wt/WFormWidget.C
-Wt/WGLWidget.C
-Wt/WAbstractGLImplementation.C
-Wt/WClientGLWidget.C
-Wt/WGoogleMap.C
-Wt/WGradient.C
-Wt/WGridLayout.C
-Wt/WGroupBox.C
-Wt/WHBoxLayout.C
-Wt/WIcon.C
-Wt/WIconPair.C
-Wt/WImage.C
-Wt/WInPlaceEdit.C
-Wt/WIntValidator.C
-Wt/WInteractWidget.C
-Wt/WIOService.C
-Wt/WLocale.C
-Wt/WLocalDateTime.C
-Wt/WIdentityProxyModel.C
-Wt/WItemDelegate.C
-Wt/WItemSelectionModel.C
-Wt/WJavaScript.C
-Wt/WJavaScriptExposableObject.C
-Wt/WJavaScriptHandle.C
-Wt/WJavaScriptObjectStorage.C
-Wt/WJavaScriptPreamble.C
-Wt/WJavaScriptSlot.C
-Wt/WLabel.C
-Wt/WLayout.C
-Wt/WLayoutImpl.C
-Wt/WLayoutItem.C
-Wt/WLayoutItemImpl.C
-Wt/WLength.C
-Wt/WLengthValidator.C
-Wt/WLineEdit.C
-Wt/WLineF.C
-Wt/WLink.C
-Wt/WLinkedCssStyleSheet.C
-Wt/WLoadingIndicator.C
-Wt/WLocalizedStrings.C
-Wt/WLogger.C
-Wt/WMatrix4x4.C
-Wt/WMeasurePaintDevice.C
-Wt/WMediaPlayer.C
-Wt/WMemoryResource.C
-Wt/WMenu.C
-Wt/WMenuItem.C
-Wt/WMessageBox.C
-Wt/WMessageResourceBundle.C
-Wt/WMessageResources.C
-Wt/WModelIndex.C
-Wt/WNavigationBar.C
-Wt/WObject.C
-Wt/WOverlayLoadingIndicator.C
-Wt/WPaintDevice.C
-Wt/WPaintedWidget.C
-Wt/WPainter.C
-Wt/WPainterPath.C
-Wt/WPanel.C
-Wt/WPen.C
-Wt/WPoint.C
-Wt/WPointF.C
-Wt/WPolygonArea.C
-Wt/WPopupMenu.C
-Wt/WPopupWidget.C
-Wt/WProgressBar.C
-Wt/WPushButton.C
-Wt/WRadioButton.C
-Wt/WRandom.C
-Wt/WReadOnlyProxyModel.C
-Wt/WRectArea.C
-Wt/WRectF.C
-Wt/WRegExpValidator.C
-Wt/WResource.C
-Wt/WSelectionBox.C
-Wt/WServer.C
-Wt/WShadow.C
-Wt/WSignal.C
-Wt/WSlider.C
-Wt/WSocketNotifier.C
-Wt/WSortFilterProxyModel.C
-Wt/WSpinBox.C
-Wt/WSplitButton.C
-Wt/WSound.C
-Wt/WSslCertificate.C
-Wt/WSslInfo.C
-Wt/WStackedWidget.C
-Wt/WStandardItem.C
-Wt/WStandardItemModel.C
-Wt/WStatelessSlot.C
-Wt/WString.C
-Wt/WStreamResource.C
-Wt/WStringListModel.C
-Wt/WStringStream.C
-Wt/WStringUtil.C
-Wt/WSuggestionPopup.C
-Wt/WSvgImage.C
-Wt/WTabWidget.C
-Wt/WTable.C
-Wt/WTableCell.C
-Wt/WTableColumn.C
-Wt/WTableRow.C
-Wt/WTemplate.C
-Wt/WTemplateFormView.C
-Wt/WTableView.C
-Wt/WText.C
-Wt/WTextArea.C
-Wt/WTextEdit.C
-Wt/WTheme.C
-Wt/WTime.C
-Wt/WTimeEdit.C
-Wt/WTimer.C
-Wt/WTimerWidget.C
-Wt/WTimePicker.C
-Wt/WTimeValidator.C
-Wt/WToolBar.C
-Wt/WTransform.C
-Wt/WTree.C
-Wt/WTreeNode.C
-Wt/WTreeTable.C
-Wt/WTreeTableNode.C
-Wt/WTreeView.C
-Wt/WValidator.C
-Wt/WVBoxLayout.C
-Wt/WVector3.C
-Wt/WVector4.C
-Wt/WVectorImage.C
-Wt/WVideo.C
-Wt/WVmlImage.C
-Wt/WViewWidget.C
-Wt/WVirtualImage.C
-Wt/WWebWidget.C
-Wt/WWidget.C
-Wt/WWidgetItem.C
-Wt/WWidgetItemImpl.C
-Wt/Auth/AbstractPasswordService.C
-Wt/Auth/AbstractUserDatabase.C
-Wt/Auth/AuthModel.C
-Wt/Auth/AuthService.C
-Wt/Auth/AuthWidget.C
-Wt/Auth/FacebookService.C
-Wt/Auth/FormBaseModel.C
-Wt/Auth/GoogleService.C
-Wt/Auth/HashFunction.C
-Wt/Auth/Identity.C
-Wt/Auth/Login.C
-Wt/Auth/LostPasswordWidget.C
-Wt/Auth/OAuthService.C
-Wt/Auth/OAuthWidget.C
-Wt/Auth/passwdqc_check.c
-Wt/Auth/PasswordHash.C
-Wt/Auth/PasswordPromptDialog.C
-Wt/Auth/PasswordService.C
-Wt/Auth/PasswordStrengthValidator.C
-Wt/Auth/PasswordVerifier.C
-Wt/Auth/RegistrationModel.C
-Wt/Auth/RegistrationWidget.C
-Wt/Auth/Token.C
-Wt/Auth/UpdatePasswordWidget.C
-Wt/Auth/User.C
-Wt/Auth/AuthUtils.C
-Wt/Auth/MailUtils.C
-Wt/Auth/OAuthClient.C
-Wt/Auth/OAuthTokenEndpoint.C
-Wt/Auth/OidcUserInfoEndpoint.C
-Wt/Auth/OAuthAuthorizationEndpointProcess.C
-Wt/Auth/IssuedToken.C
-Wt/Auth/OidcService.C
-Wt/Chart/WAbstractChart.C
-Wt/Chart/WAbstractChartModel.C
-Wt/Chart/WAxis.C
-Wt/Chart/WAxisSliderWidget.C
-Wt/Chart/WDataSeries.C
-Wt/Chart/WPieChart.C
-Wt/Chart/WCartesianChart.C
-Wt/Chart/WCartesian3DChart.C
-Wt/Chart/WAbstractChartImplementation.C
-Wt/Chart/WChart2DImplementation.C
-Wt/Chart/WChart3DImplementation.C
-Wt/Chart/WChartPalette.C
-Wt/Chart/WStandardChartProxyModel.C
-Wt/Chart/WStandardPalette.C
-Wt/Chart/WStandardColorMap.C
-Wt/Chart/WLegend.C
-Wt/Chart/WLegend3D.C
-Wt/Chart/WAbstractDataSeries3D.C
-Wt/Chart/WAbstractGridData.C
-Wt/Chart/WGridData.C
-Wt/Chart/WEquidistantGridData.C
-Wt/Chart/WScatterData.C
-Wt/Chart/WSelection.C
-Wt/Core/observable.cpp
-Wt/Core/observing_ptr.cpp
-Wt/Date/src/tz.cpp
-Wt/Json/Array.C
-Wt/Json/Object.C
-Wt/Json/Parser.C
-Wt/Json/Serializer.C
-Wt/Json/Value.C
-Wt/Http/HttpUtils.C
-Wt/Http/Client.C
-Wt/Http/Message.C
-Wt/Http/Request.C
-Wt/Http/Response.C
-Wt/Http/ResponseContinuation.C
-Wt/Http/WtClient.C
-Wt/Mail/Client.C
-Wt/Mail/Mailbox.C
-Wt/Mail/Message.C
-Wt/Payment/Address.C
-Wt/Payment/PayPal.C
-Wt/Payment/Customer.C
-Wt/Payment/Money.C
-Wt/Payment/Order.C
-Wt/Payment/OrderItem.C
-Wt/Payment/Result.C
-Wt/Render/Block.C
-Wt/Render/CssData.C
-Wt/Render/CssData_p.C
-Wt/Render/CssParser.C
-Wt/Render/Line.C
-Wt/Render/LayoutBox.C
-Wt/Render/RenderUtils.C
-Wt/Render/Specificity.C
-Wt/Render/WTextRenderer.C
-Wt/Signals/signals.cpp
-web/md5.c
-web/sha1.c
-web/CgiParser.C
-web/Configuration.C
-web/DomElement.C
-web/EntryPoint.C
-web/EscapeOStream.C
-web/FileServe.C
-web/ColorUtils.C
-web/ImageUtils.C
-web/RefEncoder.C
-web/SoundManager.C
-web/WebController.C
-web/WebMain.C
-web/WebRequest.C
-web/WebStream.C
-web/WebSession.C
-web/WebSocketMessage.C
-web/WebRenderer.C
-web/WebUtils.C
-web/FileUtils.C
-web/PdfUtils.C
-web/StringUtils.cpp
-web/TimeUtil.C
-web/XSSFilter.C
-web/XSSUtils.C
-web/SslUtils.C
-web/UriUtils.C
-web/base64.cpp
-#experimental/any.cpp
-Plain_html.C
-Boot_html.C
-Hybrid_html.C
-Boot_js.C
-Wt_js.C
-WCartesianChart_js.C
-Wt_xml.C
-AuthStrings_xml.C
-BootstrapTheme_xml.C
-Bootstrap3Theme_xml.C
-AuthCssTheme_xml.C
-JQuery_js.C
+
+target_sources(wt PRIVATE
+  Wt/FlexLayoutImpl.C
+  Wt/FlexItemImpl.C
+  Wt/PopupWindow.C
+  Wt/Resizable.C
+  Wt/ResizeSensor.C
+  Wt/ServerSideFontMetrics.C
+  Wt/SizeHandle.C
+  Wt/StdGridLayoutImpl2.C
+  Wt/StdLayoutImpl.C
+  Wt/StdLayoutItemImpl.C
+  Wt/StdWidgetItemImpl.C
+  Wt/Utils.C
+  Wt/WAbstractArea.C
+  Wt/WAbstractItemDelegate.C
+  Wt/WAbstractItemModel.C
+  Wt/WAbstractItemView.C
+  Wt/WAbstractListModel.C
+  Wt/WAbstractMedia.C
+  Wt/WAbstractProxyModel.C
+  Wt/WAbstractSpinBox.C
+  Wt/WAbstractTableModel.C
+  Wt/WAbstractToggleButton.C
+  Wt/WAggregateProxyModel.C
+  Wt/WAnchor.C
+  Wt/WAnimation.C
+  Wt/WAny.C
+  Wt/WApplication.C
+  Wt/WAudio.C
+  Wt/WBatchEditProxyModel.C
+  Wt/WBootstrapTheme.C
+  Wt/WBorder.C
+  Wt/WBorderLayout.C
+  Wt/WBoxLayout.C
+  Wt/WBreak.C
+  Wt/WBrush.C
+  Wt/WButtonGroup.C
+  Wt/WCalendar.C
+  Wt/WCanvasPaintDevice.C
+  Wt/WCheckBox.C
+  Wt/WCircleArea.C
+  Wt/WColor.C
+  Wt/WCombinedLocalizedStrings.C
+  Wt/WComboBox.C
+  Wt/WCompositeWidget.C
+  Wt/WContainerWidget.C
+  Wt/WCssDecorationStyle.C
+  Wt/WCssStyleSheet.C
+  Wt/WCssTheme.C
+  Wt/WDate.C
+  Wt/WDateEdit.C
+  Wt/WDatePicker.C
+  Wt/WDateTime.C
+  Wt/WDateValidator.C
+  Wt/WDefaultLoadingIndicator.C
+  Wt/WDialog.C
+  Wt/WDoubleSpinBox.C
+  Wt/WDoubleValidator.C
+  Wt/WEnvironment.C
+  Wt/WEvent.C
+  Wt/WException.C
+  Wt/WFileDropWidget.C
+  Wt/WFileResource.C
+  Wt/WFileUpload.C
+  Wt/WFitLayout.C
+  Wt/WFlashObject.C
+  Wt/WFont.C
+  Wt/WFontMetrics.C
+  Wt/WFormModel.C
+  Wt/WFormWidget.C
+  Wt/WGLWidget.C
+  Wt/WAbstractGLImplementation.C
+  Wt/WClientGLWidget.C
+  Wt/WGoogleMap.C
+  Wt/WGradient.C
+  Wt/WGridLayout.C
+  Wt/WGroupBox.C
+  Wt/WHBoxLayout.C
+  Wt/WIcon.C
+  Wt/WIconPair.C
+  Wt/WImage.C
+  Wt/WInPlaceEdit.C
+  Wt/WIntValidator.C
+  Wt/WInteractWidget.C
+  Wt/WIOService.C
+  Wt/WLocale.C
+  Wt/WLocalDateTime.C
+  Wt/WIdentityProxyModel.C
+  Wt/WItemDelegate.C
+  Wt/WItemSelectionModel.C
+  Wt/WJavaScript.C
+  Wt/WJavaScriptExposableObject.C
+  Wt/WJavaScriptHandle.C
+  Wt/WJavaScriptObjectStorage.C
+  Wt/WJavaScriptPreamble.C
+  Wt/WJavaScriptSlot.C
+  Wt/WLabel.C
+  Wt/WLayout.C
+  Wt/WLayoutImpl.C
+  Wt/WLayoutItem.C
+  Wt/WLayoutItemImpl.C
+  Wt/WLength.C
+  Wt/WLengthValidator.C
+  Wt/WLineEdit.C
+  Wt/WLineF.C
+  Wt/WLink.C
+  Wt/WLinkedCssStyleSheet.C
+  Wt/WLoadingIndicator.C
+  Wt/WLocalizedStrings.C
+  Wt/WLogger.C
+  Wt/WMatrix4x4.C
+  Wt/WMeasurePaintDevice.C
+  Wt/WMediaPlayer.C
+  Wt/WMemoryResource.C
+  Wt/WMenu.C
+  Wt/WMenuItem.C
+  Wt/WMessageBox.C
+  Wt/WMessageResourceBundle.C
+  Wt/WMessageResources.C
+  Wt/WModelIndex.C
+  Wt/WNavigationBar.C
+  Wt/WObject.C
+  Wt/WOverlayLoadingIndicator.C
+  Wt/WPaintDevice.C
+  Wt/WPaintedWidget.C
+  Wt/WPainter.C
+  Wt/WPainterPath.C
+  Wt/WPanel.C
+  Wt/WPen.C
+  Wt/WPoint.C
+  Wt/WPointF.C
+  Wt/WPolygonArea.C
+  Wt/WPopupMenu.C
+  Wt/WPopupWidget.C
+  Wt/WProgressBar.C
+  Wt/WPushButton.C
+  Wt/WRadioButton.C
+  Wt/WRandom.C
+  Wt/WReadOnlyProxyModel.C
+  Wt/WRectArea.C
+  Wt/WRectF.C
+  Wt/WRegExpValidator.C
+  Wt/WResource.C
+  Wt/WSelectionBox.C
+  Wt/WServer.C
+  Wt/WShadow.C
+  Wt/WSignal.C
+  Wt/WSlider.C
+  Wt/WSocketNotifier.C
+  Wt/WSortFilterProxyModel.C
+  Wt/WSpinBox.C
+  Wt/WSplitButton.C
+  Wt/WSound.C
+  Wt/WSslCertificate.C
+  Wt/WSslInfo.C
+  Wt/WStackedWidget.C
+  Wt/WStandardItem.C
+  Wt/WStandardItemModel.C
+  Wt/WStatelessSlot.C
+  Wt/WString.C
+  Wt/WStreamResource.C
+  Wt/WStringListModel.C
+  Wt/WStringStream.C
+  Wt/WStringUtil.C
+  Wt/WSuggestionPopup.C
+  Wt/WSvgImage.C
+  Wt/WTabWidget.C
+  Wt/WTable.C
+  Wt/WTableCell.C
+  Wt/WTableColumn.C
+  Wt/WTableRow.C
+  Wt/WTemplate.C
+  Wt/WTemplateFormView.C
+  Wt/WTableView.C
+  Wt/WText.C
+  Wt/WTextArea.C
+  Wt/WTextEdit.C
+  Wt/WTheme.C
+  Wt/WTime.C
+  Wt/WTimeEdit.C
+  Wt/WTimer.C
+  Wt/WTimerWidget.C
+  Wt/WTimePicker.C
+  Wt/WTimeValidator.C
+  Wt/WToolBar.C
+  Wt/WTransform.C
+  Wt/WTree.C
+  Wt/WTreeNode.C
+  Wt/WTreeTable.C
+  Wt/WTreeTableNode.C
+  Wt/WTreeView.C
+  Wt/WValidator.C
+  Wt/WVBoxLayout.C
+  Wt/WVector3.C
+  Wt/WVector4.C
+  Wt/WVectorImage.C
+  Wt/WVideo.C
+  Wt/WVmlImage.C
+  Wt/WViewWidget.C
+  Wt/WVirtualImage.C
+  Wt/WWebWidget.C
+  Wt/WWidget.C
+  Wt/WWidgetItem.C
+  Wt/WWidgetItemImpl.C
+  Wt/Auth/AbstractPasswordService.C
+  Wt/Auth/AbstractUserDatabase.C
+  Wt/Auth/AuthModel.C
+  Wt/Auth/AuthService.C
+  Wt/Auth/AuthWidget.C
+  Wt/Auth/FacebookService.C
+  Wt/Auth/FormBaseModel.C
+  Wt/Auth/GoogleService.C
+  Wt/Auth/HashFunction.C
+  Wt/Auth/Identity.C
+  Wt/Auth/Login.C
+  Wt/Auth/LostPasswordWidget.C
+  Wt/Auth/OAuthService.C
+  Wt/Auth/OAuthWidget.C
+  Wt/Auth/passwdqc_check.c
+  Wt/Auth/PasswordHash.C
+  Wt/Auth/PasswordPromptDialog.C
+  Wt/Auth/PasswordService.C
+  Wt/Auth/PasswordStrengthValidator.C
+  Wt/Auth/PasswordVerifier.C
+  Wt/Auth/RegistrationModel.C
+  Wt/Auth/RegistrationWidget.C
+  Wt/Auth/Token.C
+  Wt/Auth/UpdatePasswordWidget.C
+  Wt/Auth/User.C
+  Wt/Auth/AuthUtils.C
+  Wt/Auth/MailUtils.C
+  Wt/Auth/OAuthClient.C
+  Wt/Auth/OAuthTokenEndpoint.C
+  Wt/Auth/OidcUserInfoEndpoint.C
+  Wt/Auth/OAuthAuthorizationEndpointProcess.C
+  Wt/Auth/IssuedToken.C
+  Wt/Auth/OidcService.C
+  Wt/Chart/WAbstractChart.C
+  Wt/Chart/WAbstractChartModel.C
+  Wt/Chart/WAxis.C
+  Wt/Chart/WAxisSliderWidget.C
+  Wt/Chart/WDataSeries.C
+  Wt/Chart/WPieChart.C
+  Wt/Chart/WCartesianChart.C
+  Wt/Chart/WCartesian3DChart.C
+  Wt/Chart/WAbstractChartImplementation.C
+  Wt/Chart/WChart2DImplementation.C
+  Wt/Chart/WChart3DImplementation.C
+  Wt/Chart/WChartPalette.C
+  Wt/Chart/WStandardChartProxyModel.C
+  Wt/Chart/WStandardPalette.C
+  Wt/Chart/WStandardColorMap.C
+  Wt/Chart/WLegend.C
+  Wt/Chart/WLegend3D.C
+  Wt/Chart/WAbstractDataSeries3D.C
+  Wt/Chart/WAbstractGridData.C
+  Wt/Chart/WGridData.C
+  Wt/Chart/WEquidistantGridData.C
+  Wt/Chart/WScatterData.C
+  Wt/Chart/WSelection.C
+  Wt/Core/observable.cpp
+  Wt/Core/observing_ptr.cpp
+  Wt/Date/src/tz.cpp
+  Wt/Json/Array.C
+  Wt/Json/Object.C
+  Wt/Json/Parser.C
+  Wt/Json/Serializer.C
+  Wt/Json/Value.C
+  Wt/Http/HttpUtils.C
+  Wt/Http/Client.C
+  Wt/Http/Message.C
+  Wt/Http/Request.C
+  Wt/Http/Response.C
+  Wt/Http/ResponseContinuation.C
+  Wt/Http/WtClient.C
+  Wt/Mail/Client.C
+  Wt/Mail/Mailbox.C
+  Wt/Mail/Message.C
+  Wt/Payment/Address.C
+  Wt/Payment/PayPal.C
+  Wt/Payment/Customer.C
+  Wt/Payment/Money.C
+  Wt/Payment/Order.C
+  Wt/Payment/OrderItem.C
+  Wt/Payment/Result.C
+  Wt/Render/Block.C
+  Wt/Render/CssData.C
+  Wt/Render/CssData_p.C
+  Wt/Render/CssParser.C
+  Wt/Render/Line.C
+  Wt/Render/LayoutBox.C
+  Wt/Render/RenderUtils.C
+  Wt/Render/Specificity.C
+  Wt/Render/WTextRenderer.C
+  Wt/Signals/signals.cpp
+  web/md5.c
+  web/sha1.c
+  web/CgiParser.C
+  web/Configuration.C
+  web/DomElement.C
+  web/EntryPoint.C
+  web/EscapeOStream.C
+  web/FileServe.C
+  web/ColorUtils.C
+  web/ImageUtils.C
+  web/RefEncoder.C
+  web/SoundManager.C
+  web/WebController.C
+  web/WebMain.C
+  web/WebRequest.C
+  web/WebStream.C
+  web/WebSession.C
+  web/WebSocketMessage.C
+  web/WebRenderer.C
+  web/WebUtils.C
+  web/FileUtils.C
+  web/PdfUtils.C
+  web/StringUtils.cpp
+  web/TimeUtil.C
+  web/XSSFilter.C
+  web/XSSUtils.C
+  web/SslUtils.C
+  web/UriUtils.C
+  web/base64.cpp
+  #experimental/any.cpp
+  Plain_html.C
+  Boot_html.C
+  Hybrid_html.C
+  Boot_js.C
+  Wt_js.C
+  WCartesianChart_js.C
+  Wt_xml.C
+  AuthStrings_xml.C
+  BootstrapTheme_xml.C
+  Bootstrap3Theme_xml.C
+  AuthCssTheme_xml.C
+  JQuery_js.C
 )
 
 IF (WIN32)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=0)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS HAS_REMOTE_API=0)
-  IF (SHARED_LIBS)
-    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_DLL)
-  ELSE (SHARED_LIBS)
-    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
-  ENDIF (SHARED_LIBS)
+  set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
 ELSE (WIN32)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
 ENDIF (WIN32)
 
-ADD_DEFINITIONS(-DWT_BUILDING)
 
 IF (MULTI_THREADED_BUILD)
-  SET(libsources ${libsources} web/SocketNotifier.C)
+  target_sources(wt PRIVATE web/SocketNotifier.C)
+  target_link_libraries(wt PRIVATE Threads::Threads)
 ENDIF(MULTI_THREADED_BUILD)
 
 # How to include x86.S ?
-SET(libsources ${libsources}
+target_sources(wt PRIVATE
       Wt/Auth/bcrypt/crypt_blowfish.c
       Wt/Auth/bcrypt/crypt_gensalt.c
       Wt/Auth/bcrypt/wrapper.c)
@@ -448,6 +434,7 @@ SET(WT_FONTSUPPORT_SIMPLE false)
 SET(WT_FONTSUPPORT_PANGO false)
 SET(WT_FONTSUPPORT_DIRECTWRITE false)
 SET(HAVE_DIRECTWRITE false)
+
 IF(WIN32 AND NOT MINGW)
   SET(HAVE_DIRECTWRITE true)
 ENDIF(WIN32 AND NOT MINGW)
@@ -480,24 +467,6 @@ IF(RT_required)
   SET(RT_LIBRARY "rt")
 ENDIF(RT_required)
 
-IF(WIN32)
-  IF(SHARED_LIBS)
-    CONFIGURE_FILE(Wt/wt-version.rc.in
-                   ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
-    SET(libsources ${libsources} ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
-  ENDIF(SHARED_LIBS)
-ENDIF(WIN32)
-
-ADD_LIBRARY(wt ${libsources})
-
-if (WT_ASIO_IS_STANDALONE_ASIO)
-  TARGET_LINK_LIBRARIES(wt
-    PRIVATE ${BOOST_WT_LIBRARIES})
-else (WT_ASIO_IS_STANDALONE_ASIO)
-  TARGET_LINK_LIBRARIES(wt
-    PUBLIC ${BOOST_WT_LIBRARIES})
-endif (WT_ASIO_IS_STANDALONE_ASIO)
-
 TARGET_LINK_LIBRARIES(wt
   PUBLIC
     ${WT_SOCKET_LIBRARY}
@@ -507,15 +476,17 @@ TARGET_LINK_LIBRARIES(wt
     )
 
 IF(ENABLE_LIBWTTEST)
-  ADD_LIBRARY(wttest
+  MESSAGE("** Building libwttest")
+  add_library(wttest STATIC
     Wt/Test/WTestEnvironment.C
   )
 
-  TARGET_LINK_LIBRARIES(wttest PUBLIC wt)
-
-  IF(MULTI_THREADED_BUILD)
-    TARGET_LINK_LIBRARIES(wttest PRIVATE ${WT_THREAD_LIB})
-  ENDIF(MULTI_THREADED_BUILD)
+  target_link_libraries(wttest 
+    PUBLIC 
+      wt
+    PRIVATE
+      Threads::Threads
+  )
 
   INSTALL(TARGETS wttest
           EXPORT wt-target-test
@@ -616,9 +587,6 @@ ELSE(HAVE_UNWIND)
   ENDIF(ENABLE_UNWIND)
 ENDIF(HAVE_UNWIND)
 
-IF(MULTI_THREADED_BUILD)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${WT_THREAD_LIB})
-ENDIF(MULTI_THREADED_BUILD)
 
 TARGET_INCLUDE_DIRECTORIES(wt INTERFACE
   $<INSTALL_INTERFACE:include>)
@@ -653,4 +621,6 @@ IF(MSVC)
   TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
 ENDIF(MSVC)
 
-SUBDIRS(isapi fcgi http)
+add_subdirectory(isapi)
+add_subdirectory(fcgi)
+add_subdirectory(http)

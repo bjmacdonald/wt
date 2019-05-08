@@ -1,8 +1,11 @@
+# activate conane (if necessary)
+#
 # rd /s /q c:\Y-Work\wt-build
 # md c:\Y-Work\wt-build
 # cd c:\Y-Work\wt-build
 # conan install ..\wt
 # cmake -G"Visual Studio 15 2017 Win64" -Thost=x64 ..\wt
+# cmake -Ax64 -G"Visual Studio 16 2019" -Thost=x64 ..\wt
 
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
@@ -41,7 +44,7 @@ SET(WTTEST_SOVERSION 21)
 
 
 # Options
-OPTION(BUILD_EXAMPLES "Build examples" ON)
+OPTION(BUILD_EXAMPLES "Build examples" OFF)
 OPTION(INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" OFF)
 OPTION(INSTALL_EXAMPLES "Install examples (binaries and source)" OFF)
 OPTION(INSTALL_RESOURCES "Install resources directory" ON)
@@ -67,6 +70,14 @@ OPTION(ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 OPTION(MULTI_THREADED "Build multi-threaded httpd deamon (if possible)" ON)
 OPTION(SHARED_LIBS "Compile shared libraries" OFF)
 
+OPTION(BOOST_DYNAMIC "Link to boost DLLs (OFF means static link)" OFF)
+OPTION(HARU_DYNAMIC "Link to libharu DLLs (OFF means static link)" OFF)
+
+OPTION(DEBUG "Support for debugging, must be enabled also in wt_config.xml" OFF)
+OPTION(BUILD_TESTS "Build Wt tests" OFF)
+
+OPTION(CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" ON)
+
 SET(DOCUMENTATION_DESTINATION share/doc/Wt)
 SET(EXAMPLES_DESTINATION lib/Wt/examples)
 
@@ -81,21 +92,6 @@ IF(WIN32)
     SET(WT_NO_BOOST_INTRUSIVE true)
   ENDIF(SHARED_LIBS)
 ENDIF(WIN32)
-
-# Fixup Windows declspec stuff
-IF(NOT SHARED_LIBS)
-  SET(WT_STATIC true)
-  SET(WTHTTP_STATIC true)
-  SET(WT_EXT_STATIC true)
-  SET(WTDBO_STATIC true)
-  SET(WTDBOSQLITE3_STATIC true)
-  SET(WTDBOPOSTGRES_STATIC true)
-  SET(WTDBOFIREBIRD_STATIC true)
-  SET(WTDBOMYSQL_STATIC true)
-  SET(WTDBOMSSQLSERVER_STATIC true)
-ENDIF(NOT SHARED_LIBS)
-
-SET(BUILD_SHARED_LIBS ${SHARED_LIBS})
 
 IF(WIN32)
   SET(RUNDIR "c:/app/wt") # Does not apply to win32
@@ -124,8 +120,6 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 
-OPTION(BOOST_DYNAMIC "Link to boost DLLs (OFF means static link)" OFF)
-OPTION(HARU_DYNAMIC "Link to libharu DLLs (OFF means static link)" OFF)
 
 # BMD
 SET(POSTGRES_PREFIX "c:/app/pgsql" CACHE PATH
@@ -138,8 +132,6 @@ SET(HARU_PREFIX ${USERLIB_PREFIX} CACHE PATH
   "Installation prefix of libharu library (overrides USERLIB_PREFIX)")
 SET(SSL_PREFIX ${USERLIB_PREFIX} CACHE PATH
   "Installation prefix of SSL library (overrides USERLIB_PREFIX)")
-SET(ZLIB_PREFIX ${USERLIB_PREFIX} CACHE PATH
-  "Installation prefix of zlib library (overrides USERLIB_PREFIX)")
 SET(GM_PREFIX ${USERLIB_PREFIX} CACHE PATH
   "Installation prefix of GraphicsMagick library (overrides USERLIB_PREFIX)")
 SET(SKIA_PREFIX ${USERLIB_PREFIX} CACHE PATH
@@ -147,18 +139,12 @@ SET(SKIA_PREFIX ${USERLIB_PREFIX} CACHE PATH
 SET(UNWIND_PREFIX ${UNWIND_PREFIX} CACHE PATH
   "Prefix of unwind library (overrides USERLIB_PREFIX)")
 
-OPTION(DEBUG "Support for debugging, must be enabled also in wt_config.xml" OFF)
-
-OPTION(BUILD_TESTS "Build Wt tests" ON)
-ADD_DEFINITIONS(-DWT_WITH_OLD_INTERNALPATH_API)
-
 MARK_AS_ADVANCED( CONFIGDIR )
 SET(CONFIGURATION "${CONFIGDIR}/wt_config.xml" CACHE PATH "Path to the wt configuration file")
 SET(WTHTTP_CONFIGURATION "${CONFIGDIR}/wthttpd" CACHE PATH "Path for the wthttpd configuration file")
 
 SET(WEBUSER apache CACHE STRING "Webserver username (e.g. apache or www)")
 SET(WEBGROUP apache CACHE STRING "Webserver groupname (e.g. apache or www or users)")
-OPTION(CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" ON)
 SET(EXAMPLES_CONNECTOR wthttp CACHE STRING "Connector used for examples")
 
 # BMD
@@ -175,7 +161,6 @@ find_package(ZLIB REQUIRED CONFIG)
 # include (CheckSymbolExists)
 # INCLUDE(cmake/WtFindBoost.txt)
 # INCLUDE(cmake/WtFindFcgi.txt)
-# INCLUDE(cmake/WtFindZlib.txt)
 # INCLUDE(cmake/WtFindPng.txt)
 # INCLUDE(cmake/WtFindSsl.txt)
 # INCLUDE(cmake/WtFindMysql.txt)
@@ -288,22 +273,22 @@ IF (DOXYGEN_FOUND)
   ADD_DEPENDENCIES(doc doxygen-examples)
 ENDIF (DOXYGEN_FOUND)
 
-SUBDIRS(src)
+add_subdirectory(src)
 
 IF(BUILD_EXAMPLES)
   IF(WIN32)
-    SUBDIRS(examples)
+    add_subdirectory(examples)
   ELSE(WIN32)
     IF (INSTALL_EXAMPLES)
-      SUBDIRS(examples)
+      add_subdirectory(examples)
     ELSE (INSTALL_EXAMPLES)
-      SUBDIRS(EXCLUDE_FROM_ALL examples)
+      add_subdirectory(EXCLUDE_FROM_ALL examples)
     ENDIF (INSTALL_EXAMPLES)
   ENDIF(WIN32)
 ENDIF(BUILD_EXAMPLES)
 
 IF(BUILD_TESTS)
-  SUBDIRS(test)
+  add_subdirectory(test)
 ENDIF(BUILD_TESTS)
 
 IF(INSTALL_RESOURCES)
