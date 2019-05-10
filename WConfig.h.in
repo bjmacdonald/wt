@@ -30,7 +30,7 @@
 
 #cmakedefine WT_HAS_WRASTERIMAGE
 #cmakedefine WT_HAS_WPDFIMAGE
-#cmakedefine WT_WITH_SSL
+#define WT_WITH_SSL
 
 #cmakedefine WT_USE_OPENGL
 #cmakedefine WT_DEBUG_ENABLED

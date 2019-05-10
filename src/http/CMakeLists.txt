@@ -12,6 +12,7 @@ IF(CONNECTOR_HTTP)
   IF (HAVE_STRCASESTR)
     target_compile_definitions(wthttp PRIVATE HAVE_STRCASESTR)
   ENDIF (HAVE_STRCASESTR)
+  
   CHECK_FUNCTION_EXISTS(strcasecmp HAVE_STRCASECMP)
   IF (HAVE_STRCASECMP)
     target_compile_definitions(wthttp PRIVATE HAVE_STRCASECMP)
@@ -49,10 +50,9 @@ IF(CONNECTOR_HTTP)
       ${WT_SOCKET_LIBRARY}
   )    
 
-  IF (HAVE_SSL)
-    target_link_libraries(wthttp PRIVATE OpenSSL::api)
-    target_compile_definitions(wthttp PRIVATE HTTP_WITH_SSL)
-  ENDIF (HAVE_SSL)
+  # SSL
+  target_link_libraries(wthttp PRIVATE OpenSSL::api)
+  target_compile_definitions(wthttp PRIVATE HTTP_WITH_SSL)
 
   # ZLib
   target_link_libraries(wthttp PUBLIC ZLIB::ZLIB)
@@ -81,7 +81,6 @@ IF(CONNECTOR_HTTP)
     EXPORT_NAME HTTP
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
     SOVERSION ${WTHTTP_SOVERSION}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
   )
 
   IF(MSVC)
