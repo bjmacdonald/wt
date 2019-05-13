@@ -19,14 +19,18 @@
 #define WT_CONFIG_XML "${CONFIGURATION}"
 #define WTHTTP_CONFIGURATION "${WTHTTP_CONFIGURATION}"
 
-#cmakedefine WT_STATIC
-#cmakedefine WTDBO_STATIC
-#cmakedefine WTDBOPOSTGRES_STATIC
-#cmakedefine WTDBOSQLITE3_STATIC
-#cmakedefine WTDBOFIREBIRD_STATIC
-#cmakedefine WTDBOMYSQL_STATIC
-#cmakedefine WTDBOMSSQLSERVER_STATIC
-#cmakedefine WTHTTP_STATIC
+// Shared Library Flag
+#cmakedefine BUILD_SHARED_LIBS
+#ifndef BUILD_SHARED_LIBS
+# define WT_STATIC
+# define WTDBO_STATIC
+# define WTDBOPOSTGRES_STATIC
+# define WTDBOSQLITE3_STATIC
+# define WTDBOFIREBIRD_STATIC
+# define WTDBOMYSQL_STATIC
+# define WTDBOMSSQLSERVER_STATIC
+# define WTHTTP_STATIC
+#endif 
 
 #cmakedefine WT_HAS_WRASTERIMAGE
 #cmakedefine WT_HAS_WPDFIMAGE
@@ -43,11 +47,9 @@
 #cmakedefine WT_ASIO_IS_BOOST_ASIO
 #cmakedefine WT_ASIO_IS_STANDALONE_ASIO
 
-#cmakedefine WT_WARN_HEADER_MISSING_H
-
 // our win32: WIN32 (gcc) or _WIN32 (MSC)
 #if defined(WIN32) || defined(_WIN32)
-#define WT_WIN32 1
+# define WT_WIN32 1
 #endif
 
 #endif

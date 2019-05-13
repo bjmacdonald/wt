@@ -1,11 +1,11 @@
 IF(ENABLE_LIBWTDBO)
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_BUILD_DLL)
       CONFIGURE_FILE(wtdbo-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
       SET(wtdboversionrc ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_BUILD_DLL)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbo

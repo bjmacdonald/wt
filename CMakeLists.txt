@@ -43,20 +43,25 @@ SET(WTDBOMSSQLSERVER_SOVERSION 51)
 SET(WTTEST_SOVERSION 21)
 
 
-# Pango and SKIA are used on Linux, DirectWrite and Direct2D on Windows (built-in).
-# HARU is required for WPdfImage.
-
 # Options
 OPTION(WT_BUILD_EXAMPLES "Build examples" OFF)
 OPTION(WT_BUILD_TESTS "Build Wt tests" OFF)
 OPTION(WT_BUILD_LIBWTTEST "Build Wt::Test" ON)
 OPTION(WT_BUILD_LIBWTDBO "Build Wt::Dbo" ON)
-OPTION(WT_BUILD_DLL "Compile shared libraries" OFF)
+
+# Note: This is a special CMake variable that changes the default for add_library()
+option(BUILD_SHARED_LIBS "Compile shared libraries" OFF)
+if(BUILD_SHARED_LIBS)
+  message("*** Building Shared Libraries")
+else()
+  message("*** Building Static Libraries")
+endif(BUILD_SHARED_LIBS)
 
 OPTION(WT_INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" OFF)
 OPTION(WT_INSTALL_EXAMPLES "Install examples (binaries and source)" OFF)
 OPTION(WT_INSTALL_RESOURCES "Install resources directory" ON)
 
+# HARU is required for WPdfImage.
 OPTION(WT_ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
 IF(WT_ENABLE_HARU)
   find_package(Haru REQUIRED)
@@ -87,9 +92,11 @@ OPTION(WT_CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" 
 #
 find_package(Boost REQUIRED CONFIG)
 find_package(OpenSSL REQUIRED)
+set(WT_WITH_SSL ON)
 find_package(ZLIB REQUIRED CONFIG)
 
 # Raster Image BackEnd
+# Pango and SKIA are used on Linux, DirectWrite and Direct2D on Windows (built-in).
 IF (WIN32 AND NOT MINGW)
   SET(WT_WRASTERIMAGE_IMPLEMENTATION "Direct2D")
 ELSE (WIN32 AND NOT MINGW)
@@ -102,13 +109,13 @@ SET(WT_HAS_WRASTERIMAGE true)
 
 # OpenGL
 INCLUDE(cmake/WtFindGL.txt)
-IF(GL_FOUND AND WT_HAS_WRASTERIMAGE)
-  message("** Configured OpenGL")
+IF(GL_FOUND)
+  message("** OpenGL configured")
   SET(WT_USE_OPENGL TRUE)
   SET(HAVE_GL TRUE)
 ELSE()
-  message("!!!! Missing OpenGL !!!!") 
-ENDIF(GL_FOUND AND WT_HAS_WRASTERIMAGE)
+  message("!!! OpenGL missing, skipping support") 
+ENDIF(GL_FOUND)
 
 # Sockets, etc.
 INCLUDE(cmake/WtFindSystemLibraries.txt)

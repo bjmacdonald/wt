@@ -145,7 +145,7 @@ IF(ENABLE_LIBWTTEST)
     SUBDIRS(interactive)
   ENDIF (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/interactive)
 
-  IF(CONNECTOR_HTTP)
+  IF(WT_CONNECTOR_HTTP)
     SET(HTTP_TEST_SOURCES
       test.C
       http/HttpClientServerTest.C
@@ -156,7 +156,7 @@ IF(ENABLE_LIBWTTEST)
 	IF(MSVC)
 	  SET_TARGET_PROPERTIES(test.http PROPERTIES FOLDER "test")
     ENDIF(MSVC)  
-  ENDIF(CONNECTOR_HTTP)
+  ENDIF(WT_CONNECTOR_HTTP)
 
 ELSE (ENABLE_LIBWTTEST)
   MESSAGE("** libwttest disabled, not building tests")

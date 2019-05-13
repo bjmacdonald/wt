@@ -3,6 +3,7 @@ add_subdirectory(Wt)
 
 add_library(wt)
 
+target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
 
 target_include_directories(wt
@@ -12,40 +13,6 @@ target_include_directories(wt
     ${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include
     ${CMAKE_BINARY_DIR} # for WConfig.h
 )  
-
-MACRO (FILE_TO_STRING infile outfile var)
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
-               COMMAND ${CMAKE_COMMAND}
-                   ARGS -Dinfile:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/${infile}
-                        -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${outfile}
-                        -Dvar:STRING=${var}
-                        -P ${CMAKE_CURRENT_SOURCE_DIR}/filetostring.cmake
-           MAIN_DEPENDENCY
-                ${CMAKE_CURRENT_SOURCE_DIR}/${infile}
-)
-ENDMACRO (FILE_TO_STRING)
-
-FILE_TO_STRING(web/skeleton/Plain.html    Plain_html.C      Plain_html)
-FILE_TO_STRING(web/skeleton/Hybrid.html   Hybrid_html.C     Hybrid_html)
-FILE_TO_STRING(web/skeleton/Boot.html     Boot_html.C       Boot_html)
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Wt.js     Wt_js.C Wt_js)
-  FILE_TO_STRING(web/skeleton/Boot.js     Boot_js.C Boot_js)
-  FILE_TO_STRING(js/WCartesianChart.js WCartesianChart_js.C WCartesianChart_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Wt.min.js Wt_js.C Wt_js)
-  FILE_TO_STRING(web/skeleton/Boot.min.js Boot_js.C Boot_js)
-  FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_js.C WCartesianChart_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C JQuery_js)
-FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
-FILE_TO_STRING(xml/auth_strings.xml AuthStrings_xml.C AuthStrings_xml)
-FILE_TO_STRING(xml/bootstrap_theme.xml BootstrapTheme_xml.C BootstrapTheme_xml)
-FILE_TO_STRING(xml/bootstrap3_theme.xml Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
-FILE_TO_STRING(xml/auth_css_theme.xml AuthCssTheme_xml.C AuthCssTheme_xml)
-
 
 target_sources(wt PRIVATE
   Wt/FlexLayoutImpl.C
@@ -371,19 +338,6 @@ target_sources(wt PRIVATE
   web/SslUtils.C
   web/UriUtils.C
   web/base64.cpp
-  #experimental/any.cpp
-  Plain_html.C
-  Boot_html.C
-  Hybrid_html.C
-  Boot_js.C
-  Wt_js.C
-  WCartesianChart_js.C
-  Wt_xml.C
-  AuthStrings_xml.C
-  BootstrapTheme_xml.C
-  Bootstrap3Theme_xml.C
-  AuthCssTheme_xml.C
-  JQuery_js.C
 )
 
 IF (WIN32)
@@ -394,6 +348,57 @@ ELSE (WIN32)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
 ENDIF (WIN32)
 
+MACRO (FILE_TO_STRING infile outfile var)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
+               COMMAND ${CMAKE_COMMAND}
+                   ARGS -Dinfile:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/${infile}
+                        -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${outfile}
+                        -Dvar:STRING=${var}
+                        -P ${CMAKE_CURRENT_SOURCE_DIR}/filetostring.cmake
+           MAIN_DEPENDENCY
+                ${CMAKE_CURRENT_SOURCE_DIR}/${infile}
+)
+ENDMACRO (FILE_TO_STRING)
+
+FILE_TO_STRING(web/skeleton/Plain.html    Plain_html.C      Plain_html)
+FILE_TO_STRING(web/skeleton/Hybrid.html   Hybrid_html.C     Hybrid_html)
+FILE_TO_STRING(web/skeleton/Boot.html     Boot_html.C       Boot_html)
+FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C       JQuery_js)
+FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
+FILE_TO_STRING(xml/auth_strings.xml     AuthStrings_xml.C     AuthStrings_xml)
+FILE_TO_STRING(xml/bootstrap_theme.xml  BootstrapTheme_xml.C  BootstrapTheme_xml)
+FILE_TO_STRING(xml/bootstrap3_theme.xml Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
+FILE_TO_STRING(xml/auth_css_theme.xml   AuthCssTheme_xml.C    AuthCssTheme_xml)
+
+target_sources(wt PRIVATE
+  Plain_html.C
+  Hybrid_html.C
+  Boot_html.C
+  JQuery_js.C
+  Wt_xml.C
+  AuthStrings_xml.C
+  BootstrapTheme_xml.C
+  Bootstrap3Theme_xml.C
+  AuthCssTheme_xml.C
+)
+
+# JavaScript Debug Versions
+#FILE_TO_STRING(web/skeleton/Wt.js    Wt_js.C   Wt_js)
+#FILE_TO_STRING(web/skeleton/Boot.js  Boot_js.C Boot_js)
+#FILE_TO_STRING(js/WCartesianChart.js WCartesianChart_js.C WCartesianChart_js)
+
+# JavaScript Minified versions
+FILE_TO_STRING(web/skeleton/Wt.min.js Wt_js.C Wt_js)
+FILE_TO_STRING(web/skeleton/Boot.min.js Boot_js.C Boot_js)
+FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_js.C WCartesianChart_js)
+
+#target_sources(wt PRIVATE 
+  #$<$<CONFIG:DEBUG>:Wt_js.C Boot_js.C WCartesianChart_js.C>
+  #$<$<NOT:$<CONFIG:DEBUG>>:Wt_min_js.C Boot_min_js.C WCartesianChart_min_js.C>
+#)
+target_sources(wt PRIVATE Wt_js.C Boot_js.C WCartesianChart_js.C)
+
+target_link_libraries(wt PRIVATE Boost::boost)
 
 IF (MULTI_THREADED_BUILD)
   target_sources(wt PRIVATE web/SocketNotifier.C)
@@ -477,8 +482,7 @@ TARGET_LINK_LIBRARIES(wt
     )
 
 # SSL
-TARGET_LINK_LIBRARIES(wt PRIVATE ${SSL_LIBRARIES})
-INCLUDE_DIRECTORIES(${SSL_INCLUDE_DIRS})
+target_link_libraries(wt PRIVATE OpenSSL::api)
 
 IF(HAVE_HARU)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})

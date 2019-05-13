@@ -1,4 +1,4 @@
-IF(CONNECTOR_HTTP)
+IF(WT_CONNECTOR_HTTP)
   MESSAGE("** Enabling built-in httpd.")
 
   # The target
@@ -48,7 +48,7 @@ IF(CONNECTOR_HTTP)
     PRIVATE
       Threads::Threads
       ${WT_SOCKET_LIBRARY}
-  )    
+  )
 
   # SSL
   target_link_libraries(wthttp PRIVATE OpenSSL::api)
@@ -93,6 +93,6 @@ IF(CONNECTOR_HTTP)
 
   ADD_DEPENDENCIES(wthttp wt ${EXAMPLES_CONNECTOR})
 
-ELSE(CONNECTOR_HTTP)
+ELSE(WT_CONNECTOR_HTTP)
   MESSAGE("** Disabling built-in httpd.")
-ENDIF(CONNECTOR_HTTP)
+ENDIF(WT_CONNECTOR_HTTP)
