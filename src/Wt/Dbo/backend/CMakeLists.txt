@@ -1,4 +1,4 @@
-IF(ENABLE_SQLITE)
+IF(WT_ENABLE_SQLITE)
 
   OPTION(USE_SYSTEM_SQLITE3 "Use system-wide Sqlite3 instead of Wt's version" OFF)
   OPTION(USE_SQLITE3_BDB "Use BerkeleyDB storage with Sqlite3 API" OFF)
@@ -95,41 +95,38 @@ IF(ENABLE_SQLITE)
 
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*Sqlite3.*h$")
 
-ELSE(ENABLE_SQLITE)
+ELSE(WT_ENABLE_SQLITE)
   SET(HAVE_SQLITE OFF CACHE INTERNAL "building sqlite3 backend" FORCE)
-ENDIF(ENABLE_SQLITE)
+ENDIF(WT_ENABLE_SQLITE)
 
-IF(ENABLE_POSTGRES AND POSTGRES_FOUND)
-
-  SET(HAVE_POSTGRES ON CACHE INTERNAL "building postgres backend" FORCE)
-
+IF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
   MESSAGE("** Wt::Dbo: building Postgres backend.")
 
-  IF(WIN32)
-    IF(SHARED_LIBS)
-      CONFIGURE_FILE(wtdbopostgres-version.rc.in
-                     ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
-      SET(postgres_SRCS ${postgres_SRCS} 
-          ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
-    ENDIF(SHARED_LIBS)
-  ENDIF(WIN32)
-
-  ADD_LIBRARY(wtdbopostgres
+  add_library(wtdbopostgres
     Postgres.C
-    ${postgres_SRCS}
-    )
+  )
+
+  IF(WIN32 AND BUILD_SHARED_LIBS)
+    configure_file(wtdbopostgres-version.rc.in
+                   ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
+    target_sources(wtdbopostgres PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
+  ENDIF()
+
   TARGET_LINK_LIBRARIES(wtdbopostgres
     PUBLIC
       wtdbo
     PRIVATE
-      ${POSTGRES_LIBRARIES}
+      PostgreSQL::PostgreSQL
   )
 
-  INCLUDE_DIRECTORIES(${POSTGRES_INCLUDE})
-
-  IF(MSVC)
-    SET_TARGET_PROPERTIES(wtdbopostgres PROPERTIES FOLDER "dbo")
-  ENDIF(MSVC)
+  set_target_properties(
+    wtdbopostgres
+  PROPERTIES
+    EXPORT_NAME DboPostgres
+    FOLDER "dbo"
+    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
+    SOVERSION ${WTDBOPOSTGRES_SOVERSION}
+  )
 
   INSTALL(TARGETS wtdbopostgres
     EXPORT wt-target-dbopostgres
@@ -141,25 +138,17 @@ IF(ENABLE_POSTGRES AND POSTGRES_FOUND)
           DESTINATION ${CMAKE_INSTALL_DIR}/wt
           NAMESPACE Wt::)
 
-  SET_TARGET_PROPERTIES(
-    wtdbopostgres
-  PROPERTIES
-    EXPORT_NAME DboPostgres
-    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    SOVERSION ${WTDBOPOSTGRES_SOVERSION}
-  )
-
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*Postgres.*h$")
-ELSE(ENABLE_POSTGRES AND POSTGRES_FOUND)
-  MESSAGE("** Wt::Dbo: not building Postgres backend.")
+ELSE(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
+  if (WT_ENABLE_POSTGRES)
+    message("** Wt::Dbo: not building Postgres backend.")
+  else()
+    message("** Wt::Dbo: could not find PostgreSQL.")
+    message("    Indicate the location of your postgres installation using")
+    message("    the environment variable PostgreSQL_ROOT")
+  endif()
+ENDIF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
 
-  IF(ENABLE_POSTGRES)
-    MESSAGE("    Indicate the location of your postgres installation using ")
-    MESSAGE("    -DPOSTGRES_PREFIX=...")
-  ENDIF(ENABLE_POSTGRES)
-
-  SET(HAVE_POSTGRES OFF CACHE INTERNAL "building postgres backend" FORCE)
-ENDIF(ENABLE_POSTGRES AND POSTGRES_FOUND)
 
 IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
 

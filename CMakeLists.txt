@@ -1,5 +1,6 @@
 # activate conane (if necessary)
 #
+# set PostgreSQL_ROOT=c:\app\pgsql
 # rd /s /q c:\Y-Work\wt-build
 # md c:\Y-Work\wt-build
 # cd c:\Y-Work\wt-build
@@ -71,11 +72,9 @@ ENDIF(WT_ENABLE_HARU)
 OPTION(WT_ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" OFF)
 OPTION(WT_ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" ON)
 
-OPTION(WT_ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
-IF (WT_ENABLE_UNWIND)
-  INCLUDE(cmake/WtFindUnwind.txt)
-  SET(HAVE_UNWIND ON)
-ENDIF (WT_ENABLE_UNWIND)
+if (WT_ENABLE_POSTGRES)
+  find_package(PostgreSQL)
+endif()
 
 OPTION(WT_DEBUG "Support for debugging, must be enabled also in wt_config.xml" OFF)
 IF(WT_DEBUG)

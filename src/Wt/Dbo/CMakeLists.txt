@@ -1,95 +1,87 @@
-IF(ENABLE_LIBWTDBO)
+IF(NOT WT_BUILD_LIBWTDBO)
+  MESSAGE("** libwtdbo disabled, not building Wt::Dbo.")
+  return()
+ENDIF(NOT WT_BUILD_LIBWTDBO)
 
-  IF(WIN32)
-    IF(WT_BUILD_DLL)
-      CONFIGURE_FILE(wtdbo-version.rc.in
-                     ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
-      SET(wtdboversionrc ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
-    ENDIF(WT_BUILD_DLL)
-  ENDIF(WIN32)
+MESSAGE("** Building Wt::Dbo")
 
-  ADD_LIBRARY(wtdbo
-    ${wtdboversionrc}
-    ptr.C
-    Call.C
-    DbAction.C
-    Exception.C
-    FixedSqlConnectionPool.C
-    Json.C
-    Query.C
-    QueryColumn.C
-    SqlQueryParse.C
-    Session.C
-    SqlConnection.C
-    SqlConnectionPool.C
-    SqlStatement.C
-    SqlTraits.C
-    StdSqlTraits.C
-    Transaction.C
-    WtSqlTraits.C
-    EscapeOStream.C
-    StringStream.C
-  )
+IF(WIN32 AND BUILD_SHARED_LIBS)
+  CONFIGURE_FILE(wtdbo-version.rc.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
+  SET(wtdboversionrc ${CMAKE_CURRENT_BINARY_DIR}/wtdbo-version.rc)
+ENDIF()
 
-  IF(HAVE_UNWIND)
-    TARGET_LINK_LIBRARIES(wtdbo PRIVATE ${UNWIND_LIBRARIES})
-  ENDIF(HAVE_UNWIND)
+add_library(wtdbo
+  ${wtdboversionrc}
+  ptr.C
+  Call.C
+  DbAction.C
+  Exception.C
+  FixedSqlConnectionPool.C
+  Json.C
+  Query.C
+  QueryColumn.C
+  SqlQueryParse.C
+  Session.C
+  SqlConnection.C
+  SqlConnectionPool.C
+  SqlStatement.C
+  SqlTraits.C
+  StdSqlTraits.C
+  Transaction.C
+  WtSqlTraits.C
+  EscapeOStream.C
+  StringStream.C
+)
 
-  IF(MSVC)
-    #win32 links automatically against boost libs; specifying too much causes
-    #trouble
-    IF(MULTI_THREADED_BUILD)
-      TARGET_LINK_LIBRARIES(wtdbo
-                            PRIVATE
-                            ${WT_THREAD_LIB})
-    ENDIF(MULTI_THREADED_BUILD)
-  ELSE(MSVC)
-    IF(MULTI_THREADED_BUILD)
-      TARGET_LINK_LIBRARIES(wtdbo
-                            PRIVATE
-                              ${WT_THREAD_LIB})
-    ENDIF(MULTI_THREADED_BUILD)
-  ENDIF(MSVC)
+target_include_directories(wtdbo PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
+target_include_directories(wtdbo PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/web>)
+target_include_directories(wtdbo PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
+message("Wt::DBo Current Binary Dir ${CMAKE_CURRENT_BINARY_DIR}")
+message("Wt::DBo Binary Dir ${CMAKE_BINARY_DIR}")
+message("Wt::DBo Current Source Dir ${CMAKE_CURRENT_SOURCE_DIR}")
+message("Wt::DBo Source Dir ${CMAKE_SOURCE_DIR}")
+target_include_directories(wtdbo INTERFACE $<INSTALL_INTERFACE:include>)
+target_compile_features(wtdbo PUBLIC cxx_std_17)
+target_compile_definitions(wtdbo PRIVATE WT_BUILDING)
+target_compile_definitions(wtdbo PRIVATE _WIN32_WINNT=0x0A00)
 
-  TARGET_INCLUDE_DIRECTORIES(wtdbo INTERFACE $<INSTALL_INTERFACE:include>)
+target_link_libraries(wtdbo PUBLIC ${WT_THREAD_LIB} Boost::boost)
 
-  INSTALL(TARGETS wtdbo
-      EXPORT wt-target-dbo
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-      ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+set_target_properties(
+  wtdbo
+PROPERTIES
+  FOLDER "dbo"
+  EXPORT_NAME Dbo
+  VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
+  SOVERSION ${WTDBO_SOVERSION}
+)
 
-  INSTALL(EXPORT wt-target-dbo
-          DESTINATION ${CMAKE_INSTALL_DIR}/wt
-          NAMESPACE Wt::)
-
+IF(MSVC)
   SET_TARGET_PROPERTIES(
     wtdbo
   PROPERTIES
-    EXPORT_NAME Dbo
-    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    SOVERSION ${WTDBO_SOVERSION}
+    COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4267"
   )
-  IF(MSVC)
-    SET_TARGET_PROPERTIES(
-      wtdbo
-    PROPERTIES
-      COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4267"
-    )
-	SET_TARGET_PROPERTIES(wtdbo PROPERTIES FOLDER "dbo")
-  ENDIF(MSVC)
+ENDIF(MSVC)
 
-  SUBDIRS(backend)
+add_subdirectory(backend)
 
-  INSTALL_FILES(/include/Wt/Dbo "^[^.]+\\.h$")
-  INSTALL_FILES(/include/Wt FILES ${WCONFIG_H_PATH})
+INSTALL(TARGETS wtdbo
+    EXPORT wt-target-dbo
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
-  IF (ASCIIDOC_FOUND)
-    ASCIIDOC_FILE(dbo-tutorial
-      ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.doc
-      ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.html)
-  ENDIF (ASCIIDOC_FOUND)
+INSTALL(EXPORT wt-target-dbo
+        DESTINATION ${CMAKE_INSTALL_DIR}/wt
+        NAMESPACE Wt::)
 
-ELSE (ENABLE_LIBWTDBO)
-  MESSAGE("** libwtdbo disabled, not building Wt::Dbo.")
-ENDIF (ENABLE_LIBWTDBO)
+INSTALL_FILES(/include/Wt/Dbo "^[^.]+\\.h$")
+INSTALL_FILES(/include/Wt FILES ${WCONFIG_H_PATH})
+
+IF (ASCIIDOC_FOUND)
+  ASCIIDOC_FILE(dbo-tutorial
+    ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.doc
+    ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.html)
+ENDIF (ASCIIDOC_FOUND)

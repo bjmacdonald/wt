@@ -152,7 +152,7 @@ WStringStream& WStringStream::operator<< (double d)
   return *this << buf;
 }
 
-void WStringStream::append(const char *s, int length)
+void WStringStream::append(const char *s, size_t length)
 {
   if (buf_i_ + length > buf_len()) {
     pushBuf();

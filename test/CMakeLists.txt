@@ -78,7 +78,7 @@ IF(ENABLE_LIBWTTEST)
       private/DboImplTest.C
     )
 
-    IF(HAVE_POSTGRES)
+    IF(PostgreSQL_FOUND)
       ADD_EXECUTABLE(       test.postgres ${DBO_TEST_SOURCES})
       TARGET_LINK_LIBRARIES(test.postgres wt wttest wtdbo wtdbopostgres)
       SET_TARGET_PROPERTIES(test.postgres PROPERTIES COMPILE_FLAGS "-DPOSTGRES")
@@ -86,7 +86,7 @@ IF(ENABLE_LIBWTTEST)
 	    SET_TARGET_PROPERTIES(test.postgres PROPERTIES FOLDER "test")
       ENDIF(MSVC)
       MESSAGE("** Testing Wt::Dbo using Postgres backend")
-    ENDIF(HAVE_POSTGRES)
+    ENDIF(PostgreSQL_FOUND)
 
     IF(HAVE_MYSQL)
       ADD_EXECUTABLE(       test.mysql ${DBO_TEST_SOURCES})

@@ -97,7 +97,7 @@ public:
    *
    * Appends \p length bytes from the given string.
    */
-  void append(const char *s, int length);
+  void append(const char *s, size_t length);
 
   /*! \brief Appends a character.
    */
@@ -197,7 +197,7 @@ private:
   char static_buf_[S_LEN + 1];
 
   char *buf_;
-  int buf_i_;
+  size_t buf_i_;
 
   int buf_len() const 
     { return buf_ == static_buf_ ? static_cast<int>(S_LEN)

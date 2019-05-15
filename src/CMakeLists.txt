@@ -5,14 +5,13 @@ add_library(wt)
 
 target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
+target_compile_definitions(wt PRIVATE _WIN32_WINNT=0x0A00)
 
-target_include_directories(wt
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/web
-    ${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include
-    ${CMAKE_BINARY_DIR} # for WConfig.h
-)  
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
+target_include_directories(wt INTERFACE $<INSTALL_INTERFACE:include>)
 
 target_sources(wt PRIVATE
   Wt/FlexLayoutImpl.C
@@ -535,18 +534,6 @@ ELSEIF(WT_FONTSUPPORT_DIRECTWRITE)
   MESSAGE("** Enabling advanced font support using DirectWrite")
 ENDIF(WT_FONTSUPPORT_SIMPLE)
 
-IF(HAVE_UNWIND)
-  ADD_DEFINITIONS(-DWT_WITH_UNWIND)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${UNWIND_LIBRARIES})
-  INCLUDE_DIRECTORIES(${UNWIND_INCLUDE_DIRS})
-  MESSAGE("** Enabling stacktrace prints using libunwind")
-ELSE(HAVE_UNWIND)
-  IF(ENABLE_UNWIND)
-    MESSAGE("** Disabling stacktrace prints: could not find libunwind")
-  ENDIF(ENABLE_UNWIND)
-ENDIF(HAVE_UNWIND)
-
-
 TARGET_INCLUDE_DIRECTORIES(wt INTERFACE
   $<INSTALL_INTERFACE:include>)
 
@@ -574,10 +561,10 @@ PROPERTIES
   SOVERSION ${WT_SOVERSION}
 )
 
-IF(MSVC)
-  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
-  TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
-ENDIF(MSVC)
+#IF(MSVC)
+#  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
+#  TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
+#ENDIF(MSVC)
 
 IF(ENABLE_LIBWTTEST)
   MESSAGE("** Building libwttest")
