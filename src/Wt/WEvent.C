@@ -51,7 +51,7 @@ namespace {
     if ((p = request.getParameter(name))) {
       try {
 	return asInt(*p);
-      } catch (const std::exception& ee) {
+      } catch (const std::exception&) {
 	LOG_ERROR("Could not cast event property '" << name 
 		  << ": " << *p << "' to int");
 	return ifMissing;
@@ -90,7 +90,7 @@ namespace {
 			       asInt(s[i + 5]), asInt(s[i + 6]),
 			       asInt(s[i + 7]), asInt(s[i + 8])));
       }
-    } catch (const std::exception& ee) {
+    } catch (const std::exception&) {
       LOG_ERROR("Could not parse touches array '" << str << "'");
       return;
     }

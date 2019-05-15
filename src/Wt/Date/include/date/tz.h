@@ -368,7 +368,7 @@ public:
               >::type>
         explicit zoned_time(std::string_view name);
 #else
-#if !defined(_MSC_VER) || (_MSC_VER > 1900)
+#  if !defined(_MSC_VER) || (_MSC_VER > 1900)
     template <class T = TimeZonePtr,
               class = typename std::enable_if
               <
@@ -378,7 +378,7 @@ public:
                       decltype(zoned_traits<T>::locate_zone(std::string()))
                   >::value
               >::type>
-#endif
+#  endif
         explicit zoned_time(const std::string& name);
 #endif
 
@@ -474,30 +474,34 @@ public:
               >::type>
         zoned_time(std::string_view name,   const local_time<Duration>& tp, choose c);
 
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string_view())),
-                      zoned_time
-                  >::value
-              >::type>
-        zoned_time(std::string_view name, const zoned_time& zt);
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string_view())),
+                              zoned_time
+                          >::value
+                      >::type>
+        zoned_time(std::string_view name, const zoned_time<Duration2, TimeZonePtr2>& zt);
 
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string_view())),
-                      zoned_time,
-                      choose
-                  >::value
-              >::type>
-        zoned_time(std::string_view name, const zoned_time& zt, choose);
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string_view())),
+                              zoned_time,
+                              choose
+                          >::value
+                      >::type>
+        zoned_time(std::string_view name, const zoned_time<Duration2, TimeZonePtr2>& zt, choose);
 
 #else  // !HAS_STRING_VIEW
 
@@ -588,62 +592,80 @@ public:
         zoned_time(const char* name, const local_time<Duration>& tp, choose c);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string())),
-                      zoned_time
-                  >::value
-              >::type>
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string())),
+                              zoned_time
+                          >::value
+                      >::type>
+#else
+    template <class Duration2, class TimeZonePtr2>
 #endif
-        zoned_time(const std::string& name, const zoned_time& zt);
+        zoned_time(const std::string& name, const zoned_time<Duration2, TimeZonePtr2>& zt);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string())),
-                      zoned_time
-                  >::value
-              >::type>
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string())),
+                              zoned_time
+                          >::value
+                      >::type>
+#else
+    template <class Duration2, class TimeZonePtr2>
 #endif
-        zoned_time(const char* name, const zoned_time& zt);
+        zoned_time(const char* name, const zoned_time<Duration2, TimeZonePtr2>& zt);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string())),
-                      zoned_time,
-                      choose
-                  >::value
-              >::type>
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string())),
+                              zoned_time,
+                              choose
+                          >::value
+                      >::type>
+#else
+    template <class Duration2, class TimeZonePtr2>
 #endif
-        zoned_time(const std::string& name, const zoned_time& zt, choose);
+        zoned_time(const std::string& name, const zoned_time<Duration2, TimeZonePtr2>& zt,
+                   choose);
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-    template <class T = TimeZonePtr,
+    template <class Duration2, class TimeZonePtr2, class T = TimeZonePtr,
               class = typename std::enable_if
-              <
-                  std::is_constructible
-                  <
-                      zoned_time,
-                      decltype(zoned_traits<T>::locate_zone(std::string())),
-                      zoned_time,
-                      choose
-                  >::value
-              >::type>
+                      <
+                          std::is_convertible<sys_time<Duration2>,
+                                              sys_time<Duration>>::value &&
+                          std::is_constructible
+                          <
+                              zoned_time,
+                              decltype(zoned_traits<T>::locate_zone(std::string())),
+                              zoned_time,
+                              choose
+                          >::value
+                      >::type>
+#else
+    template <class Duration2, class TimeZonePtr2>
 #endif
-        zoned_time(const char* name, const zoned_time& zt, choose);
+        zoned_time(const char* name, const zoned_time<Duration2, TimeZonePtr2>& zt,
+                   choose);
 
 #endif  // !HAS_STRING_VIEW
 
@@ -685,57 +707,45 @@ template <class Duration>
 zoned_time(sys_time<Duration>)
     -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
 
-template <class TimeZonePtr>
-zoned_time(TimeZonePtr)
-    -> zoned_time<std::chrono::seconds, TimeZonePtr>;
+template <class TimeZonePtrOrName>
+zoned_time(TimeZonePtrOrName)
+    -> zoned_time<std::chrono::seconds,
+                  std::conditional_t
+                  <
+                      std::is_convertible<TimeZonePtrOrName, std::string_view>::value,
+                      time_zone const*,
+                      TimeZonePtrOrName
+                  >>;
 
-template <class TimeZonePtr, class Duration>
-zoned_time(TimeZonePtr, sys_time<Duration>)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>, TimeZonePtr>;
+template <class TimeZonePtrOrName, class Duration>
+zoned_time(TimeZonePtrOrName, sys_time<Duration>)
+    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>,
+                  std::conditional_t
+                  <
+                      std::is_convertible<TimeZonePtrOrName, std::string_view>::value,
+                      time_zone const*,
+                      TimeZonePtrOrName
+                  >>;
 
-template <class TimeZonePtr, class Duration>
-zoned_time(TimeZonePtr, local_time<Duration>, choose = choose::earliest)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>, TimeZonePtr>;
+template <class TimeZonePtrOrName, class Duration>
+zoned_time(TimeZonePtrOrName, local_time<Duration>, choose = choose::earliest)
+    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>,
+                  std::conditional_t
+                  <
+                      std::is_convertible<TimeZonePtrOrName, std::string_view>::value,
+                      time_zone const*,
+                      TimeZonePtrOrName
+                  >>;
 
-#if HAS_STRING_VIEW
-
-zoned_time(std::string_view)
-    -> zoned_time<std::chrono::seconds>;
-
-template <class Duration>
-zoned_time(std::string_view, sys_time<Duration>)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-template <class Duration>
-zoned_time(std::string_view, local_time<Duration>, choose = choose::earliest)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-#else  // !HAS_STRING_VIEW
-
-zoned_time(std::string)
-    -> zoned_time<std::chrono::seconds>;
-
-template <class Duration>
-zoned_time(std::string, sys_time<Duration>)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-template <class Duration>
-zoned_time(std::string, local_time<Duration>, choose = choose::earliest)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-#endif  // !HAS_STRING_VIEW
-
-template <class Duration>
-zoned_time(const char*, sys_time<Duration>)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-template <class Duration>
-zoned_time(const char*, local_time<Duration>, choose = choose::earliest)
-    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>>;
-
-template <class Duration, class TimeZonePtr, class TimeZonePtr2>
-zoned_time(TimeZonePtr, zoned_time<Duration, TimeZonePtr2>, choose = choose::earliest)
-    -> zoned_time<Duration, TimeZonePtr>;
+template <class Duration, class TimeZonePtrOrName, class TimeZonePtr2>
+zoned_time(TimeZonePtrOrName, zoned_time<Duration, TimeZonePtr2>, choose = choose::earliest)
+    -> zoned_time<std::common_type_t<Duration, std::chrono::seconds>,
+                  std::conditional_t
+                  <
+                      std::is_convertible<TimeZonePtrOrName, std::string_view>::value,
+                      time_zone const*,
+                      TimeZonePtrOrName
+                  >>;
 
 #endif  // HAS_DEDUCTION_GUIDES
 
@@ -1366,7 +1376,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(TimeZonePtr z)
 #if HAS_STRING_VIEW
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name))
@@ -1441,7 +1451,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(TimeZonePtr z,
 #if HAS_STRING_VIEW
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const sys_time<Duration>& st)
@@ -1449,7 +1459,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const local_time<Duration>& t)
@@ -1457,7 +1467,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const local_time<Duration>& t, choose c)
@@ -1465,17 +1475,19 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class Duration2, class TimeZonePtr2, class, class>
 inline
-zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name, const zoned_time& zt)
+zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt)
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class Duration2, class TimeZonePtr2, class, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
-                                              const zoned_time& zt, choose c)
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt,
+                                              choose c)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt, c)
     {}
 
@@ -1543,40 +1555,51 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(const char* name,
 
 template <class Duration, class TimeZonePtr>
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-template <class T, class>
+template <class Duration2, class TimeZonePtr2, class, class>
+#else
+template <class Duration2, class TimeZonePtr2>
 #endif
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(const std::string& name,
-                                              const zoned_time& zt)
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt)
     {}
 
 template <class Duration, class TimeZonePtr>
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-template <class T, class>
+template <class Duration2, class TimeZonePtr2, class, class>
+#else
+template <class Duration2, class TimeZonePtr2>
 #endif
 inline
-zoned_time<Duration, TimeZonePtr>::zoned_time(const char* name, const zoned_time& zt)
+zoned_time<Duration, TimeZonePtr>::zoned_time(const char* name,
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt)
     {}
 
 template <class Duration, class TimeZonePtr>
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-template <class T, class>
+template <class Duration2, class TimeZonePtr2, class, class>
+#else
+template <class Duration2, class TimeZonePtr2>
 #endif
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(const std::string& name,
-                                              const zoned_time& zt, choose c)
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt,
+                                              choose c)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt, c)
     {}
 
 template <class Duration, class TimeZonePtr>
 #if !defined(_MSC_VER) || (_MSC_VER > 1900)
-template <class T, class>
+template <class Duration2, class TimeZonePtr2, class, class>
+#else
+template <class Duration2, class TimeZonePtr2>
 #endif
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(const char* name,
-                                              const zoned_time& zt, choose c)
+                                              const zoned_time<Duration2, TimeZonePtr2>& zt,
+                                              choose c)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name), zt, c)
     {}
 
@@ -1805,9 +1828,8 @@ to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
 {
     using duration = typename zoned_time<Duration, TimeZonePtr>::duration;
     using LT = local_time<duration>;
-    auto const tz = tp.get_time_zone();
     auto const st = tp.get_sys_time();
-    auto const info = tz->get_info(st);
+    auto const info = tp.get_time_zone()->get_info(st);
     return to_stream(os, fmt, LT{(st+info.offset).time_since_epoch()},
                      &info.abbrev, &info.offset);
 }
@@ -1843,6 +1865,16 @@ public:
     static
     std::chrono::time_point<utc_clock, typename std::common_type<Duration, std::chrono::seconds>::type>
     from_sys(const std::chrono::time_point<std::chrono::system_clock, Duration>&);
+
+    template<typename Duration>
+    static
+    std::chrono::time_point<local_t, typename std::common_type<Duration, std::chrono::seconds>::type>
+    to_local(const std::chrono::time_point<utc_clock, Duration>&);
+
+    template<typename Duration>
+    static
+    std::chrono::time_point<utc_clock, typename std::common_type<Duration, std::chrono::seconds>::type>
+    from_local(const std::chrono::time_point<local_t, Duration>&);
 };
 
 template <class Duration>
@@ -1855,10 +1887,10 @@ utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 utc_clock::from_sys(const sys_time<Duration>& st)
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
+    using CD = typename std::common_type<Duration, seconds>::type;
     auto const& leaps = get_tzdb().leaps;
     auto const lt = std::upper_bound(leaps.begin(), leaps.end(), st);
-    return utc_time<duration>{st.time_since_epoch() + seconds{lt-leaps.begin()}};
+    return utc_time<CD>{st.time_since_epoch() + seconds{lt-leaps.begin()}};
 }
 
 // Return pair<is_leap_second, seconds{number_of_leap_seconds_since_1970}>
@@ -1890,16 +1922,30 @@ is_leap_second(date::utc_time<Duration> const& ut)
     return {ls, ds};
 }
 
+struct leap_second_info
+{
+    bool is_leap_second;
+    std::chrono::seconds elapsed;
+};
+
+template <class Duration>
+leap_second_info
+get_leap_second_info(date::utc_time<Duration> const& ut)
+{
+    auto p = is_leap_second(ut);
+    return {p.first, p.second};
+}
+
 template <class Duration>
 sys_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 utc_clock::to_sys(const utc_time<Duration>& ut)
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
+    using CD = typename std::common_type<Duration, seconds>::type;
     auto ls = is_leap_second(ut);
-    auto tp = sys_time<duration>{ut.time_since_epoch() - ls.second};
+    auto tp = sys_time<CD>{ut.time_since_epoch() - ls.second};
     if (ls.first)
-        tp = floor<seconds>(tp) + seconds{1} - duration{1};
+        tp = floor<seconds>(tp) + seconds{1} - CD{1};
     return tp;
 }
 
@@ -1911,22 +1957,36 @@ utc_clock::now()
     return from_sys(system_clock::now());
 }
 
+template <class Duration>
+utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
+utc_clock::from_local(const local_time<Duration>& st)
+{
+    return from_sys(sys_time<Duration>{st.time_since_epoch()});
+}
+
+template <class Duration>
+local_time<typename std::common_type<Duration, std::chrono::seconds>::type>
+utc_clock::to_local(const utc_time<Duration>& ut)
+{
+    using CD = typename std::common_type<Duration, std::chrono::seconds>::type;
+    return local_time<CD>{to_sys(ut).time_since_epoch()};
+}
+
 template <class CharT, class Traits, class Duration>
 std::basic_ostream<CharT, Traits>&
 to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
           const utc_time<Duration>& t)
 {
-    using namespace std;
     using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    const string abbrev("UTC");
+    using CT = typename std::common_type<Duration, seconds>::type;
+    const std::string abbrev("UTC");
     CONSTDATA seconds offset{0};
     auto ls = is_leap_second(t);
     auto tp = sys_time<CT>{t.time_since_epoch() - ls.second};
     auto const sd = floor<days>(tp);
     year_month_day ymd = sd;
     auto time = make_time(tp - sys_seconds{sd});
-    time.seconds() += seconds{ls.first};
+    time.seconds(detail::undocumented{}) += seconds{ls.first};
     fields<CT> fds{ymd, time};
     return to_stream(os, fmt, fds, &abbrev, &offset);
 }
@@ -1945,26 +2005,26 @@ from_stream(std::basic_istream<CharT, Traits>& is, const CharT* fmt,
             utc_time<Duration>& tp, std::basic_string<CharT, Traits, Alloc>* abbrev = nullptr,
             std::chrono::minutes* offset = nullptr)
 {
-    using namespace std;
     using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
+    using CT = typename std::common_type<Duration, seconds>::type;
     minutes offset_local{};
     auto offptr = offset ? offset : &offset_local;
     fields<CT> fds{};
+    fds.has_tod = true;
     from_stream(is, fmt, fds, abbrev, offptr);
     if (!fds.ymd.ok())
-        is.setstate(ios::failbit);
+        is.setstate(std::ios::failbit);
     if (!is.fail())
     {
         bool is_60_sec = fds.tod.seconds() == seconds{60};
         if (is_60_sec)
-            fds.tod.seconds() -= seconds{1};
+            fds.tod.seconds(detail::undocumented{}) -= seconds{1};
         auto tmp = utc_clock::from_sys(sys_days(fds.ymd) - *offptr + fds.tod.to_duration());
         if (is_60_sec)
             tmp += seconds{1};
         if (is_60_sec != is_leap_second(tmp).first || !fds.tod.in_conventional_range())
         {
-            is.setstate(ios::failbit);
+            is.setstate(std::ios::failbit);
             return is;
         }
         tp = time_point_cast<Duration>(tmp);
@@ -1994,6 +2054,16 @@ public:
     static
     std::chrono::time_point<tai_clock, typename std::common_type<Duration, std::chrono::seconds>::type>
     from_utc(const std::chrono::time_point<utc_clock, Duration>&) NOEXCEPT;
+
+    template<typename Duration>
+    static
+    std::chrono::time_point<local_t, typename std::common_type<Duration, date::days>::type>
+    to_local(const std::chrono::time_point<tai_clock, Duration>&) NOEXCEPT;
+
+    template<typename Duration>
+    static
+    std::chrono::time_point<tai_clock, typename std::common_type<Duration, date::days>::type>
+    from_local(const std::chrono::time_point<local_t, Duration>&) NOEXCEPT;
 };
 
 template <class Duration>
@@ -2007,9 +2077,9 @@ utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 tai_clock::to_utc(const tai_time<Duration>& t) NOEXCEPT
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
-    return utc_time<duration>{t.time_since_epoch()} -
-            (sys_days(year{1970}/jan/1) - sys_days(year{1958}/jan/1) + seconds{10});
+    using CD = typename std::common_type<Duration, seconds>::type;
+    return utc_time<CD>{t.time_since_epoch()} -
+            (sys_days(year{1970}/January/1) - sys_days(year{1958}/January/1) + seconds{10});
 }
 
 template <class Duration>
@@ -2018,9 +2088,9 @@ tai_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 tai_clock::from_utc(const utc_time<Duration>& t) NOEXCEPT
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
-    return tai_time<duration>{t.time_since_epoch()} +
-            (sys_days(year{1970}/jan/1) - sys_days(year{1958}/jan/1) + seconds{10});
+    using CD = typename std::common_type<Duration, seconds>::type;
+    return tai_time<CD>{t.time_since_epoch()} +
+            (sys_days(year{1970}/January/1) - sys_days(year{1958}/January/1) + seconds{10});
 }
 
 inline
@@ -2031,23 +2101,34 @@ tai_clock::now()
     return from_utc(utc_clock::now());
 }
 
+template <class Duration>
+inline
+local_time<typename std::common_type<Duration, date::days>::type>
+tai_clock::to_local(const tai_time<Duration>& t) NOEXCEPT
+{
+    using CD = typename std::common_type<Duration, date::days>::type;
+    return local_time<CD>{t.time_since_epoch()} -
+           (local_days(year{1970}/January/1) - local_days(year{1958}/January/1));
+}
+
+template <class Duration>
+inline
+tai_time<typename std::common_type<Duration, date::days>::type>
+tai_clock::from_local(const local_time<Duration>& t) NOEXCEPT
+{
+    using CD = typename std::common_type<Duration, date::days>::type;
+    return tai_time<CD>{t.time_since_epoch()} +
+            (local_days(year{1970}/January/1) - local_days(year{1958}/January/1));
+}
+
 template <class CharT, class Traits, class Duration>
 std::basic_ostream<CharT, Traits>&
 to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
           const tai_time<Duration>& t)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    const string abbrev("TAI");
-    CONSTDATA seconds offset{0};
-    auto tp = sys_time<CT>{t.time_since_epoch()} -
-              seconds(sys_days(year{1970}/jan/1) - sys_days(year{1958}/jan/1));
-    auto const sd = floor<days>(tp);
-    year_month_day ymd = sd;
-    auto time = make_time(tp - sys_seconds{sd});
-    fields<CT> fds{ymd, time};
-    return to_stream(os, fmt, fds, &abbrev, &offset);
+    const std::string abbrev("TAI");
+    CONSTDATA std::chrono::seconds offset{0};
+    return to_stream(os, fmt, tai_clock::to_local(t), &abbrev, &offset);
 }
 
 template <class CharT, class Traits, class Duration>
@@ -2065,20 +2146,10 @@ from_stream(std::basic_istream<CharT, Traits>& is, const CharT* fmt,
             std::basic_string<CharT, Traits, Alloc>* abbrev = nullptr,
             std::chrono::minutes* offset = nullptr)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    minutes offset_local{};
-    auto offptr = offset ? offset : &offset_local;
-    fields<CT> fds{};
-    from_stream(is, fmt, fds, abbrev, offptr);
-    if (!fds.ymd.ok() || !fds.tod.in_conventional_range())
-        is.setstate(ios::failbit);
+    local_time<Duration> lp;
+    from_stream(is, fmt, lp, abbrev, offset);
     if (!is.fail())
-        tp = tai_time<Duration>{duration_cast<Duration>(
-                (sys_days(fds.ymd) +
-                 (sys_days(year{1970}/jan/1) - sys_days(year{1958}/jan/1)) -
-                 *offptr + fds.tod.to_duration()).time_since_epoch())};
+        tp = tai_clock::from_local(lp);
     return is;
 }
 
@@ -2105,6 +2176,15 @@ public:
     std::chrono::time_point<gps_clock, typename std::common_type<Duration, std::chrono::seconds>::type>
     from_utc(const std::chrono::time_point<utc_clock, Duration>&) NOEXCEPT;
 
+    template<typename Duration>
+    static
+    std::chrono::time_point<local_t, typename std::common_type<Duration, date::days>::type>
+    to_local(const std::chrono::time_point<gps_clock, Duration>&) NOEXCEPT;
+
+    template<typename Duration>
+    static
+    std::chrono::time_point<gps_clock, typename std::common_type<Duration, date::days>::type>
+    from_local(const std::chrono::time_point<local_t, Duration>&) NOEXCEPT;
 };
 
 template <class Duration>
@@ -2118,9 +2198,10 @@ utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 gps_clock::to_utc(const gps_time<Duration>& t) NOEXCEPT
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
-    return utc_time<duration>{t.time_since_epoch()} +
-            (sys_days(year{1980}/jan/sun[1]) - sys_days(year{1970}/jan/1) + seconds{9});
+    using CD = typename std::common_type<Duration, seconds>::type;
+    return utc_time<CD>{t.time_since_epoch()} +
+            (sys_days(year{1980}/January/Sunday[1]) - sys_days(year{1970}/January/1) +
+             seconds{9});
 }
 
 template <class Duration>
@@ -2129,9 +2210,10 @@ gps_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 gps_clock::from_utc(const utc_time<Duration>& t) NOEXCEPT
 {
     using namespace std::chrono;
-    using duration = typename std::common_type<Duration, seconds>::type;
-    return gps_time<duration>{t.time_since_epoch()} -
-            (sys_days(year{1980}/jan/sun[1]) - sys_days(year{1970}/jan/1) + seconds{9});
+    using CD = typename std::common_type<Duration, seconds>::type;
+    return gps_time<CD>{t.time_since_epoch()} -
+            (sys_days(year{1980}/January/Sunday[1]) - sys_days(year{1970}/January/1) +
+             seconds{9});
 }
 
 inline
@@ -2142,23 +2224,35 @@ gps_clock::now()
     return from_utc(utc_clock::now());
 }
 
+template <class Duration>
+inline
+local_time<typename std::common_type<Duration, date::days>::type>
+gps_clock::to_local(const gps_time<Duration>& t) NOEXCEPT
+{
+    using CD = typename std::common_type<Duration, date::days>::type;
+    return local_time<CD>{t.time_since_epoch()} +
+            (local_days(year{1980}/January/Sunday[1]) - local_days(year{1970}/January/1));
+}
+
+template <class Duration>
+inline
+gps_time<typename std::common_type<Duration, date::days>::type>
+gps_clock::from_local(const local_time<Duration>& t) NOEXCEPT
+{
+    using CD = typename std::common_type<Duration, date::days>::type;
+    return gps_time<CD>{t.time_since_epoch()} -
+            (local_days(year{1980}/January/Sunday[1]) - local_days(year{1970}/January/1));
+}
+
+
 template <class CharT, class Traits, class Duration>
 std::basic_ostream<CharT, Traits>&
 to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
           const gps_time<Duration>& t)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    const string abbrev("GPS");
-    CONSTDATA seconds offset{0};
-    auto tp = sys_time<CT>{t.time_since_epoch()} +
-              seconds(sys_days(year{1980}/jan/sun[1]) - sys_days(year{1970}/jan/1));
-    auto const sd = floor<days>(tp);
-    year_month_day ymd = sd;
-    auto time = make_time(tp - sys_seconds{sd});
-    fields<CT> fds{ymd, time};
-    return to_stream(os, fmt, fds, &abbrev, &offset);
+    const std::string abbrev("GPS");
+    CONSTDATA std::chrono::seconds offset{0};
+    return to_stream(os, fmt, gps_clock::to_local(t), &abbrev, &offset);
 }
 
 template <class CharT, class Traits, class Duration>
@@ -2176,20 +2270,10 @@ from_stream(std::basic_istream<CharT, Traits>& is, const CharT* fmt,
             std::basic_string<CharT, Traits, Alloc>* abbrev = nullptr,
             std::chrono::minutes* offset = nullptr)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    minutes offset_local{};
-    auto offptr = offset ? offset : &offset_local;
-    fields<CT> fds{};
-    from_stream(is, fmt, fds, abbrev, offptr);
-    if (!fds.ymd.ok() || !fds.tod.in_conventional_range())
-        is.setstate(ios::failbit);
+    local_time<Duration> lp;
+    from_stream(is, fmt, lp, abbrev, offset);
     if (!is.fail())
-        tp = gps_time<Duration>{duration_cast<Duration>(
-                (sys_days(fds.ymd) -
-                 (sys_days(year{1980}/jan/sun[1]) - sys_days(year{1970}/jan/1)) -
-                 *offptr + fds.tod.to_duration()).time_since_epoch())};
+        tp = gps_clock::from_local(lp);
     return is;
 }
 
@@ -2221,6 +2305,17 @@ struct clock_time_conversion<utc_clock, utc_clock>
     }
 };
 
+template<>
+struct clock_time_conversion<local_t, local_t>
+{
+    template <class Duration>
+    local_time<Duration>
+    operator()(const local_time<Duration>& lt) const
+    {
+        return lt;
+    }
+};
+
 template <>
 struct clock_time_conversion<utc_clock, std::chrono::system_clock>
 {
@@ -2243,7 +2338,51 @@ struct clock_time_conversion<std::chrono::system_clock, utc_clock>
     }
 };
 
-template <class Clock>
+template<>
+struct clock_time_conversion<local_t, std::chrono::system_clock>
+{
+    template <class Duration>
+    local_time<Duration>
+    operator()(const sys_time<Duration>& st) const
+    {
+       return local_time<Duration>{st.time_since_epoch()};
+    }
+};
+
+template<>
+struct clock_time_conversion<std::chrono::system_clock, local_t>
+{
+    template <class Duration>
+    sys_time<Duration>
+    operator()(const local_time<Duration>& lt) const
+    {
+        return sys_time<Duration>{lt.time_since_epoch()};
+    }
+};
+
+template<>
+struct clock_time_conversion<utc_clock, local_t>
+{
+    template <class Duration>
+    utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
+    operator()(const local_time<Duration>& lt) const
+    {
+       return utc_clock::from_local(lt);
+    }
+};
+
+template<>
+struct clock_time_conversion<local_t, utc_clock>
+{
+    template <class Duration>
+    local_time<typename std::common_type<Duration, std::chrono::seconds>::type>
+    operator()(const utc_time<Duration>& ut) const
+    {
+       return utc_clock::to_local(ut);
+    }
+};
+
+template<typename Clock>
 struct clock_time_conversion<Clock, Clock>
 {
     template <class Duration>
@@ -2349,6 +2488,44 @@ struct return_from_utc
       >
 {};
 
+// Similiar to above
+template<typename Clock, typename Duration, typename = void>
+struct return_to_local
+{};
+
+template<typename Clock, typename Duration>
+struct return_to_local
+       <
+          Clock, Duration,
+          decltype(Clock::to_local(declval<time_point<Clock, Duration> const&>()),
+                   void())
+       >
+     : return_clock_time
+       <
+           local_t,
+           decltype(Clock::to_local(declval<time_point<Clock, Duration> const&>()))
+       >
+{};
+
+// Similiar to above
+template<typename Clock, typename Duration, typename = void>
+struct return_from_local
+{};
+
+template<typename Clock, typename Duration>
+struct return_from_local
+       <
+           Clock, Duration,
+           decltype(Clock::from_local(declval<time_point<local_t, Duration> const&>()),
+                    void())
+       >
+     : return_clock_time
+       <
+           Clock,
+           decltype(Clock::from_local(declval<time_point<local_t, Duration> const&>()))
+       >
+{};
+
 }  // namespace ctc_detail
 
 template <class SrcClock>
@@ -2392,6 +2569,28 @@ struct clock_time_conversion<DstClock, utc_clock>
     operator()(const utc_time<Duration>& ut) const
     {
         return DstClock::from_utc(ut);
+    }
+};
+
+template<typename SrcClock>
+struct clock_time_conversion<local_t, SrcClock>
+{
+    template <class Duration>
+    typename ctc_detail::return_to_local<SrcClock, Duration>::type
+    operator()(const std::chrono::time_point<SrcClock, Duration>& tp) const
+    {
+        return SrcClock::to_local(tp);
+    }
+};
+
+template<typename DstClock>
+struct clock_time_conversion<DstClock, local_t>
+{
+    template <class Duration>
+    typename ctc_detail::return_from_local<DstClock, Duration>::type
+    operator()(const local_time<Duration>& lt) const
+    {
+        return DstClock::from_local(lt);
     }
 };
 

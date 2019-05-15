@@ -591,7 +591,7 @@ void WFileDropWidget::createWorkerResource() {
 #else
   try {
     uploadWorkerResource_->setData(ss.str().getBytes("utf8"));
-  } catch (UnsupportedEncodingException e) {
+  } catch (UnsupportedEncodingException) {
   }
 #endif
 }

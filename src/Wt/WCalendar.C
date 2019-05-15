@@ -505,7 +505,7 @@ void WCalendar::yearChanged(WString yearStr)
       emitCurrentPageChanged();
       renderMonth();
     }
-  } catch (std::exception& e) {
+  } catch (std::exception&) {
   }
 }
 

@@ -5,7 +5,22 @@ add_library(wt)
 
 target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
-target_compile_definitions(wt PRIVATE _WIN32_WINNT=0x0A00)
+
+if (MSVC)
+  target_compile_options(wt
+    PUBLIC 
+      /permissive-
+      /Zc:__cplusplus
+  )
+  target_compile_definitions(wt 
+    PUBLIC
+      _CRT_NONSTDC_NO_WARNINGS # Don't deprecate posix names of functions.
+      _CRT_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
+      _SCL_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
+    PRIVATE 
+      _WIN32_WINNT=0x0A00
+  )
+endif(MSVC)
 
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web>)

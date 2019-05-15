@@ -496,13 +496,13 @@ double asNumber(const cpp17::any& v)
   else if (v.type() == typeid(WString))
     try {
       return WLocale::currentLocale().toDouble(cpp17::any_cast<WString>(v));
-    } catch (std::exception& e) {
+    } catch (std::exception&) {
       return std::numeric_limits<double>::signaling_NaN();
     }
   else if (v.type() == typeid(std::string))
     try {
       return WLocale::currentLocale().toDouble(WT_USTRING::fromUTF8(cpp17::any_cast<std::string>(v)));
-    } catch (std::exception& e) {
+    } catch (std::exception&) {
       return std::numeric_limits<double>::signaling_NaN();
     }
   else if (v.type() == typeid(const char *))

@@ -661,7 +661,7 @@ void WApplication::useStyleSheet(const WLinkedCssStyleSheet& styleSheet,
 	    }
 	    if (invert)
 	      display = !display;
-	  } catch (std::exception& e) {
+	  } catch (std::exception&) {
 	    LOG_ERROR("Could not parse condition: '" << condition << "'");
 	  }
 	  r.clear();

@@ -319,7 +319,7 @@ void WEnvironment::enableAjax(const WebRequest& request)
 
   try {
     dpiScale_ = scaleE ? Utils::stod(*scaleE) : 1;
-  } catch (std::exception& e) {
+  } catch (std::exception&) {
     dpiScale_ = 1;
   }
 
@@ -331,7 +331,7 @@ void WEnvironment::enableAjax(const WebRequest& request)
 
   try {
     timeZoneOffset_ = std::chrono::minutes(tzE ? Utils::stoi(*tzE) : 0);
-  } catch (std::exception& e) {
+  } catch (std::exception&) {
   }
 
   const std::string *tzSE = request.getParameter("tzS");
@@ -357,14 +357,14 @@ void WEnvironment::enableAjax(const WebRequest& request)
   if (scrWE) {
     try {
       screenWidth_ = Utils::stoi(*scrWE);
-    } catch (std::exception &e) {
+    } catch (std::exception &) {
     }
   }
   const std::string *scrHE = request.getParameter("scrH");
   if (scrHE) {
     try {
       screenHeight_ = Utils::stoi(*scrHE);
-    } catch (std::exception &e) {
+    } catch (std::exception &) {
     }
   }
 }
@@ -416,7 +416,7 @@ void WEnvironment::setUserAgent(const std::string& userAgent)
 	double v = Utils::stod(vs);
 	if (v >= 10)
 	  agent_ = UserAgent::Opera10;
-      } catch (std::exception& e) { }
+      } catch (std::exception&) { }
     }
   }
 

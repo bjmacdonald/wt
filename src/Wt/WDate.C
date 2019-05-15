@@ -114,7 +114,7 @@ int WDate::dayOfWeek() const
   if (!isValid())
     return 0;
 
-  unsigned dow = (unsigned)date::weekday(date::day(day())/month()/year());
+  unsigned dow = (date::weekday(date::day(day()) / month() / year()) - date::Sunday).count();
   return (dow == 0 ? 7 : dow);
 }
 

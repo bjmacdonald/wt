@@ -106,24 +106,24 @@ void WAbstractMedia::setFormData(const FormData& formData)
     if (attributes.size() == 6) {
       try {
 	volume_ = Utils::stod(attributes[0]);
-      } catch (const std::exception& e) {
+      } catch (const std::exception&) {
         volume_ = -1;
       }
       try {
 	current_ = Utils::stod(attributes[1]);
-      } catch (const std::exception& e) {
+      } catch (const std::exception&) {
         current_ = -1;
       }
       try {
         duration_ = Utils::stod(attributes[2]);
-      } catch (const std::exception& e) {
+      } catch (const std::exception&) {
         duration_ = -1;
       }
       playing_ = (attributes[3] == "0");
       ended_ = (attributes[4] == "1");
       try {
         readyState_ = intToReadyState(Utils::stoi(attributes[5]));
-      } catch (const std::exception& e) {
+      } catch (const std::exception&) {
         readyState_ = MediaReadyState::HaveNothing;
       }
     } else

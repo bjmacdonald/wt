@@ -345,7 +345,7 @@ void WComboBox::setFormData(const FormData& formData)
     if (!value.empty()) {
       try {
 	currentIndex_ = Utils::stoi(value);
-      } catch (std::exception& e) {
+      } catch (std::exception&) {
 	LOG_ERROR("received illegal form value: '" << value << "'");
       }
     } else

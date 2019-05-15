@@ -451,7 +451,7 @@ weekday::weekday(unsigned wd) NOEXCEPT
 CONSTCD11
 inline
 weekday::weekday(date::weekday wd) NOEXCEPT
-    : wd_(to_iso_encoding(static_cast<unsigned>(wd)))
+    : wd_((wd-date::Monday).count() + 1)
     {}
 
 CONSTCD11
@@ -713,7 +713,7 @@ inline
 std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& os, const year& y)
 {
-    date::detail::save_stream<CharT, Traits> _(os);
+    date::detail::save_ostream<CharT, Traits> _(os);
     os.fill('0');
     os.flags(std::ios::dec | std::ios::internal);
     os.width(4 + (y < year{0}));
@@ -875,7 +875,7 @@ inline
 std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& os, const weeknum& wn)
 {
-    date::detail::save_stream<CharT, Traits> _(os);
+    date::detail::save_ostream<CharT, Traits> _(os);
     os << 'W';
     os.fill('0');
     os.flags(std::ios::dec | std::ios::right);

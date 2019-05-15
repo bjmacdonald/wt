@@ -214,15 +214,15 @@ void substituteFields(const SelectFieldList& list,
 	  break;
       }
 
-      int start = list[j].begin + offset;
-      int count = list[j].end - list[j].begin;
+      auto start = list[j].begin + offset;
+      auto count = list[j].end - list[j].begin;
 
       sql.replace(start, count, dboFields);
 
       offset += (dboFields.length() - (list[j].end - list[j].begin));
     } else {
       if (!fs[i].isAliasedName()) {
-        int start = list[j].end + offset;
+        auto start = list[j].end + offset;
         std::string col = " as col" + std::to_string(i);
         sql.insert(start, col);
         offset += col.size();
