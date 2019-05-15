@@ -232,7 +232,8 @@ public:
   double d;
 
   A()
-    : checked(false),
+    : timeduration(0),
+      checked(false),
       i(0),
       pet(Pet::Other),
       i64(0),
@@ -3061,4 +3062,95 @@ BOOST_AUTO_TEST_CASE( dbo_test38 )
   }
 #endif // __has_include(<optional>)
 #endif // WT_CXX17
+}
+
+namespace {
+  void setupTest39(dbo::Session &session) {
+    dbo::Transaction t(session);
+
+    Wt::Dbo::ptr<A> a1 = session.addNew<A>();
+    a1.modify()->i = 3;
+
+    Wt::Dbo::ptr<A> a2 = session.addNew<A>();
+    a2.modify()->i = 4;
+
+    Wt::Dbo::ptr<A> a3 = session.addNew<A>();
+    a3.modify()->i = 5;
+
+    t.commit();
+  }
+}
+
+BOOST_AUTO_TEST_CASE( dbo_test39a )
+{
+  // Test UNION
+  DboFixture f;
+  dbo::Session *session_ = f.session_;
+
+  setupTest39(*session_);
+
+  {
+    dbo::Transaction t(*session_);
+
+    As as = session_->query<Wt::Dbo::ptr<A> >("select a from \"table_a\" a where a.\"i\" = 3 union select a from \"table_a\" a where a.\"i\" = 5");
+
+    BOOST_REQUIRE(as.size() == 2);
+
+    As::iterator it = as.begin();
+    BOOST_REQUIRE((*it)->i == 3);
+    ++it;
+    BOOST_REQUIRE((*it)->i == 5);
+    ++it;
+    BOOST_REQUIRE(it == as.end());
+  }
+}
+
+BOOST_AUTO_TEST_CASE( dbo_test39b )
+{
+#if !defined(MYSQL) && !defined(FIREBIRD) // MySQL and Firebird don't do INTERSECT
+  // Test INTERSECT
+  DboFixture f;
+  dbo::Session *session_ = f.session_;
+
+  setupTest39(*session_);
+
+  {
+    dbo::Transaction t(*session_);
+
+    As as = session_->query<Wt::Dbo::ptr<A> >("select a from \"table_a\" a where a.\"i\" > 3 intersect select a from \"table_a\" a where a.\"i\" < 5");
+
+    BOOST_REQUIRE(as.size() == 1);
+
+    As::iterator it = as.begin();
+    BOOST_REQUIRE((*it)->i == 4);
+    ++it;
+    BOOST_REQUIRE(it == as.end());
+  }
+#endif
+}
+
+BOOST_AUTO_TEST_CASE( dbo_test39c )
+{
+#if !defined(MYSQL) && !defined(FIREBIRD) // MySQL and Firebird don't do EXCEPT
+  // Test EXCEPT
+  DboFixture f;
+  dbo::Session *session_ = f.session_;
+
+  setupTest39(*session_);
+
+  {
+    dbo::Transaction t(*session_);
+
+    As as = session_->query<Wt::Dbo::ptr<A> >("select a from \"table_a\" a where a.\"i\" >= 3 except select a from \"table_a\" a where a.\"i\" = 4");
+
+    BOOST_REQUIRE(as.size() == 2);
+
+    As::iterator it = as.begin();
+    BOOST_REQUIRE((*it)->i == 3);
+    ++it;
+    BOOST_REQUIRE((*it)->i == 5);
+    ++it;
+    BOOST_REQUIRE(it == as.end());
+  }
+#endif
 }
