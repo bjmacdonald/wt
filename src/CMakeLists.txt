@@ -567,6 +567,8 @@ CONFIGURE_FILE(
   ${WT_BINARY_DIR}/WtInstall.cmake
 )
 
+export(EXPORT wt-target-wt NAMESPACE Wt FILE ${CMAKE_BINARY_DIR}/wt-export.cmake)
+
 SET_TARGET_PROPERTIES(
   wt
 PROPERTIES
