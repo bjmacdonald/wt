@@ -72,14 +72,10 @@ PROPERTIES
 add_subdirectory(backend)
 
 INSTALL(TARGETS wtdbo
-    EXPORT wt-target-dbo
+    EXPORT "${PROJECT_NAME}-targets"
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
-INSTALL(EXPORT wt-target-dbo
-        DESTINATION ${CMAKE_INSTALL_DIR}/wt
-        NAMESPACE Wt::)
 
 INSTALL_FILES(/include/Wt/Dbo "^[^.]+\\.h$")
 INSTALL_FILES(/include/Wt FILES ${WCONFIG_H_PATH})
