@@ -412,11 +412,11 @@ FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_js.C WCartesianChart_js
 #)
 target_sources(wt PRIVATE Wt_js.C Boot_js.C WCartesianChart_js.C)
 
-target_link_libraries(wt PRIVATE Boost::boost)
+target_link_libraries(wt PRIVATE Boost::boost Boost::filesystem)
 
 IF (MULTI_THREADED_BUILD)
   target_sources(wt PRIVATE web/SocketNotifier.C)
-  target_link_libraries(wt PRIVATE Threads::Threads)
+  target_link_libraries(wt PRIVATE Threads::Threads Boost::thread)
 ENDIF(MULTI_THREADED_BUILD)
 
 # How to include x86.S ?
@@ -426,28 +426,35 @@ target_sources(wt PRIVATE
       Wt/Auth/bcrypt/wrapper.c)
 
 IF(HAVE_HARU)
-  SET(libsources ${libsources} Wt/WPdfImage.C Wt/Render/WPdfRenderer.C)
+  target_sources(wt PRIVATE Wt/WPdfImage.C Wt/Render/WPdfRenderer.C)
   SET(BOOST_WT_LIBRARIES ${BOOST_WT_LIBRARIES})
   ADD_DEFINITIONS(-DHAVE_PDF_IMAGE)
 ENDIF(HAVE_HARU)
 
 IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-  SET(libsources ${libsources} Wt/WRasterImage-gm.C)
+  target_sources(wt PRIVATE Wt/WRasterImage-gm.C)
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "skia")
-  SET(libsources ${libsources} Wt/WRasterImage-skia.C)
+  target_sources(wt PRIVATE Wt/WRasterImage-skia.C)
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-  SET(libsources ${libsources} Wt/WRasterImage-d2d1.C)
+  target_sources(wt PRIVATE Wt/WRasterImage-d2d1.C)
 ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
 
 IF(HAVE_GL)
-  SET(libsources ${libsources} Wt/WServerGLWidget.C)
+  target_sources(wt PRIVATE Wt/WServerGLWidget.C)
   IF(NOT USE_SYSTEM_GLEW)
     ADD_DEFINITIONS(-DGLEW_STATIC)
-    SET(libsources
-      ${libsources}
-      3rdparty/glew-1.10.0/src/glew.c
-    )
+    target_sources(wt PRIVATE 3rdparty/glew-1.10.0/src/glew.c)
   ENDIF(NOT USE_SYSTEM_GLEW)
+ENDIF(HAVE_GL)
+
+IF(HAVE_GL)
+  INCLUDE_DIRECTORIES(${GL_INCLUDE_DIRS})
+  IF(USE_SYSTEM_GLEW)
+    TARGET_LINK_LIBRARIES(wt PRIVATE GLEW)
+  ENDIF(USE_SYSTEM_GLEW)
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${GL_LIBRARIES})
+ELSE(HAVE_GL)
+  MESSAGE("** Disabling server-side opengl rendering for WGLWidget: requires gl, glew and WRasterImage (GraphicsMagick or skia).")
 ENDIF(HAVE_GL)
 
 SET(WT_FONTSUPPORT_SIMPLE false)
@@ -461,13 +468,13 @@ ENDIF(WIN32 AND NOT MINGW)
 
 IF(HAVE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
   IF(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-    SET(libsources ${libsources} Wt/FontSupportPango.C)
+    target_sources(wt PRIVATE Wt/FontSupportPango.C)
     SET(WT_FONTSUPPORT_PANGO true)
   ELSEIF(HAVE_DIRECTWRITE)
-    SET(libsources ${libsources} Wt/FontSupportDirectWrite.C)
+    target_sources(wt PRIVATE Wt/FontSupportDirectWrite.C)
     SET(WT_FONTSUPPORT_DIRECTWRITE true)
   ELSE(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-    SET(libsources ${libsources} Wt/FontSupportSimple.C)
+    target_sources(wt PRIVATE Wt/FontSupportSimple.C)
     SET(WT_FONTSUPPORT_SIMPLE true)
   ENDIF(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 ENDIF(HAVE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
@@ -497,6 +504,9 @@ TARGET_LINK_LIBRARIES(wt
 
 # SSL
 target_link_libraries(wt PRIVATE OpenSSL::api)
+if(WIN32)
+  target_link_libraries(wt PRIVATE Crypt32)
+endif()
 
 IF(HAVE_HARU)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})
@@ -521,16 +531,6 @@ ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
 ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-
-IF(HAVE_GL)
-  INCLUDE_DIRECTORIES(${GL_INCLUDE_DIRS})
-  IF(USE_SYSTEM_GLEW)
-    TARGET_LINK_LIBRARIES(wt PRIVATE GLEW)
-  ENDIF(USE_SYSTEM_GLEW)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${GL_LIBRARIES})
-ELSE(HAVE_GL)
-  MESSAGE("** Disabling server-side opengl rendering for WGLWidget: requires gl, glew and WRasterImage (GraphicsMagick or skia).")
-ENDIF(HAVE_GL)
 
 IF(WT_FONTSUPPORT_SIMPLE)
   ADD_DEFINITIONS(-DWT_FONTSUPPORT_SIMPLE)
