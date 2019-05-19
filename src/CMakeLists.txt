@@ -558,16 +558,18 @@ INSTALL(TARGETS wt
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
-CONFIGURE_FILE(
-  ${WT_SOURCE_DIR}/WtInstall.cmake
-  ${WT_BINARY_DIR}/WtInstall.cmake
-)
+# BMD Thie creates RUNDIR and sets its ownership, then it is run as
+#     POST_INSTALL_SCRIPT in the section below.  Not needed.
+#CONFIGURE_FILE(
+#  ${WT_SOURCE_DIR}/WtInstall.cmake
+#  ${WT_BINARY_DIR}/WtInstall.cmake
+#)
 
 SET_TARGET_PROPERTIES(
   wt
 PROPERTIES
   EXPORT_NAME Wt
-  POST_INSTALL_SCRIPT ${WT_BINARY_DIR}/WtInstall.cmake
+#  POST_INSTALL_SCRIPT ${WT_BINARY_DIR}/WtInstall.cmake
   VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
   SOVERSION ${WT_SOVERSION}
 )
