@@ -1,12 +1,14 @@
 # activate conane (if necessary)
 #
-# set PostgreSQL_ROOT=c:\app\pgsql
-# rd /s /q c:\Y-Work\wt-build
-# md c:\Y-Work\wt-build
-# cd c:\Y-Work\wt-build
-# conan install ..\wt
-# cmake -G"Visual Studio 15 2017 Win64" -Thost=x64 ..\wt
-# cmake -Ax64 -G"Visual Studio 16 2019" -Thost=x64 -DCMAKE_INSTALL_PREFIX=c:\app\wt ..\wt
+#set PostgreSQL_ROOT=c:\app\pgsql
+#
+#rd /s /q c:\Y-Work\build\wt
+#md c:\Y-Work\build\wt
+#cd c:\Y-Work\build\wt
+#conan install ..\..\wt
+#cmake -Ax64 -G"Visual Studio 16 2019" -Thost=x64 -DCMAKE_INSTALL_PREFIX=c:\app\local\wt ..\..\wt
+#cmake --build . --config Debug
+#cmake --build . --config Release
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 PROJECT(Wt VERSION 4.0.5)
