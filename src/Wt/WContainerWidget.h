@@ -156,6 +156,19 @@ public:
    */
   void setLayout(std::unique_ptr<WLayout> layout);
 
+  /*! \brief Sets a layout manager for the container, returning a raw pointer.
+   *
+   * This is implemented as:
+   *
+   * \code
+   * Layout *result = layout.get();
+   * setLayout(std::unique_ptr<WLayout>(std::move(layout)));
+   * return result;
+   * \endcode
+   *
+   * This is a useful shorthand that allows to create a layout and get a raw
+   * pointer to it in one line.
+   */
   template <typename Layout>
     Layout *setLayout(std::unique_ptr<Layout> layout)
 #ifndef WT_TARGET_JAVA
@@ -339,6 +352,8 @@ public:
     return result;
   }
 #endif // WT_TARGET_JAVA
+
+  using WWidget::removeWidget;
 
   /*! \brief Removes a child widget from this container.
    *
