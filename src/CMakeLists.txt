@@ -11,6 +11,8 @@ if (MSVC)
     PUBLIC 
       /permissive-
       /Zc:__cplusplus
+    PRIVATE
+      /MP
   )
   target_compile_definitions(wt 
     PUBLIC
