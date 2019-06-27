@@ -50,7 +50,7 @@ SET(WTTEST_SOVERSION 21)
 OPTION(WT_BUILD_EXAMPLES "Build examples" OFF)
 OPTION(WT_BUILD_TESTS "Build Wt tests" OFF)
 OPTION(WT_BUILD_LIBWTTEST "Build Wt::Test" ON)
-OPTION(WT_BUILD_LIBWTDBO "Build Wt::Dbo" ON)
+OPTION(WT_BUILD_LIBWTDBO "Build Wt::Dbo" OFF)
 
 # Note: This is a special CMake variable that changes the default for add_library()
 option(BUILD_SHARED_LIBS "Compile shared libraries" OFF)
@@ -72,7 +72,7 @@ IF(WT_ENABLE_HARU)
 ENDIF(WT_ENABLE_HARU)
 
 OPTION(WT_ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" OFF)
-OPTION(WT_ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" ON)
+OPTION(WT_ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" OFF)
 
 if (WT_ENABLE_POSTGRES)
   find_package(PostgreSQL)
