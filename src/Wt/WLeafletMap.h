@@ -173,6 +173,10 @@ public:
    */
   WLeafletMap();
 
+  /*! \brief Create a new WLeafletMap with the given options
+   */
+  explicit WLeafletMap(const Json::Object &options);
+
   virtual ~WLeafletMap();
 
   WLeafletMap(const WLeafletMap &) = delete;
@@ -265,6 +269,14 @@ public:
    */
   JSignal<double, double> &panChanged() { return panChanged_; }
 
+  /*! \brief Returns a JavaScript expression to the Leaflet map object.
+   *
+   * You may want to use this in conjunction with JSlot or
+   * doJavaScript() in custom JavaScript code, e.g. to access
+   * features not built-in to %WLeafletMap.
+   */
+  std::string mapJsRef() const;
+
 protected:
   virtual void render(WFlags<RenderFlag> flags) override;
 
@@ -273,6 +285,7 @@ private:
   static const int BIT_PAN_CHANGED = 1;
 
   Impl *impl_;
+  Json::Object options_;
   std::bitset<2> flags_;
   JSignal<int> zoomLevelChanged_;
   JSignal<double, double> panChanged_;
@@ -298,6 +311,8 @@ private:
       static const int BIT_ADDED = 0;
       static const int BIT_REMOVED = 1;
 
+      MarkerEntry();
+
       std::unique_ptr<Marker> uMarker;
       Marker *marker;
       long long id;
@@ -306,6 +321,7 @@ private:
 
   std::vector<MarkerEntry> markers_; // goes on the markerPane, z-index 600
 
+  void setup(); // called from constructors to reduce code duplication
   void defineJavaScript();
   void addTileLayerJS(WStringStream &ss, const TileLayer &layer) const;
   void panToJS(WStringStream &ss, const Coordinate &position) const;

@@ -732,6 +732,10 @@ this.filter = function(edit, event, tokens) {
 // Get coordinates of element relative to an ancestor object (or page origin).
 // It computes the location of the left-top corner of the margin-box.
 this.widgetPageCoordinates = function(obj, reference) {
+  if (!obj.getBoundingClientRect) {
+    return {x: 0, y: 0};
+  }
+
   var pageXOffset = window.pageXOffset !== undefined ? window.pageXOffset : document.documentElement.scrollLeft;
   var pageYOffset = window.pageYOffset !== undefined ? window.pageYOffset : document.documentElement.scrollTop;
 
@@ -1801,7 +1805,7 @@ this.positionAtWidget = function(id, atId, orientation, delta) {
     w.parentNode.removeChild(w);
   
     for (p = pp.parentNode; p != domRoot; p = p.parentNode) {
-      if (p.wtResize) {
+      if (p.wtResize || p.wtReparentBarrier) {
 	break;
       }
 

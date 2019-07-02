@@ -8,7 +8,7 @@
 
 WT_DECLARE_WT_MEMBER
 (1, JavaScriptConstructor, "WLeafletMap",
-  function(APP, el, lat, lng, zoom) {
+  function(APP, el, options_str, lat, lng, zoom) {
     el.wtObj = this;
 
     var self = this;
@@ -79,11 +79,32 @@ WT_DECLARE_WT_MEMBER
       });
     };
 
-    this.init = function(position, zoom) {
-      self.map = L.map(el, {
-        center: position,
-        zoom: zoom
-      });
+    this.init = function(options_str, position, zoom) {
+      var options = JSON.parse(options_str);
+      options.center = position;
+      options.zoom = zoom;
+      self.map = L.map(el, options);
+
+      var baseZIndex = parseInt((function(){
+        var p = el.parentNode;
+        while (p) {
+          if (p.wtPopup) {
+            return p.style.zIndex;
+          }
+          p = p.parentNode;
+        }
+        return 0;
+      })(), 10);
+
+      if (baseZIndex > 0) {
+        self.map.getPane('tilePane').style.zIndex = baseZIndex + 200;
+        self.map.getPane('overlayPane').style.zIndex = baseZIndex + 400;
+        self.map.getPane('shadowPane').style.zIndex = baseZIndex + 500;
+        self.map.getPane('markerPane').style.zIndex = baseZIndex + 600;
+        self.map.getPane('tooltipPane').style.zIndex = baseZIndex + 650;
+        self.map.getPane('popupPane').style.zIndex = baseZIndex + 700;
+      }
+
       self.map.on('zoomend', function() {
         var zoom = self.map.getZoom();
         if (zoom != lastZoom) {
@@ -101,5 +122,5 @@ WT_DECLARE_WT_MEMBER
       });
     };
 
-    this.init([lat, lng], zoom);
+    this.init(options_str, [lat, lng], zoom);
   });

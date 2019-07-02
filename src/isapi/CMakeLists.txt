@@ -7,17 +7,21 @@ IF(CONNECTOR_ISAPI)
     ADD_DEFINITIONS(-D_WIN32_WINNT=0x0600 -DWTISAPI_STATIC)
 
     SET(libsapisources
-      Server.C
+      Server.h Server.C
       WServer.C
       Isapi.C
-      IsapiRequest.C
-      IsapiStream.C
+      IsapiRequest.h IsapiRequest.C
+      IsapiStream.h IsapiStream.C
     )
 
     INCLUDE_DIRECTORIES(${FCGI_INCLUDE_DIRS})
 
     ADD_LIBRARY(wtisapi STATIC ${libsapisources})
-    TARGET_LINK_LIBRARIES(wtisapi wt)
+    TARGET_LINK_LIBRARIES(wtisapi PUBLIC wt)
+
+    IF(TARGET Boost::headers)
+      TARGET_LINK_LIBRARIES(wtisapi PRIVATE Boost::headers)
+    ENDIF()
 
     SET_TARGET_PROPERTIES(
       wtisapi

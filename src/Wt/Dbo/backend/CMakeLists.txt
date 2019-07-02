@@ -41,7 +41,7 @@ IF(WT_ENABLE_SQLITE)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbosqlite3
-    Sqlite3.C
+    Sqlite3.h Sqlite3.C
     ${Sqlite3_SRCS}
     )
 
@@ -99,7 +99,7 @@ IF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
   MESSAGE("** Wt::Dbo: building Postgres backend.")
 
   add_library(wtdbopostgres
-    Postgres.C
+    Postgres.h Postgres.C
   )
 
   IF(WIN32 AND BUILD_SHARED_LIBS)
@@ -158,7 +158,7 @@ IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbomssqlserver
-    MSSQLServer.C
+    MSSQLServer.h MSSQLServer.C
     ${mssqlserver_SRCS}
   )
   TARGET_LINK_LIBRARIES(wtdbomssqlserver
