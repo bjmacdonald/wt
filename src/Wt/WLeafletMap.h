@@ -96,8 +96,14 @@ public:
   protected:
     explicit Marker(const Coordinate &pos);
 
+    WLeafletMap *map() { return map_; }
+    const WLeafletMap *map() const { return map_; }
+
     virtual void setMap(WLeafletMap *map);
     virtual void createMarkerJS(WStringStream &ss, WStringStream &postJS) const = 0;
+    virtual void unrender();
+    virtual bool needsUpdate() const;
+    virtual void update(WStringStream &js);
 
   private:
     Coordinate pos_;
@@ -118,9 +124,6 @@ public:
   class WT_API WidgetMarker : public Marker {
   public:
     /*! \brief Create a new WidgetMarker at the given position with the given widget.
-     *
-     * The widget should have a predetermined width and height to be
-     * rendered correctly, with \p pos in the center of the widget.
      */
     explicit WidgetMarker(const Coordinate &pos, std::unique_ptr<WWidget> widget);
 
@@ -139,12 +142,34 @@ public:
      */
     const WWidget *widget() const;
 
+    /*! \brief Set the anchor point of the marker.
+     *
+     * This determines the "tip" of the marker (relative to its
+     * top left corner). The marker will be aligned so that this
+     * point is at the marker's geographical location.
+     *
+     * If x is negative, the anchor point is in the
+     * horizontal center of the widget. If y is negative,
+     * the anchor point is in the vertical center of the widget.
+     *
+     * By default the anchor point is in the middle (horizontal and vertical center).
+     */
+    void setAnchorPoint(double x, double y);
+
   protected:
     virtual void setMap(WLeafletMap *map) override;
     virtual void createMarkerJS(WStringStream &ss, WStringStream &postJS) const override;
+    virtual void unrender() override;
+    virtual bool needsUpdate() const override;
+    virtual void update(WStringStream &js) override;
 
   private:
     std::unique_ptr<WContainerWidget> container_;
+    double anchorX_, anchorY_;
+    bool anchorPointChanged_;
+
+    void createContainer();
+    void updateAnchorJS(WStringStream &js) const;
   };
 
   /*! \class LeafletMarker
@@ -174,6 +199,8 @@ public:
   WLeafletMap();
 
   /*! \brief Create a new WLeafletMap with the given options
+   *
+   * \sa setOptions()
    */
   explicit WLeafletMap(const Json::Object &options);
 
@@ -183,6 +210,16 @@ public:
   WLeafletMap& operator=(const WLeafletMap &) = delete;
   WLeafletMap(WLeafletMap &&) = delete;
   WLeafletMap& operator=(WLeafletMap &&) = delete;
+
+  /*! \brief Change the options of the %WLeafletMap
+   *
+   * \note This fully rerenders the map, because it creates a new Leaflet map,
+   * so any custom JavaScript modifying the map with e.g. doJavaScript() is undone,
+   * much like reloading the page when <tt>reload-is-new-session</tt> is set to false.
+   *
+   * See https://leafletjs.com/reference.html#map for a list of options.
+   */
+  void setOptions(const Json::Object &options);
 
   /*! \brief Add a new tile layer
    *
@@ -283,10 +320,14 @@ protected:
 private:
   static const int BIT_ZOOM_CHANGED = 0;
   static const int BIT_PAN_CHANGED = 1;
+  static const int BIT_OPTIONS_CHANGED = 2;
+
+  static const std::string WIDGETMARKER_CONTAINER_RULENAME;
+  static const std::string WIDGETMARKER_CONTAINER_CHILDREN_RULENAME;
 
   Impl *impl_;
   Json::Object options_;
-  std::bitset<2> flags_;
+  std::bitset<3> flags_;
   JSignal<int> zoomLevelChanged_;
   JSignal<double, double> panChanged_;
   Coordinate position_;
