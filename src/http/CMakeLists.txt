@@ -55,7 +55,27 @@ target_link_libraries(wthttp
 )
 
 target_compile_definitions(wthttp PRIVATE WT_BUILDING)
-target_compile_definitions(wthttp PRIVATE _WIN32_WINNT=0x0A00)
+
+if (MSVC)
+  target_compile_options(wthttp
+    PUBLIC 
+      /permissive-
+      /Zc:__cplusplus
+    PRIVATE
+      /MP
+      /wd4267  # argument conversion possible loss of data
+      /wd4244  # initializing conversion possible loss of data
+  )
+  target_compile_definitions(wt 
+    PUBLIC
+      _CRT_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
+      _SCL_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
+    PRIVATE 
+      _CRT_NONSTDC_NO_WARNINGS # Don't deprecate posix names of functions.
+      # _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+      _WIN32_WINNT=0x0A00
+  )
+endif(MSVC)
 
 # SSL
 target_link_libraries(wthttp PRIVATE OpenSSL::api)
