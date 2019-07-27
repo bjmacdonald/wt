@@ -195,6 +195,8 @@ std::string WebRenderer::bodyClassRtl() const
 
 void WebRenderer::saveChanges()
 {
+  collectedJS1_ << invisibleJS_.str();
+  invisibleJS_.clear();
   collectJS(&collectedJS1_);
 }
 
@@ -1125,8 +1127,6 @@ void WebRenderer::serveMainscript(WebResponse& response)
     currentFormObjectsList_.clear();
     collectJavaScript();
     updateLoadIndicator(collectedJS1_, app, true);
-
-    clearStubbedWidgets();
 
     LOG_DEBUG("js: " << collectedJS1_.str() << collectedJS2_.str());
 
@@ -2086,27 +2086,6 @@ std::string WebRenderer::headDeclarations() const
 void WebRenderer::addWsRequestId(int wsRqId)
 {
   wsRequestsToHandle_.push_back(wsRqId);
-}
-
-void WebRenderer::markAsStubbed(const WWidget *widget)
-{
-  stubbedWidgets_.push_back(widget);
-}
-
-bool WebRenderer::wasStubbed(const WObject *widget) const
-{
-  for (std::size_t i = 0; i < stubbedWidgets_.size(); ++i) {
-    if (stubbedWidgets_[i] == widget)
-      return true;
-  }
-  return false;
-}
-
-void WebRenderer::clearStubbedWidgets()
-{
-  if (expectedAckId_ - scriptId_ > 1) {
-    stubbedWidgets_.clear();
-  }
 }
 
 }

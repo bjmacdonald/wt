@@ -5,13 +5,12 @@
 #
 # This CMakeLists.txt is complex because it supports all different modes
 # of building Wt on all supported platforms. Your own CMakeLists.txt can
-# be much simpler. For example (for Windows):
+# be much simpler. For example:
 #
-# CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+# CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 # Project(myproject)
 #
-# INCLUDE_DIRECTORIES(c:/wt-installation-path/include)
-# LINK_DIRECTORIES(c:/wt-installation-path/lib)
+# FIND_PACKAGE(Wt REQUIRED Wt HTTP)
 #
 # ADD_DEFINITIONS(-DHPDF_DLL)
 #
@@ -22,8 +21,8 @@
 # )
 #
 # TARGET_LINK_LIBRARIES(myprog.wt
-#   debug wtd      optimized wt
-#   debug wthttpd  optimized wthttp
+#   Wt::Wt
+#   Wt::HTTP
 #   debug libhpdfd optimized libhpdf # only required for if you write pdfs
 # )
 
@@ -37,7 +36,7 @@ IF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
   IF(WIN32)
     # preamble to make this a toplevel CMakeLists.txt for Windows, intended
     # for being used 
-    CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.1...3.14)
 
     Project(WtExamples)
 
@@ -45,15 +44,25 @@ IF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     find_package(Wt REQUIRED Wt HTTP)
 
     set_target_properties(Wt::Wt PROPERTIES
-      MAP_IMPORTED_CONFIG_RELEASE MinSizeRel
-      MAP_IMPORTED_CONFIG_RELWITHDEBINFO MinSizeRel
+      MAP_IMPORTED_CONFIG_RELEASE RelWithDebInfo
+      MAP_IMPORTED_CONFIG_MINSIZEREL RelWithDebInfo
     )
     set_target_properties(Wt::HTTP PROPERTIES
-      MAP_IMPORTED_CONFIG_RELEASE MinSizeRel
-      MAP_IMPORTED_CONFIG_RELWITHDEBINFO MinSizeRel
+      MAP_IMPORTED_CONFIG_RELEASE RelWithDebInfo
+      MAP_IMPORTED_CONFIG_MINSIZEREL RelWithDebInfo
     )
 
+    get_filename_component(WT_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
     SET(HAVE_HARU true)
+    add_library(libhpdf SHARED IMPORTED)
+    set_target_properties(libhpdf PROPERTIES
+      IMPORTED_IMPLIB "${WT_INSTALL_DIR}/lib/libhpdf.lib"
+      IMPORTED_LOCATION "${WT_INSTALL_DIR}/bin/libhpdf.dll")
+    add_library(libhpdfd SHARED IMPORTED)
+    set_target_properties(libhpdfd PROPERTIES
+      IMPORTED_IMPLIB "${WT_INSTALL_DIR}/lib/libhpdfd.lib"
+      IMPORTED_LOCATION "${WT_INSTALL_DIR}/bin/libhpdfd.dll")
     SET(HARU_LIB optimized libhpdf debug libhpdfd)
 
     SET(EXAMPLES_CONNECTOR Wt::HTTP)
@@ -62,9 +71,6 @@ IF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     SET(EXAMPLES_WTDBOSQLITE3_LIB Wt::DboSqlite3)
     SET(EXAMPLES_WTDBOPOSTGRES_LIB Wt::DboPostgres)
     SET(EXAMPLES_WTDBOMYSQL_LIB Wt::DboMySQL)
-
-    INCLUDE_DIRECTORIES($(CMAKE_SOURCE_DIR)/../../../include)
-    LINK_DIRECTORIES(${CMAKE_SOURCE_DIR}/../../../lib)
 
     IF(${Boost_FOUND})
       SET(BOOST_FS_LIB ${Boost_FILESYSTEM_LIBRARY})
@@ -95,8 +101,6 @@ IF(BOOST_WT_MT_FOUND)
 ELSE(BOOST_WT_MT_FOUND)
   ADD_DEFINITIONS(-DBOOST_DISABLE_THREADS)
 ENDIF(BOOST_WT_MT_FOUND)
-
-ADD_DEFINITIONS(-DWT_DEPRECATED_3_0_0)
 
 # The WT_ADD_EXAMPLE function builds a DLL in case of ISAPI, and an executable
 # in case of FCGI or HTTPD connectors. It also makes sure that the example
