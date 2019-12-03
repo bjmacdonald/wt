@@ -82,7 +82,7 @@ if (MSVC)
       /wd4267  # argument conversion possible loss of data
       /wd4244  # initializing conversion possible loss of data
   )
-  target_compile_definitions(wt 
+  target_compile_definitions(wthttp 
     PUBLIC
       _CRT_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
       _SCL_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions, because safety is for chumps.
@@ -105,6 +105,8 @@ SET_TARGET_PROPERTIES(
   wthttp
 PROPERTIES
   EXPORT_NAME HTTP
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN YES
   VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
 )
 
