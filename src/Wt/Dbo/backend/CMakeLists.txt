@@ -45,6 +45,9 @@ IF(WT_ENABLE_SQLITE)
     ${Sqlite3_SRCS}
     )
 
+  SET_PROPERTY(TARGET wtdbosqlite3 PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbosqlite3 PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
   MESSAGE("** Wt::Dbo: building SQLite3 backend.")
 
   TARGET_LINK_LIBRARIES(wtdbosqlite3
@@ -99,13 +102,11 @@ IF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
 
   add_library(wtdbopostgres
     Postgres.h Postgres.C
-  )
+    ${postgres_SRCS}
+    )
 
-  IF(WIN32 AND BUILD_SHARED_LIBS)
-    configure_file(wtdbopostgres-version.rc.in
-                   ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
-    target_sources(wtdbopostgres PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
-  ENDIF()
+  SET_PROPERTY(TARGET wtdbopostgres PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbopostgres PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 
   TARGET_LINK_LIBRARIES(wtdbopostgres
     PUBLIC
@@ -122,8 +123,81 @@ IF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
   )
 
-  INSTALL(TARGETS wtdbopostgres
-    EXPORT "${PROJECT_NAME}-targets"
+  INSTALL_FILES(/include/Wt/Dbo/backend "^.*Postgres.*h$")
+ELSE(ENABLE_POSTGRES AND POSTGRES_FOUND)
+  MESSAGE("** Wt::Dbo: not building Postgres backend.")
+
+  IF(ENABLE_POSTGRES)
+    MESSAGE("    Indicate the location of your postgres installation using ")
+    MESSAGE("    -DPOSTGRES_PREFIX=...")
+  ENDIF(ENABLE_POSTGRES)
+
+  SET(HAVE_POSTGRES OFF CACHE INTERNAL "building postgres backend" FORCE)
+ENDIF(ENABLE_POSTGRES AND POSTGRES_FOUND)
+
+IF(ENABLE_FIREBIRD)
+  OPTION(USE_SYSTEM_IBPP "Use a custom IBPP library instead of Wt's version" OFF)
+
+  IF(NOT USE_SYSTEM_IBPP)
+    SET(IBPP_SRC_DIRECTORY ibpp/)
+  ENDIF(NOT USE_SYSTEM_IBPP)
+  INCLUDE(../../../../cmake/WtFindFirebirdSql.txt)
+ENDIF(ENABLE_FIREBIRD)
+
+IF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+
+  SET(HAVE_FIREBIRD ON CACHE INTERNAL "building firebird backend" FORCE)
+
+  IF(MSVC)
+    ADD_DEFINITIONS(-DIBPP_WINDOWS)
+  ENDIF(MSVC)
+  IF(APPLE)
+    ADD_DEFINITIONS(-DIBPP_DARWIN)
+  ENDIF(APPLE)
+  IF(UNIX)
+    ADD_DEFINITIONS(-DIBPP_LINUX)
+  ENDIF(UNIX)
+
+  INCLUDE_DIRECTORIES(${FIREBIRD_INCLUDE_DIRS})
+
+  MESSAGE("** Wt::Dbo: building FirebirdSQL backend.")
+
+  IF(WIN32)
+    IF(SHARED_LIBS)
+      CONFIGURE_FILE(wtdbofirebird-version.rc.in
+                     ${CMAKE_CURRENT_BINARY_DIR}/wtdbofirebird-version.rc)
+      SET(firebird_SRCS ${firebird_SRCS} 
+          ${CMAKE_CURRENT_BINARY_DIR}/wtdbofirebird-version.rc)
+    ENDIF(SHARED_LIBS)
+  ENDIF(WIN32)
+
+  ADD_LIBRARY(wtdbofirebird
+    Firebird.h Firebird.C
+    ${IBPP_ALL_IN_ONE_FILE}
+    ${firebird_SRCS}
+  )
+
+  SET_PROPERTY(TARGET wtdbofirebird PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbofirebird PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
+  TARGET_LINK_LIBRARIES(wtdbofirebird
+    PUBLIC
+      wtdbo
+    PRIVATE
+      ${FIREBIRD_LIBRARIES}
+  )
+
+  IF(MSVC)
+    SET_TARGET_PROPERTIES(
+      wtdbofirebird
+    PROPERTIES
+      COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4267"
+    )
+	SET_TARGET_PROPERTIES(wtdbofirebird PROPERTIES FOLDER "dbo")
+  ENDIF(MSVC)
+
+  INSTALL(TARGETS wtdbofirebird
+    EXPORT wt-target-dbofirebird
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
@@ -139,6 +213,84 @@ ELSE(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
   endif()
 ENDIF(WT_ENABLE_POSTGRES AND PostgreSQL_FOUND)
 
+
+  INSTALL_FILES(/include/Wt/Dbo/backend "^.*Firebird.*h$")
+ELSE(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+  MESSAGE("** Wt::Dbo: not building Firebird backend.")
+
+  IF(ENABLE_FIREBIRD)
+    MESSAGE("    Indicate the location of your FirebirdSQL and IBPP installation using ")
+    MESSAGE("    -DFIREBIRD_PREFIX=... -DIBPP_SRC_DIRECTORY=...")
+  ENDIF(ENABLE_FIREBIRD)
+
+  SET(HAVE_FIREBIRD OFF CACHE INTERNAL "building firebird backend" FORCE)
+ENDIF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+
+IF(ENABLE_MYSQL AND MYSQL_FOUND)
+
+  SET(HAVE_MYSQL ON CACHE INTERNAL "building mysql backend" FORCE)
+
+  MESSAGE("** Wt::Dbo: building MySQL backend.")
+  ADD_DEFINITIONS(${MYSQL_DEFINITIONS})
+
+  IF(WIN32)
+    IF(SHARED_LIBS)
+      CONFIGURE_FILE(wtdbomysql-version.rc.in
+                     ${CMAKE_CURRENT_BINARY_DIR}/wtdbomysql-version.rc)
+      SET(mysql_SRCS ${mysql_SRCS} 
+          ${CMAKE_CURRENT_BINARY_DIR}/wtdbomysql-version.rc)
+    ENDIF(SHARED_LIBS)
+  ENDIF(WIN32)
+
+  ADD_LIBRARY(wtdbomysql
+    MySQL.h MySQL.C
+    ${mysql_SRCS}
+    )
+
+  SET_PROPERTY(TARGET wtdbomysql PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbomysql PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
+  TARGET_LINK_LIBRARIES(wtdbomysql
+    PUBLIC
+      wtdbo
+    PRIVATE
+      ${MYSQL_LIBRARIES}
+  )
+
+  INCLUDE_DIRECTORIES(${MYSQL_INCLUDE})
+
+  INSTALL(TARGETS wtdbomysql
+    EXPORT wt-target-dbomysql
+    RUNTIME DESTINATION bin	
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+
+  INSTALL(EXPORT wt-target-dbomysql
+          DESTINATION ${CMAKE_INSTALL_DIR}/wt
+          NAMESPACE Wt::)
+
+  SET_TARGET_PROPERTIES(
+    wtdbomysql
+  PROPERTIES
+    EXPORT_NAME DboMySQL
+    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
+    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
+  )
+  INSTALL_FILES(/include/Wt/Dbo/backend "^.*MySQL.*h$")
+  IF(MSVC)
+    SET_TARGET_PROPERTIES(wtdbomysql PROPERTIES FOLDER "dbo")
+  ENDIF(MSVC)
+ELSE(ENABLE_MYSQL AND MYSQL_FOUND)
+  MESSAGE("** Wt::Dbo: not building MySQL backend.")
+
+  IF(ENABLE_MYSQL)
+    MESSAGE("    Indicate the location of your mariadb or mysqlclient installation using ")
+    MESSAGE("    -DMYSQL_PREFIX=... and the library to search for (e.g. mariadb or ")
+    MESSAGE("    mysqlclient) using -DMYSQL_LIBRARY=...")
+  ENDIF(ENABLE_MYSQL)
+
+  SET(HAVE_MYSQL OFF CACHE INTERNAL "building mysql backend" FORCE)
+ENDIF(ENABLE_MYSQL AND MYSQL_FOUND)
 
 IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
 
@@ -159,6 +311,10 @@ IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
     MSSQLServer.h MSSQLServer.C
     ${mssqlserver_SRCS}
   )
+
+  SET_PROPERTY(TARGET wtdbomssqlserver PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbomssqlserver PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
   TARGET_LINK_LIBRARIES(wtdbomssqlserver
     PUBLIC
       wtdbo

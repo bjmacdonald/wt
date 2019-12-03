@@ -301,7 +301,7 @@ public:
 
   /** @name Authentication token support
    */
-  //@{
+  //!@{
   /*! \brief Configures authentication token support.
    *
    * This method allows you to configure whether authentication tokens
@@ -428,11 +428,11 @@ public:
    * \sa setAuthTokenValidity()
    */
   int authTokenValidity() const { return authTokenValidity_; }
-  //@}
+  //!@}
 
   /** @name Email verification
    */
-  //@{
+  //!@{
 
   /*! \brief Configures email verification.
    *
@@ -560,11 +560,11 @@ public:
    * \elseif java
    * Then it uses the JavaMail API to send the message, the SMTP settings
    * are configured using the smtp.host and smpt.port JWt configuration 
-   * variables (see {@link Configuration#setProperties(HashMap properties)}).
+   * variables (see {javadoclink Configuration#setProperties(HashMap properties)}).
    * \endif
    */
   virtual void sendMail(const Mail::Message& message) const;
-  //@}
+  //!@}
 
 protected:
   /*! \brief Sends a confirmation email to the user to verify his email address.

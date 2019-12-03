@@ -4,6 +4,22 @@ IF(NOT WT_CONNECTOR_HTTP)
 endif()
 
 MESSAGE("** Enabling built-in httpd.")
+  # Wt uses strstrcase for case insensitive ASCII string
+  # comparisons on Linux for performance reasons. This function is however
+  # not supported on many platforms (windows, solaris)
+  INCLUDE(CheckFunctionExists)
+  CHECK_FUNCTION_EXISTS(strcasestr HAVE_STRCASESTR)
+  IF (HAVE_STRCASESTR)
+    ADD_DEFINITIONS(-DHAVE_STRCASESTR)
+  ENDIF (HAVE_STRCASESTR)
+  CHECK_FUNCTION_EXISTS(strcasecmp HAVE_STRCASECMP)
+  IF (HAVE_STRCASECMP)
+    ADD_DEFINITIONS(-DHAVE_STRCASECMP)
+  ENDIF (HAVE_STRCASECMP)
+  CHECK_FUNCTION_EXISTS(strncasecmp HAVE_STRNCASECMP)
+  IF (HAVE_STRNCASECMP)
+    ADD_DEFINITIONS(-DHAVE_STRNCASECMP)
+  ENDIF (HAVE_STRNCASECMP)
 
 # The target
 ADD_LIBRARY(wthttp)

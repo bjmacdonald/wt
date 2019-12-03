@@ -713,7 +713,7 @@ public:
    * area. When \p location is \link Wt::Chart::LegendLocation::Inside
    * Chart::LegendLocation::Inside\endlink, the legend will be rendered inside
    * the chart. When \p location is \link Wt::Chart::LegendLocation::Outside
-   * Chart::Legendoutside\endlink, the legend is rendered outside the
+   * Chart::LegendLocation::Outside\endlink, the legend is rendered outside the
    * chart, in the chart padding area.
    *
    * The provided \p side can either be Wt::Side::Left, Wt::Side::Right, Wt::Side::Top,
@@ -723,11 +723,14 @@ public:
    * The \p alignment specifies how the legend is aligned. This can be
    * a horizontal alignment flag (Wt::AlignmentFlag::Left, Wt::AlignmentFlag::Center, or
    * Wt::AlignmentFlag::Right), when the \p side is Side::Bottom or Side::Top, or a vertical
-   * alignment flag (Wt::AlignmentFlag::Top, Wt::AlignmentFlag::Middle, or Wt::AlignmentFlag::Bottom)
-   * when the \p side is Side::Left or Side::Right.
+   * alignment flag (\link Wt::AlignmentFlag Wt::AlignmentFlag::Top\endlink,
+   * \link Wt::AlignmentFlag Wt::AlignmentFlag::Middle\endlink, or
+   * \link Wt::AlignmentFlag Wt::AlignmentFlag::Bottom\endlink)
+   * when the \p side is \link Wt::Side Side::Left\endlink or \link Wt::Side Side::Right\endlink.
    *
    * The default location is \link Wt::Chart::LegendLocation::Outside
-   * Chart::LegendLocation::Outside\endlink, Wt::Side::Right and Wt::AlignmentFlag::Middle.
+   * Chart::LegendLocation::Outside\endlink, \link Wt::Side Wt::Side::Right\endlink and
+   * \link Wt::AlignmentFlag Wt::AlignmentFlag::Middle\endlink.
    *
    * To have more control over the legend, you could reimplement the
    * renderLegendItem() method to customize how one item in the legend
@@ -1136,9 +1139,8 @@ public:
    *	     They may be clipped off outside of the chart area, and when
    *         zooming, the axis ticks will change size.
    *       - WAxis::setBreak() is incompatible with interactive mode
-   *
-   * @{
    */
+  //!@{
 
   /*! \brief Returns whether this chart is interactive.
    *
@@ -1449,8 +1451,7 @@ public:
    */
   const WBrush& loadingBackground() const { return loadingBackground_; }
 
-  /*! @}
-   */
+  //!@}
 
   void iterateSeries(SeriesIterator *iterator,
 		     WPainter *painter, bool reverseStacked = false, bool extremesOnly = false) const;
@@ -1591,7 +1592,7 @@ protected:
 
   /** @name Rendering logic
    */
-  //@{
+  //!@{
   /*! \brief Paints the widget.
    *
    * This calls render() to paint on the paint device.
@@ -1776,7 +1777,7 @@ protected:
    * This method can be overridden to draw extra content onto
    * the chart.
    *
-   * Chart coordinates can be mapped to device coordinates with
+   * %Chart coordinates can be mapped to device coordinates with
    * mapToDeviceWithoutTransform(). If these need to move and scale
    * along with the zoom range, those points can be transformed with
    * zoomRangeTransform().
@@ -1791,7 +1792,7 @@ protected:
    */
   int calcNumBarGroups();
 
-  //@}
+  //!@}
 
   virtual void render(WFlags<RenderFlag> flags) override ;
   virtual void setFormData(const FormData& formData) override ;

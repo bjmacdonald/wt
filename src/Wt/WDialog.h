@@ -210,7 +210,7 @@ public:
    * of execution until one of done(DialogCode), accept() or reject()
    * is called.
    *
-   * <i>Icon::Warning: using exec() does not scale to many concurrent
+   * <i>Warning: using exec() does not scale to many concurrent
    * sessions, since the thread is locked until exec returns, so the
    * entire server will be unresponsive when the thread pool is
    * exhausted.</i>
@@ -380,7 +380,7 @@ public:
 
   /** @name keyboard and mouse events
    */
-  //@{
+  //!@{
   /*! \brief Event signal emitted when a keyboard key is pushed down.
    *
    *  The event will be triggered if nothing in the WDialog has focus
@@ -421,7 +421,7 @@ public:
    *
    */
   EventSignal<>& escapePressed();
-  //@}
+  //!@}
 
   /*! \brief Event signal emitted when a finger is placed on the screen.
    */

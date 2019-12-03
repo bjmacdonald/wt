@@ -1555,7 +1555,7 @@ void WWebWidget::updateDom(DomElement& element, bool all)
             && app->environment().ajax()) {
           LOAD_JAVASCRIPT(app, "js/ToolTip.js", "toolTip", wtjs10);
 
-	  WString tooltipText = *lookImpl_->toolTip_;
+          WString tooltipText(lookImpl_->toolTip_->toUTF8()); // UTF8 Guarantees copy for JWt
           if (lookImpl_->toolTipTextFormat_ == TextFormat::Plain) {
             tooltipText = escapeText(*lookImpl_->toolTip_);
           } else if (lookImpl_->toolTipTextFormat_ == TextFormat::XHTML) {
@@ -2438,8 +2438,9 @@ std::string& WWebWidget::unescapeText(std::string &text)
   assert(s <= text.size());
   text.resize(s);
   return text;
+#else // WT_TARGET_JAVA
+  return doUnescapeText(text);
 #endif // WT_TARGET_JAVA
-  return text;
 }
 
 std::string WWebWidget::jsStringLiteral(const std::string& value,

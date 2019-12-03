@@ -137,7 +137,7 @@ public:
   typedef std::map<std::string, std::string> CookieMap;
 
 #ifdef WT_TARGET_JAVA
-  /*! \brief Wt's JavaScript scope.
+  /*! \brief %Wt's JavaScript scope.
    */
   static std::string javaScriptWtScope() { return WT_CLASS; } 
 #endif //WT_TARGET_JAVA
@@ -223,9 +223,6 @@ public:
    *
    * Returns a header value, or an empty string if the header was 
    * present.
-   *
-   * \note Currently, the header name is case sensitive, although this should
-   * not be the case according to RFC2616
    */
   const std::string headerValue(const std::string& field) const;
 
@@ -631,10 +628,10 @@ public:
   WServer *server() const;
 
 #ifndef WT_TARGET_JAVA
-  /*! \brief Returns information on the SSL client certificate or \c 0
+  /*! \brief Returns information on the SSL client certificate or \c nullptr
    *  if no authentication took place.
    *
-   * This function will return \c 0 if no verification took place, %Wt
+   * This function will return \c nullptr if no verification took place, %Wt
    * was compiled without SSL support, or the web server was
    * configured without client SSL certificates.
    *
@@ -651,10 +648,12 @@ public:
    * The object returned is owned by WEnvironment and will be deleted
    * when WEnvironment is destroyed (= at the end of the session).
    *
+   * \includedoc ssl_client_headers.dox
+   *
    * \sa Wt::Http::Request::sslInfo()
    */
   WSslInfo *sslInfo() const {
-    return sslInfo_;
+    return sslInfo_.get();
   }
 #endif
 
@@ -710,7 +709,7 @@ protected:
   std::string publicDeploymentPath_;
 
 #ifndef WT_TARGET_JAVA
-  WSslInfo *sslInfo_;
+  std::unique_ptr<WSslInfo> sslInfo_;
 #endif
 
   WEnvironment();
@@ -725,9 +724,6 @@ private:
   void init(const WebRequest& request);
   void updateHostName(const WebRequest& request);
   void updateUrlScheme(const WebRequest& request);
-#ifndef WT_TARGET_JAVA
-  void parseSSLInfo(const std::string& json);
-#endif
   void enableAjax(const WebRequest& request);
 
   bool agentSupportsAjax() const;

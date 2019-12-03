@@ -1800,40 +1800,38 @@ this.positionAtWidget = function(id, atId, orientation, delta) {
    * Reparent the widget in a suitable parent:
    *  an ancestor of w which isn't overflowing
    */
-  if (!w.wtNoReparent && !$(w).hasClass("wt-no-reparent")) {
-    var p, pp = atw, domRoot = $('.Wt-domRoot').get(0);
-    w.parentNode.removeChild(w);
+  var p, pp = atw, domRoot = $('.Wt-domRoot').get(0);
+  w.parentNode.removeChild(w);
   
-    for (p = pp.parentNode; p != domRoot; p = p.parentNode) {
-      if (p.wtResize || p.wtReparentBarrier) {
-	break;
-      }
-
-      // e.g. a layout widget has clientHeight=0 since it's relative
-      // with only absolutely positioned children. We are a bit more liberal
-      // here to catch other simular situations, and 100px seems like space
-      // needed anyway?
-      //
-      // We need to check whether overflowX or overflowY is not visible, because
-      // of an issue on Firefox where clientWidth !== scrollWidth and
-      // clientHeight !== scrollHeight when using the border-collapse CSS property.
-      if (WT.css(p, 'display') != 'inline' &&
-	  p.clientHeight > 100 &&
-	  ((p.scrollHeight > p.clientHeight && getComputedStyle(p).overflowY !== 'visible') ||
-	   (p.scrollWidth > p.clientWidth && getComputedStyle(p).overflowX !== 'visible'))) {
-	break;
-      }
-
-      pp = p;
+  for (p = pp.parentNode; p != domRoot; p = p.parentNode) {
+    if (p.wtResize || p.wtReparentBarrier) {
+      break;
     }
 
-    var posP = WT.css(p, 'position');
-    if (posP != 'absolute' && posP != 'relative')
-      p.style.position = 'relative';
-    
-    p.appendChild(w);
-    $(w).addClass('wt-reparented');
+    // e.g. a layout widget has clientHeight=0 since it's relative
+    // with only absolutely positioned children. We are a bit more liberal
+    // here to catch other simular situations, and 100px seems like space
+    // needed anyway?
+    //
+    // We need to check whether overflowX or overflowY is not visible, because
+    // of an issue on Firefox where clientWidth !== scrollWidth and
+    // clientHeight !== scrollHeight when using the border-collapse CSS property.
+    if (WT.css(p, 'display') != 'inline' &&
+        p.clientHeight > 100 &&
+        ((p.scrollHeight > p.clientHeight && getComputedStyle(p).overflowY !== 'visible') ||
+         (p.scrollWidth > p.clientWidth && getComputedStyle(p).overflowX !== 'visible'))) {
+      break;
+    }
+
+    pp = p;
   }
+
+  var posP = WT.css(p, 'position');
+  if (posP != 'absolute' && posP != 'relative')
+    p.style.position = 'relative';
+  
+  p.appendChild(w);
+  $(w).addClass('wt-reparented');
 
   WT.fitToWindow(w, x, y, rightx, bottomy);
 
@@ -1906,7 +1904,12 @@ if (html5History) {
   // state anymore at the moment that onPopState() is called.
   // For navigation, when pushState() is called, the scroll
   // history can be updated before the pushState() call.
-  function coalesceEvents(callback, minPeriod) {
+
+  // delayCallback: delay the calling of the callback by delay
+  //
+  // as long as events keep coming in, we delay it further, so
+  // the callback will only run "delay" ms after the last invocation.
+  function delayCallback(callback, delay) {
     var timer = null;
     var args = null;
 
@@ -1920,9 +1923,11 @@ if (html5History) {
     function proxy() {
       args = arguments;
 
-      if (!timer) {
-        timer = setTimeout(dispatch, minPeriod);
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
       }
+      timer = setTimeout(dispatch, delay);
     }
 
     return proxy;
@@ -1946,7 +1951,7 @@ if (html5History) {
       console.log(error.toString());
     }
   }
-  window.addEventListener('scroll', coalesceEvents(updateScrollHistory, 10));
+  window.addEventListener('scroll', delayCallback(updateScrollHistory, 100));
 
   // the 'auto' scrollRestoration gives too much flicker, since it
   // updates the scroll state before the page is updated
@@ -2415,12 +2420,6 @@ var dragState = {
   objectPrevStyle: null,
   xy: null
 };
-
-function initDragDrop() {
-  document.body.ondragstart=function() {
-    return false;
-  };
-}
 
 var touchTimer;
 var touchduration = 1000;
@@ -3036,7 +3035,6 @@ function load(fullapp) {
   $(document).mousedown(WT.mouseDown).mouseup(WT.mouseUp);
 
   WT.history._initialize();
-  initDragDrop();
   initIdleTimeout();
   loaded = true;
 

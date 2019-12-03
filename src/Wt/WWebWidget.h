@@ -238,6 +238,9 @@ public:
   static WString escapeText(const WString& text, bool newlinesToo = false);
   static std::string& escapeText(std::string& text, bool newlinestoo = false);
   static std::string& unescapeText(std::string& text);
+#ifdef WT_TARGET_JAVA
+  static std::string& doUnescapeText(std::string& text);
+#endif // WT_TARGET_JAVA
   static bool removeScript(WString& text);
 
   /*! \brief Turn a CharEncoding::UTF8 encoded string into a JavaScript string literal
@@ -331,10 +334,7 @@ protected:
   std::unique_ptr<WWidget> manageWidget(std::unique_ptr<Widget>& managed,
 					std::unique_ptr<Widget> w)
 #else // WT_TARGET_JAVA
-  template <class Widget>
-  std::unique_ptr<WWidget> manageWidget(std::unique_ptr<WWidget> managed, std::unique_ptr<Widget> w);
-  std::unique_ptr<WWidget> manageWidgetImpl(std::unique_ptr<WWidget> managed,
-                                            std::unique_ptr<WWidget> w)
+  std::unique_ptr<WWidget> manageWidget(std::unique_ptr<WWidget> managed, std::unique_ptr<WWidget> w)
 #endif // WT_TARGET_JAVA
   {
     if (managed)

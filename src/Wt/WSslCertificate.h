@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#if defined(WT_WITH_SSL) || defined(DOXYGEN_ONLY)
+#ifndef WT_TARGET_JAVA
 
 namespace Wt {
 
@@ -56,7 +56,8 @@ class WT_API WSslCertificate
     OrganizationName,       //!< Name of the organization
     OrganizationalUnitName, //!< Name of the organizational unit
     StateOrProvinceName,    //!< Name of the state or province
-    Pseudonym               //!< Pseudonym
+    Pseudonym,              //!< Pseudonym
+    DnAttributeNameCount
   };
 
   /*! \brief Distinguished name attribute (also known as relative 
@@ -182,7 +183,9 @@ class WT_API WSslCertificate
   static std::string pemToDer(const std::string &pem);
 
   std::string gdb() const;
-  
+
+  static std::vector<DnAttribute> dnFromString(const std::string &dnStr);
+
  private:
   std::vector<DnAttribute>                 subjectDn_;
   std::vector<DnAttribute>                 issuerDn_;

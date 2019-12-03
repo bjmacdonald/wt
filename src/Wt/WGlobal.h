@@ -391,8 +391,8 @@ enum class SelectionMode {
  * \sa WTreeView::setSelectionBehavior()
  */
 enum class SelectionBehavior {
-  Items = 0,    //!< SelectionFlag::Select single items
-  Rows = 1      //!< SelectionFlag::Select only rows
+  Items = 0,    //!< Select single items
+  Rows = 1      //!< Select only rows
     /*, SelectColumns */
 };
 
@@ -420,10 +420,10 @@ enum class SelectionFlag {
  * \sa WCssDecorationStyle::setBackgroundImage()
  */
 enum class Side {
-  Top = 0x1,                          //!< Side::Top side
-  Bottom = 0x2,                       //!< Side::Bottom side
-  Left = 0x4,                         //!< Side::Left side
-  Right = 0x8,                        //!< Side::Right side
+  Top = 0x1,                          //!< Top side
+  Bottom = 0x2,                       //!< Bottom side
+  Left = 0x4,                         //!< Left side
+  Right = 0x8,                        //!< Right side
   CenterX = 0x10,                     //!< Center horiziontally
   CenterY = 0x20                      //!< Center vertically
 };
@@ -436,7 +436,7 @@ static const WFlags<Side> AllSides =
 /*! \brief Enumeration that specifies a horizontal or a vertical alignment.
  *
  * The vertical alignment flags are AlignmentFlag::Baseline,
- * AlignmentFlag::Sub, AlignmentFlag::super, AlignmentFlag::Top,
+ * AlignmentFlag::Sub, AlignmentFlag::Super, AlignmentFlag::Top,
  * AlignmentFlag::TextTop, AlignmentFlag::Middle,
  * AlignmentFlag::Bottom and AlignmentFlag::TextBottom.
  *
@@ -534,16 +534,16 @@ enum class TextFlag {
 enum class PositionScheme {
   /*! \brief Static position scheme.
    *
-   *  The widget is layed-out with other \link
-   *  Wt::PositionScheme::Static PositionScheme::Static \endlink and
-   *  \link Wt::PositionScheme::Relative PositionScheme::Relative
-   *  \endlink sibling widgets, one after another.
+   *  The widget is layed-out with other
+   *  \link Wt::PositionScheme::Static Static\endlink and
+   *  \link Wt::PositionScheme::Relative Relative\endlink
+   *  sibling widgets, one after another.
    *
    *  Inline widgets are layed out in horizontal lines (like text),
    *  wrapping around at the end of the line to continue on the next
    *  line. Block widgets are stacked vertically.
    *
-   *  PositionScheme::Static widgets may also float to the left or
+   *  Static widgets may also float to the left or
    *  right border, using setFloatSide().
    */
   Static,
@@ -551,11 +551,11 @@ enum class PositionScheme {
   /*! \brief Relative position scheme.
    *
    *  The widget is first layed out according to
-   *  PositionScheme::Static layout rules, but after layout, the
+   *  Static layout rules, but after layout, the
    *  widget may be offset relative to where it would be in a static
    *  layout, using setOffsets().
    *
-   *  Another common use of a PositionScheme::Relative position scheme
+   *  Another common use of a Relative position scheme
    *  (even with no specified offsets) is to provide a new reference
    *  coordinate system for Absolutely positioned widgets.
    */
@@ -568,8 +568,8 @@ enum class PositionScheme {
    *  <ul>
    *    <li> a WTableCell </li>
    *    <li> or has a position scheme that is
-   *     \link Wt::PositionScheme::Relative PositionScheme::Relative\endlink
-   *     or \link Wt::PositionScheme::Absolute PositionScheme::Absolute\endlink. </li>
+   *     \link Wt::PositionScheme::Relative Relative\endlink
+   *     or \link Wt::PositionScheme::Absolute Absolute\endlink. </li>
    *  </ul>
    */
    Absolute,
@@ -627,7 +627,8 @@ enum class CharEncoding {
   UTF8
 };
 
-/*! \brief Enumeration that indicates a pen style.
+/*! \enum PenStyle
+ *  \brief Enumeration that indicates a pen style.
  *
  * \ingroup painting
  *
@@ -642,7 +643,8 @@ enum class PenStyle {
   DashDotDotLine  //!< Stroke with a dash dot dot line
 };
 
-/*! \brief Enumeration that indicates how line end points are rendered
+/*! \enum PenCapStyle
+ *  \brief Enumeration that indicates how line end points are rendered
  *
  * \ingroup painting
  *
@@ -654,7 +656,8 @@ enum class PenCapStyle {
   Round        //!< Rounded ends (terminates with a half circle)
 };
 
-/*! \brief Enumeration that indicates how line joins are rendered.
+/*! \enum PenJoinStyle
+ *  \brief Enumeration that indicates how line joins are rendered.
  *
  * \ingroup painting
  *
@@ -666,7 +669,8 @@ enum class PenJoinStyle {
   Round       //!< Rounded joins
 };
 
-/*! \brief Enumeration that indicates a fill style.
+/*! \enum BrushStyle
+ *  \brief Enumeration that indicates a fill style.
  *
  * \ingroup painting
  *
@@ -678,15 +682,16 @@ enum class BrushStyle {
   Gradient //!< Fill with a color gradient
 };
 
-/*! \brief Enumeration that indicates a gradient style.
+/*! \enum GradientStyle
+ *  \brief Enumeration that indicates a gradient style.
  *
  * \ingroup painting
  *
  * \relates WGradient
  */
 enum class GradientStyle {
-  Linear,
-  Radial
+  Linear, //!< Linear gradient
+  Radial //!< Radial gradient
 };
 
 /*! \brief Enumeration that specifies where the target of an anchor should
@@ -937,7 +942,8 @@ enum class EntryPointType {
 };
 
 
-/*! \brief Enum for internal use.
+/*! \enum RenderFlag
+ *  \brief Enum for internal use.
  */
 enum class RenderFlag {
   Full    = 0x1,
@@ -1004,7 +1010,7 @@ enum class HeaderFlag {
 
   /*! \brief Flag that indicates that the item has three states.
    *
-   * When set, Wt::ItemDataRole::CheckState data is of type Wt::CheckState
+   * When set, Wt::ItemDataRole::Checked data is of type Wt::CheckState
    */
   Tristate = 0x10,
 

@@ -403,12 +403,14 @@ public:
    *
    * Session-bound resources will probably not use this method, but rely on
    * the validation done at the start of the session (see sslInfo() in
-   * WEnvironment). PositionScheme::Static resources on the other hand don't have an
+   * WEnvironment). Static resources on the other hand don't have an
    * associated session, so using this method you can perform client
    * authentication verification.
    *
    * The object returned is owned by Request and will be deleted
    * when the Request object is destroyed.
+   *
+   * \includedoc ssl_client_headers.dox
    *
    * \sa WEnvironment::sslInfo()
    */
@@ -449,7 +451,7 @@ private:
   const UploadedFileMap& files_;
   ResponseContinuation *continuation_;
   std::map<std::string, std::string> cookies_;
-  mutable WSslInfo *sslInfo_;
+  mutable std::unique_ptr<WSslInfo> sslInfo_;
 
   Request(const WebRequest& request, ResponseContinuation *continuation);
   Request(const ParameterMap& parameters, const UploadedFileMap& files);

@@ -426,12 +426,14 @@ AuthCssTheme_xml.C
 JQuery_js.C
 )
 
+set(_TZ_BUILD_DEFS "")
+
 IF (WIN32)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=0)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS HAS_REMOTE_API=0)
   set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
 ELSE (WIN32)
-  set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
+  set(_TZ_BUILD_DEFS USE_OS_TZDB=1)
 ENDIF (WIN32)
 
 IF (MULTI_THREADED_BUILD)

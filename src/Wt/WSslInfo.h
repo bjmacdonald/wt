@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#if defined(WT_WITH_SSL) || defined(DOXYGEN_ONLY)
+#ifndef WT_TARGET_JAVA
 
 namespace Wt {
 
@@ -62,7 +62,7 @@ public:
 
   /*! \brief Returns the certificate chain used for client authentication.
    *
-   * Icon::Warning: for the ISAPI connector, the certificate chain will always be
+   * Warning: for the ISAPI connector, the certificate chain will always be
    * empty.
    */
   const std::vector<WSslCertificate> &clientPemCertificateChain() const {

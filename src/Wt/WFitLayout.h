@@ -24,7 +24,8 @@ public:
   /*! \brief Creates a new fit layout.
    */
   WFitLayout();
-  ~WFitLayout();
+
+  virtual ~WFitLayout() override;
 
 #ifndef WT_TARGET_JAVA
   /*! \brief Adds a widget to the layout, returning a raw pointer.
@@ -56,6 +57,7 @@ public:
   virtual int count() const override;
 
   virtual void iterateWidgets(const HandleWidgetMethod& method) const override;
+  virtual bool implementationIsFlexLayout() const override;
 
 protected:
   virtual void updateImplementation() override;

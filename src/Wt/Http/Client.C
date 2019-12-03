@@ -38,6 +38,14 @@
 
 using Wt::AsioWrapper::asio::ip::tcp;
 
+namespace {
+constexpr const int STATUS_NO_CONTENT = 204;
+constexpr const int STATUS_MOVED_PERMANENTLY = 301;
+constexpr const int STATUS_FOUND = 302;
+constexpr const int STATUS_SEE_OTHER = 303;
+constexpr const int STATUS_TEMPORARY_REDIRECT = 307;
+}
+
 namespace Wt {
 
 namespace asio = AsioWrapper::asio;
@@ -424,7 +432,7 @@ private:
 	  emitHeadersReceived();
       }
 
-      bool done = headersOnly_;
+      bool done = headersOnly_ || response_.status() == STATUS_NO_CONTENT;
       // Write whatever content we already have to output.
       if (responseBuf_.size() > 0) {
 	std::stringstream ss;
@@ -1066,8 +1074,10 @@ void Client::handleRedirect(Http::Method method,
   }
   impl_.reset();
   int status = response.status();
-  if (!err && (((status == 301 || status == 302 || status == 307) &&
-		method == Http::Method::Get) || status == 303)) {
+  if (!err && (((status == STATUS_MOVED_PERMANENTLY ||
+                 status == STATUS_FOUND ||
+                 status == STATUS_TEMPORARY_REDIRECT) && method == Http::Method::Get) ||
+               status == STATUS_SEE_OTHER)) {
     const std::string *newUrl = response.getHeader("Location");
     ++ redirectCount_;
     if (newUrl) {
@@ -1112,14 +1122,19 @@ bool Client::parseUrl(const std::string &url, URL &parsedUrl)
   std::string rest = url.substr(i + 3);
   // find auth
   std::size_t l = rest.find('@');
-  if (l != std::string::npos) {
+  // find host
+  std::size_t j = rest.find('/');
+  if (l != std::string::npos &&
+      (j == std::string::npos || j > l)) {
+    // above check: userinfo can not contain a forward slash
+    // path may contain @ (issue #7272)
     parsedUrl.auth = rest.substr(0, l);
     parsedUrl.auth = Wt::Utils::urlDecode(parsedUrl.auth);
     rest = rest.substr(l+1);
+    if (j != std::string::npos) {
+      j -= l + 1;
+    }
   }
-
-  // find host
-  std::size_t j = rest.find('/');
 
   if (j == std::string::npos) {
     parsedUrl.host = rest;

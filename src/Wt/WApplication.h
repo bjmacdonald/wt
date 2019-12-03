@@ -192,7 +192,7 @@ public:
  * - inline and external JavaScript using doJavaScript() and require().
  * - the top-level widget in root(), representing the entire browser window,
  *   or multiple top-level widgets using bindWidget() when deployed in
- *   %EntryPointType::WidgetSet mode to manage a number of widgets within a 3rd party page.
+ *   EntryPointType::WidgetSet mode to manage a number of widgets within a 3rd party page.
  * - definition of cookies using setCookie() to persist information across
  *   sessions, which may be read using WEnvironment::getCookie() in a future
  *   session.
@@ -300,7 +300,7 @@ public:
 
   /** @name Style sheets and CSS
    */
-  //@{
+  //!@{
   /*! \brief Returns a reference to the inline style sheet.
    *
    * Widgets may allow configuration of their look and feel through
@@ -467,7 +467,7 @@ public:
    * \sa setHtmlClass()
    */
   std::string htmlClass() const { return htmlClass_; }
-  //@}
+  //!@}
 
   /*! \brief Sets the window title.
    *
@@ -619,7 +619,7 @@ public:
 
   /** @name URLs and internal paths
    */
-  //@{
+  //!@{
   /*! \brief Returns a URL for the current session
    *
    * Returns the (relative) URL for this application session
@@ -653,7 +653,7 @@ public:
    *
    * The default implementation is not complete: it does not handle relative
    * URL path segments with '..'. It just handles the cases that are necessary for
-   * Wt.
+   * %Wt.
    *
    * This is not used in the library, except when a public URL is
    * needed, e.g. for inclusion in an email.
@@ -806,7 +806,6 @@ public:
    * \code
    * http://www.mydomain.com/stuff/app.wt#/project/z3cbc/details/
    * \endcode
-   * </li><li>
    * </li><li>
    * in a plain HTML session:
    * \code
@@ -993,7 +992,7 @@ public:
    * connection.
    */
   void redirect(const std::string& url);
-  //@}
+  //!@}
 
   /*! \brief Returns the URL at which the resources are deployed.
    *
@@ -1121,7 +1120,7 @@ public:
 
   /** @name Manipulation outside the main event loop
    */
-  //@{
+  //!@{
   /*! \brief Enables server-initiated updates.
    *
    * By default, updates to the user interface are possible only at
@@ -1392,11 +1391,11 @@ public:
    * current thread.
    */
   void attachThread(bool attach = true);
-  //@}
+  //!@}
 
   /** @name Invoking JavaScript or including scripts
    */
-  //@{
+  //!@{
   /*! \brief Executes some JavaScript code.
    *
    * This method may be used to call some custom \p javaScript code as
@@ -1505,7 +1504,7 @@ public:
    * page in Wt::WidgtSet mode, without interfering.
    */
   std::string javaScriptClass() { return javaScriptClass_; }
-  //@}
+  //!@}
 
   /*! \brief Processes UI events.
    *
@@ -1862,7 +1861,7 @@ public:
 
   /** @name Global keyboard and mouse events
    */
-  //@{
+  //!@{
   /*! \brief Event signal emitted when a keyboard key is pushed down.
    *
    * The application receives key events when no widget currently
@@ -1912,7 +1911,7 @@ public:
    * \sa See WInteractWidget::escapePressed()
    */
   EventSignal<>& globalEscapePressed();
-  //@}
+  //!@}
 
   /*
    * Returns whether debug was configured.
@@ -2450,6 +2449,51 @@ extern int WRun(int argc, char** argv,
 #else // DOXYGEN_ONLY
 extern int WTCONNECTOR_API 
 WRun(int argc, char** argv,
+     ApplicationCreator createApplication = ApplicationCreator());
+
+#endif // DOXYGEN_ONLY
+
+#ifdef DOXYGEN_ONLY
+/*! \brief Runs the %Wt application server.
+ *
+ * This function runs the application server, and should be called
+ * only once (e.g. from within your main function).
+ *
+ * The \p createApplication parameter is a <tt>std::function</tt>
+ * object that should create a new application instance for a new user
+ * visiting the application. It is of type:
+ * <tt>std::function<Wt::WApplication* (const
+ * Wt::WEnvironment&)></tt>, and thus you can pass to it a function
+ * like:
+ *
+ * <pre>
+ * Wt::WApplication *createApplication(const Wt::WEnvironment& env)
+ * {
+ *   // ...
+ * }
+ * </pre>
+ *
+ * When using the built-in httpd, the implementation listens for POSIX
+ * termination signals (or console CTRL-C) event. You can use the
+ * WServer class for more flexible control on starting and stopping
+ * the server.
+ *
+ * This version of WRun() takes a std::string
+ * for the application path, and a vector of arguments (not including
+ * argv[0], the application path) instead of argc and argv,
+ * for better convenience when arguments are not provided via
+ * the command line.
+ *
+ * \relates WServer
+ * \sa WApplication
+ */
+extern int WRun(const std::string &applicationPath,
+                const std::vector<std::string> &args,
+                ApplicationCreator createApplication = 0);
+#else // DOXYGEN_ONLY
+extern int WTCONNECTOR_API
+WRun(const std::string &applicationPath,
+     const std::vector<std::string> &args,
      ApplicationCreator createApplication = ApplicationCreator());
 
 #endif // DOXYGEN_ONLY

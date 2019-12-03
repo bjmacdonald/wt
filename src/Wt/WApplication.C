@@ -175,13 +175,13 @@ WApplication::WApplication(const WEnvironment& env
   if (session_->type() == EntryPointType::Application)
     domRoot_->resize(WLength::Auto, WLength(100, LengthUnit::Percentage));
 
-  timerRoot_ = domRoot_->addWidget(std::unique_ptr<WContainerWidget>(new WContainerWidget()));
+  timerRoot_ = domRoot_->addWidget(cpp14::make_unique<WContainerWidget>());
   timerRoot_->setId("Wt-timers");
   timerRoot_->resize(WLength::Auto, 0);
   timerRoot_->setPositionScheme(PositionScheme::Absolute);
 
   if (session_->type() == EntryPointType::Application) {
-    widgetRoot_ = domRoot_->addWidget(std::unique_ptr<WContainerWidget>(new WContainerWidget()));
+    widgetRoot_ = domRoot_->addWidget(cpp14::make_unique<WContainerWidget>());
     widgetRoot_->resize(WLength::Auto, WLength(100, LengthUnit::Percentage));
   } else {
     domRoot2_.reset(new WContainerWidget());
@@ -537,8 +537,13 @@ void WApplication::removeGlobalWidget(WWidget *w)
   // In the destructor domRoot_->reset() can cause domRoot_
   // to be null. In that case, we don't need to remove this
   // widget from the domRoot.
-  if (domRoot_)
-    domRoot_->removeWidget(w);
+  if (domRoot_) {
+    auto removed = domRoot_->removeWidget(w);
+    // domRoot_ should never own the global widget
+#ifndef WT_TARGET_JAVA
+    assert(!removed);
+#endif // WT_TARGET_JAVA
+  }
 }
 
 bool WApplication::isExposed(WWidget *w) const
@@ -1596,7 +1601,7 @@ bool WApplication::debug() const
 SoundManager *WApplication::getSoundManager()
 {
   if (!soundManager_)
-    soundManager_ = domRoot_->addWidget(std::unique_ptr<SoundManager>(new SoundManager()));
+    soundManager_ = domRoot_->addWidget(cpp14::make_unique<SoundManager>());
 
   return soundManager_;
 }

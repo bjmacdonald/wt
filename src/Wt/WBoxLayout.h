@@ -107,6 +107,8 @@ public:
    */
   WBoxLayout(LayoutDirection dir);
 
+  virtual ~WBoxLayout() override;
+
   virtual void addItem(std::unique_ptr<WLayoutItem> item) override;
   virtual std::unique_ptr<WLayoutItem> removeItem(WLayoutItem *item) override;
   virtual WLayoutItem *itemAt(int index) const override;
@@ -185,6 +187,11 @@ public:
     addWidget(std::unique_ptr<WWidget>(std::move(widget)), stretch, alignment);
     return result;
   }
+#else // WT_TARGET_JAVA
+  template <typename Widget>
+    Widget *addWidget(std::unique_ptr<Widget> widget);
+  template <typename Widget>
+    Widget *addWidget(std::unique_ptr<Widget> widget, int stretch);
 #endif // WT_TARGET_JAVA
 
   /*! \brief Adds a nested layout to the layout.
@@ -376,6 +383,7 @@ public:
   bool isResizable(int index) const;
 
   virtual void iterateWidgets(const HandleWidgetMethod& method) const override;
+  virtual bool implementationIsFlexLayout() const override;
 
 protected:
   void insertItem(int index, std::unique_ptr<WLayoutItem> item, int stretch,
@@ -393,7 +401,6 @@ private:
   virtual void setParentWidget(WWidget *parent) override;
 
   void setImplementation();
-  bool implementationIsFlexLayout() const;
 };
 
 }

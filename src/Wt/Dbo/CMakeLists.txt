@@ -34,8 +34,12 @@ add_library(wtdbo
     StringStream.h StringStream.C
 )
 
-target_compile_features(wtdbo PUBLIC cxx_std_17)
-target_compile_definitions(wtdbo PRIVATE WT_BUILDING)
+  SET_PROPERTY(TARGET wtdbo PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wtdbo PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
+  IF(HAVE_UNWIND)
+    TARGET_LINK_LIBRARIES(wtdbo PRIVATE ${UNWIND_LIBRARIES})
+  ENDIF(HAVE_UNWIND)
 
 if (MSVC)
   target_compile_options(wtdbo
