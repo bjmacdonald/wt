@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -10,6 +10,7 @@
 #include <limits>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <Wt/WAbstractItemView.h>
@@ -240,7 +241,7 @@ private:
 
   bool skipNextMouseEvent_;
 
-  WModelIndexSet expandedSet_;
+  std::unordered_set<WModelIndex> expandedSet_;
   NodeMap renderedNodes_;
   bool renderedNodesAdded_;
   WTreeViewNode *rootNode_;
@@ -324,6 +325,9 @@ private:
   static int shiftModelIndexes(const WModelIndex& parent, int start, int count,
 			       const std::shared_ptr<WAbstractItemModel>& model,
 			       WModelIndexSet& set);
+  static int shiftModelIndexes(const WModelIndex& parent, int start, int count,
+                               const std::shared_ptr<WAbstractItemModel>& model,
+                               std::unordered_set<WModelIndex>& set);
 
   void addRenderedNode(WTreeViewNode *node);
   void removeRenderedNode(WTreeViewNode *node);

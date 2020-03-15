@@ -1,17 +1,19 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
 
 #include "Wt/Dbo/Call.h"
 #include "Wt/Dbo/Exception.h"
+#include "Wt/Dbo/Logger.h"
 #include "Wt/Dbo/Session.h"
 #include "Wt/Dbo/SqlConnection.h"
 #include "Wt/Dbo/SqlConnectionPool.h"
 #include "Wt/Dbo/SqlStatement.h"
 #include "Wt/Dbo/StdSqlTraits.h"
+#include "Wt/Dbo/StringStream.h"
 
 #include <iostream>
 #include <vector>
@@ -24,6 +26,9 @@
 
 namespace Wt {
   namespace Dbo {
+
+LOGGER("Dbo.Session");
+
     namespace Impl {
 
 struct MetaDboBaseSet : public boost::multi_index::multi_index_container<
@@ -149,9 +154,9 @@ Session::Session()
 
 Session::~Session()
 {
-  if (!dirtyObjects_->empty())
-    std::cerr << "Warning: Wt::Dbo::Session exiting with "
-	      << dirtyObjects_->size() << " dirty objects" << std::endl;
+  if (!dirtyObjects_->empty()) {
+    LOG_WARN("Session exiting with " << dirtyObjects_->size() << " dirty objects");
+  }
 
   while (!dirtyObjects_->empty()) {
     MetaDboBase *b = *dirtyObjects_->begin();
@@ -1270,5 +1275,6 @@ void Session::load(MetaDboBase *dbo)
   Impl::MappingInfo *mapping = dbo->getMapping();
   mapping->load(*this, dbo);
 }
+
   }
 }

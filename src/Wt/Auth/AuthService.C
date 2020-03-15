@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2011 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -317,7 +317,7 @@ void AuthService::lostPassword(const std::string& emailAddress,
 
     Token t(hash, expires);
     user.setEmailToken(t, EmailTokenRole::LostPassword);
-    sendLostPasswordMail(emailAddress, user, random);
+    sendLostPasswordMail(user.email(), user, random);
   }
 }
 
@@ -353,8 +353,6 @@ EmailTokenResult AuthService::processEmailToken(const std::string& token,
 
     switch (user.emailTokenRole()) {
     case EmailTokenRole::LostPassword:
-      user.clearEmailToken();
-
       if (tr.get())
 	tr->commit();
 

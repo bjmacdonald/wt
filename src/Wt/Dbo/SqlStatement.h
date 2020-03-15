@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -119,6 +119,13 @@ public:
    * Returns \c true if there was one more row to be fetched.
    */
   virtual bool nextRow() = 0;
+
+  /*! \brief Returns the number of columns in the result.
+   *
+   * \note The column count may only be available after the
+   *       query was executed.
+   */
+  virtual int columnCount() const = 0;
 
   /*! \brief Fetches a result value.
    *

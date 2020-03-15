@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -196,6 +196,8 @@ public:
   virtual std::unique_ptr<WSslInfo> sslInfo(bool behindReverseProxy) const = 0;
 
   virtual const std::vector<std::pair<std::string, std::string> >& urlParams() const;
+
+  std::string clientAddress(bool behindReverseProxy) const;
 
 protected:
   const EntryPoint *entryPoint_;

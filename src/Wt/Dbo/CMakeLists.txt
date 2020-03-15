@@ -32,8 +32,10 @@ add_library(wtdbo
     WtSqlTraits.h WtSqlTraits.C
     EscapeOStream.h EscapeOStream.C
     StringStream.h StringStream.C
-)
+    Logger.h Logger.C
+  )
 
+  SET_PROPERTY(TARGET wtdbo PROPERTY C_VISIBILITY_PRESET hidden)
   SET_PROPERTY(TARGET wtdbo PROPERTY CXX_VISIBILITY_PRESET hidden)
   SET_PROPERTY(TARGET wtdbo PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 

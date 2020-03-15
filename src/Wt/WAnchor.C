@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -95,10 +95,7 @@ void WAnchor::setText(const WString& text)
     text_ = t.get();
     addWidget(std::move(t));
   } else
-    if (!text.empty())
-      text_->setText(text);
-    else
-      text_->parent()->removeWidget(text_.get());
+    text_->setText(text);
 }
 
 void WAnchor::setWordWrap(bool wordWrap)

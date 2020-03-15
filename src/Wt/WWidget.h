@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -482,9 +482,11 @@ public:
    * visible if it and all its ancestors in the widget tree are
    * visible, which may be checked using isVisible().
    *
+   * \if cpp
    * \note hide() and show() are considered to be stateless slots by default.
    * If you override setHidden() and need to modify server state whenever it is called,
    * you'll need to call WObject::isNotStateless().
+   * \endif
    */
   virtual void setHidden(bool hidden,
 			 const WAnimation& animation = WAnimation()) = 0;
@@ -524,9 +526,11 @@ public:
    * Typically, a disabled form widget will not allow changing the
    * value, and disabled widgets will not react to mouse click events.
    *
+   * \if cpp
    * \note enable() and disable() are considered to be stateless slots by default.
    * If you override setDisabled() and need to modify server state whenever it is called,
    * you'll need to call WObject::isNotStateless().
+   * \endif
    *
    * \sa disable(), enable()
    */

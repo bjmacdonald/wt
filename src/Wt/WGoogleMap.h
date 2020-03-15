@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  *
@@ -289,6 +289,7 @@ private:
   JSignal<Coordinate> clicked_;
   JSignal<Coordinate> doubleClicked_;
   JSignal<Coordinate> *mouseMoved_;
+  std::string googlekey_;
 
 protected:
   virtual void render(WFlags<RenderFlag> flags) override;

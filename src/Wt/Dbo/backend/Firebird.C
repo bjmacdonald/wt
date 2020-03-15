@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2011 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  *
@@ -8,6 +8,8 @@
 #include <Wt/Dbo/backend/Firebird.h>
 
 #include "Wt/Dbo/Exception.h"
+#include "Wt/Dbo/Logger.h"
+#include "Wt/Dbo/StringStream.h"
 
 #include <cstdio>
 #include <ctime>
@@ -18,15 +20,6 @@
 #define snprintf _snprintf
 #define timegm _mkgmtime
 #endif
-
-//#define DEBUG(x) x
-#define DEBUG(x)
-
-#define bindErr(x, y)						\
-  std::cerr << this << " bind " << x << " " << y << std::endl;
-
-#define resultErr(x, y)							\
-  std::cerr << this << " getResult " << x << " " << y << std::endl;
 
 #include <ibpp.h>
 
@@ -52,12 +45,15 @@ namespace Wt
 {
   namespace Dbo
   {
+
+LOGGER("Dbo.backend.Firebird");
+
     namespace backend {
-      class FirebirdException : public Wt::Dbo::Exception
+      class FirebirdException : public ::Wt::Dbo::Exception
       {
       public:
 	FirebirdException(const std::string& msg)
-	  : Wt::Dbo::Exception(msg)
+          : ::Wt::Dbo::Exception(msg)
 	{ }
       };
 
@@ -89,10 +85,11 @@ namespace Wt
 	{
 	  lastId_ = -1;
 	  row_ = affectedRows_ = 0;
+          columnCount_ = 0;
 	  
           snprintf(name_, 64, "SQL%p%08X", (void*)this, rand());
 	  
-	  DEBUG(std::cerr << this << " for: " << sql_ << std::endl);
+	  LOG_DEBUG(this << " for: " << sql_);
 	  
 	  IBPP::Transaction tr = conn_.impl_->m_tra;
 	  
@@ -106,6 +103,8 @@ namespace Wt
 	  } catch(IBPP::LogicException &e) {
 	    throw FirebirdException(e.what());
 	  }
+
+          columnCount_ = m_stmt->Columns();
 	}
 
 	virtual ~FirebirdStatement()
@@ -117,42 +116,42 @@ namespace Wt
 	// The first column index is 1!
 	virtual void bind(int column, const std::string& value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 	  
 	  m_stmt->Set(column + 1, value);
 	}
 
 	virtual void bind(int column, short value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 
 	  m_stmt->Set(column + 1, value);
 	}
 
 	virtual void bind(int column, int value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 	  
 	  m_stmt->Set(column + 1, value);
 	}
 
 	virtual void bind(int column, long long value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 	  
 	  m_stmt->Set(column + 1, (int64_t) value);
 	}
 
 	virtual void bind(int column, float value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 	  
 	  m_stmt->Set(column + 1, value);
 	}
 
 	virtual void bind(int column, double value) override
 	{
-	  DEBUG(bindErr(column, value));
+          LOG_DEBUG("bind: " << column << " " << value);
 	  
 	  m_stmt->Set(column + 1, value);
 	}
@@ -171,7 +170,7 @@ namespace Wt
       std::tm *tm = thread_local_gmtime(&time);
       char mbstr[100];
       std::strftime(mbstr, sizeof(mbstr), "%Y-%b-%d %H:%M:%S", tm);
-      DEBUG(bindErr(column, mbstr));
+      LOG_DEBUG("bind: " << column << " " << mbstr);
 
       int h = tm->tm_hour;
       int m = tm->tm_min;
@@ -190,7 +189,7 @@ namespace Wt
       std::tm *tm = thread_local_gmtime(&t);
       char mbstr[100];
       std::strftime(mbstr, sizeof(mbstr), "%Y-%b-%d %H:%M:%S", tm);
-      DEBUG(bindErr(column, mbstr));
+      LOG_DEBUG("bind: " << column << " " << mbstr);
 	  
       if (type == SqlDateTimeType::Date) {
         IBPP::Date idate(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
@@ -223,7 +222,7 @@ namespace Wt
 
 	virtual void bindNull(int column) override
 	{
-	  DEBUG(bindErr(column, "null"));
+          LOG_DEBUG("bind: " << column << " null");
 	  
 	  m_stmt->SetNull(column + 1);
 	}
@@ -231,7 +230,7 @@ namespace Wt
 	virtual void execute() override
 	{
 	  if (conn_.showQueries())
-	    std::cerr << sql_ << std::endl;
+	    LOG_INFO(sql_);
 
 	  try {
 	    m_stmt->Execute();
@@ -274,6 +273,11 @@ namespace Wt
 	  }
 	}
 
+        virtual int columnCount() const override
+        {
+          return columnCount_;
+        }
+
 	void getString(int column, std::string *value, int size)
 	{
 	  m_stmt->Get(column, *value);
@@ -286,7 +290,7 @@ namespace Wt
 	      
 	  getString(column, value, size);
 	  
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 	  
 	  return true;
 	}
@@ -298,7 +302,7 @@ namespace Wt
 
 	  m_stmt->Get(column, *value);
 	
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 
 	  return true;
 	}
@@ -310,7 +314,7 @@ namespace Wt
 
 	  m_stmt->Get(column, *value);
 
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 
 	  return true;
 	}
@@ -322,7 +326,7 @@ namespace Wt
 
 	  m_stmt->Get(column,  *((int64_t *)value));
 
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 
 	  return true;
 	}
@@ -334,7 +338,7 @@ namespace Wt
 
 	  m_stmt->Get(column, *value);
 	  
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 	  	  
 	  return true;
 	}
@@ -346,7 +350,7 @@ namespace Wt
 	  
 	  m_stmt->Get(column, *value);
 
-	  DEBUG(resultErr(column, *value));
+          LOG_DEBUG("getResult " << column << " " << *value);
 
 	  return true;
 	}
@@ -390,10 +394,8 @@ namespace Wt
 	  case SqlDateTimeType::Time:
 	    break;
 	  }
-          DEBUG(do {
-                  std::time_t t = std::chrono::system_clock::to_time_t(*value);
-                  resultErr(column, std::ctime(&t));
-                } while (0);)
+          std::time_t t = std::chrono::system_clock::to_time_t(*value);
+          LOG_DEBUG("getResult " << column << " " << std::ctime(&t));
 	  
 	  return true;
 	}
@@ -411,7 +413,7 @@ namespace Wt
 	  *value = std::chrono::hours(t.Hours()) + std::chrono::minutes(t.Minutes()) +
               std::chrono::seconds(t.Seconds()) + std::chrono::milliseconds(t.SubSeconds() / 10);
 	  
-	  DEBUG(resultErr(column, *value.count()));
+          LOG_DEBUG("getResult " << column << " " << value->count() << "ms");
 
 	  return true;
 	}
@@ -448,6 +450,7 @@ namespace Wt
 	char name_[64];
 	
 	int lastId_, row_, affectedRows_;
+        int columnCount_;
 
 
 	void setValue(int column, const std::string& value)

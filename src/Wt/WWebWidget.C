@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -251,6 +251,14 @@ WWebWidget::~WWebWidget()
   // removeFromParent should always return a nullptr if it is called in the destructor!
   assert(unique_this == nullptr);
 #endif // WT_TARGET_JAVA
+
+  // Run destructors in this order (same as Wt 3), some destructors
+  // rely on otherImpl_ (loadToolTip_ JSignal destructor unexposes signal,
+  // which calls id(), which looks at otherImpl_)
+  transientImpl_.reset();
+  layoutImpl_.reset();
+  lookImpl_.reset();
+  otherImpl_.reset();
 }
 
 WCssDecorationStyle& WWebWidget::decorationStyle()

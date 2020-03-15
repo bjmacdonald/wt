@@ -1,18 +1,23 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
 
+#include <exception>
 #include <iostream>
 
-#include "Wt/Dbo/Transaction.h"
-#include "Wt/Dbo/SqlConnection.h"
+#include "Wt/Dbo/Logger.h"
 #include "Wt/Dbo/Session.h"
+#include "Wt/Dbo/SqlConnection.h"
+#include "Wt/Dbo/StringStream.h"
+#include "Wt/Dbo/Transaction.h"
 #include "Wt/Dbo/ptr.h"
 
 namespace Wt {
   namespace Dbo {
+
+LOGGER("Dbo.Transaction");
 
 Transaction::Transaction(Session& session)
   : committed_(false),
@@ -53,9 +58,10 @@ Transaction::~Transaction() noexcept(false)
 	try {
 	  if (impl_->transactionCount_ == 1)
 	    rollback();
+        } catch (std::exception &e) {
+          LOG_ERROR("Unexpected exception during Transaction::rollback(): " << e.what());
 	} catch (...) {
-	  std::cerr << "Unexpected exception during Transaction::rollback()"
-		    << std::endl;
+	  LOG_ERROR("Unexpected exception during Transaction::rollback()");
 	}
 
 	release();
@@ -166,7 +172,7 @@ void Transaction::Impl::rollback()
     if (open_)
       connection_->rollbackTransaction();
   } catch (const std::exception& e) {
-    std::cerr << "Transaction::rollback(): " << e.what() << std::endl;
+    LOG_ERROR("Transaction::rollback(): " << e.what());
   }
 
   for (unsigned i = 0; i < objects_.size(); ++i) {

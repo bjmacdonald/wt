@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2011 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -40,6 +40,8 @@ WServer::Exception::Exception(const std::string& what)
 void WServer::init(const std::string& wtApplicationPath,
 		   const std::string& configurationFile)
 {
+  customLogger_ = nullptr;
+
   application_ = wtApplicationPath;
   configurationFile_ = configurationFile; 
 
@@ -141,8 +143,22 @@ WLogger& WServer::logger()
   return logger_;
 }
 
+void WServer::setCustomLogger(const WLogSink& customLogger)
+{
+  customLogger_ = &customLogger;
+}
+
+const WLogSink * WServer::customLogger() const
+{
+  return customLogger_;
+}
+
 WLogEntry WServer::log(const std::string& type) const
 {
+  if (customLogger_) {
+    return WLogEntry(*customLogger_, type);
+  }
+
   WLogEntry e = logger_.entry(type);
 
   e << WLogger::timestamp << WLogger::sep
@@ -215,14 +231,14 @@ void WServer::postAll(const std::function<void ()>& function)
   }
 }
 
-void WServer::schedule(std::chrono::steady_clock::duration millis,
+void WServer::schedule(std::chrono::steady_clock::duration duration,
 		       const std::string& sessionId,
 		       const std::function<void ()>& function,
 		       const std::function<void ()>& fallbackFunction)
 {
   ApplicationEvent event(sessionId, function, fallbackFunction);
 
-  ioService().schedule(millis, [this, event] () {
+  ioService().schedule(duration, [this, event] () {
           webController_->handleApplicationEvent(event);
   });
 }

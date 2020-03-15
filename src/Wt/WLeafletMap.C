@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Emweb bvba, Herent, Belgium.
+ * Copyright (C) 2019 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -339,6 +339,9 @@ void WLeafletMap::WidgetMarker::createContainer()
   container_.reset(new Wt::WContainerWidget());
   container_->addStyleClass(WIDGETMARKER_CONTAINER_CLASS);
   container_->setJavaScriptMember("wtReparentBarrier", "true");
+  WLeafletMap *m = map();
+  if (m)
+    container_->setParentWidget(m);
 }
 
 bool WLeafletMap::WidgetMarker::needsUpdate() const

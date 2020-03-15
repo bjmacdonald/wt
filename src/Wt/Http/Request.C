@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2009 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -221,7 +221,12 @@ std::string Request::userAgent() const
 
 std::string Request::clientAddress() const
 {
-  return request_ ? request_->remoteAddr() : std::string();
+  if (!request_)
+    return std::string();
+
+  WServer *server = WServer::instance();
+  const bool behindReverseProxy = server && server->configuration().behindReverseProxy();
+  return request_->clientAddress(behindReverseProxy);
 }
 
 WSslInfo *Request::sslInfo() const

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  *
@@ -15,6 +15,8 @@
 
 #include "Wt/Dbo/backend/Postgres.h"
 #include "Wt/Dbo/Exception.h"
+#include "Wt/Dbo/Logger.h"
+#include "Wt/Dbo/StringStream.h"
 
 #include <libpq-fe.h>
 #include <cerrno>
@@ -39,9 +41,6 @@
 #endif // WT_WIN32
 
 #define BYTEAOID 17
-
-//#define DEBUG(x) x
-#define DEBUG(x)
 
 namespace karma = boost::spirit::karma;
 
@@ -118,6 +117,9 @@ namespace {
 
 namespace Wt {
   namespace Dbo {
+
+LOGGER("Dbo.backend.Postgres");
+
     namespace backend {
 
 // do not reconnect in a transaction unless we exceed the lifetime by 120s.
@@ -150,10 +152,11 @@ public:
 
     paramValues_ = nullptr;
     paramTypes_ = paramLengths_ = paramFormats_ = nullptr;
+    columnCount_ = 0;
  
     snprintf(name_, 64, "SQL%p%08X", (void*)this, rand());
 
-    DEBUG(std::cerr << this << " for: " << sql_ << std::endl);
+    LOG_DEBUG(this << " for: " << sql_);
 
     state_ = Done;
   }
@@ -187,7 +190,7 @@ public:
 
   virtual void bind(int column, const std::string& value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " " << value << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << value);
 
     setValue(column, value);
   }
@@ -199,28 +202,28 @@ public:
 
   virtual void bind(int column, int value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " " << value << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << value);
 
     setValue(column, std::to_string(value));
   }
 
   virtual void bind(int column, long long value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " " << value << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << value);
 
     setValue(column, std::to_string(value));
   }
 
   virtual void bind(int column, float value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " " << value << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << value);
 
     setValue(column, float_to_s(value));
   }
 
   virtual void bind(int column, double value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " " << value << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << value);
 
     setValue(column, double_to_s(value));
   }
@@ -243,7 +246,7 @@ public:
        << std::setw(2) << seconds.count() << '.'
        << std::setw(3) << milliseconds.count();
 
-    DEBUG(std::cerr << this << " bind " << column << " " << ss.str() << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << ss.str());
 
     setValue(column, ss.str());
   }
@@ -274,14 +277,14 @@ public:
        */
       ss << "+00";
     }
-    DEBUG(std::cerr << this << " bind " << column << " " << ss.str() << std::endl);
+    LOG_DEBUG(this << " bind " << column << " " << ss.str());
     setValue(column, ss.str());
   }
 
   virtual void bind(int column, const std::vector<unsigned char>& value) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " (blob, size=" <<
-	  value.size() << ")" << std::endl);
+    LOG_DEBUG(this << " bind " << column << " (blob, size=" <<
+              value.size() << ")");
 
     for (int i = (int)params_.size(); i <= column; ++i)
       params_.push_back(Param());
@@ -300,7 +303,7 @@ public:
 
   virtual void bindNull(int column) override
   {
-    DEBUG(std::cerr << this << " bind " << column << " null" << std::endl);
+    LOG_DEBUG(this << " bind " << column << " null");
 
     for (int i = (int)params_.size(); i <= column; ++i)
       params_.push_back(Param());
@@ -313,7 +316,7 @@ public:
     conn_.checkConnection(TRANSACTION_LIFETIME_MARGIN);
     
     if (conn_.showQueries())
-      std::cerr << sql_ << std::endl;
+      LOG_INFO(sql_);
 
     if (!result_) {
       paramValues_ = new char *[params_.size()];
@@ -336,6 +339,7 @@ public:
       result_ = PQprepare(conn_.connection(), name_, sql_.c_str(),
 			  paramTypes_ ? params_.size() : 0, (Oid *)paramTypes_);
       handleErr(PQresultStatus(result_), result_);
+      columnCount_ = PQnfields(result_);
     }
 
     for (unsigned i = 0; i < params_.size(); ++i) {
@@ -389,7 +393,7 @@ public:
 
     PQclear(result_);
     result_ = PQgetResult(conn_.connection());
-    
+
     row_ = 0;
     if (PQresultStatus(result_) == PGRES_COMMAND_OK) {
       std::string s = PQcmdTuples(result_);
@@ -399,6 +403,8 @@ public:
 	affectedRows_ = 0;
     } else if (PQresultStatus(result_) == PGRES_TUPLES_OK)
       affectedRows_ = PQntuples(result_);
+
+    columnCount_ = PQnfields(result_);
 
     bool isInsertReturningId = false;
     if (affectedRows_ == 1) {
@@ -466,6 +472,10 @@ public:
     return false;
   }
 
+  virtual int columnCount() const override {
+    return columnCount_;
+  }
+
   virtual bool getResult(int column, std::string *value, int size) override
   {
     if (PQgetisnull(result_, row_, column))
@@ -473,8 +483,7 @@ public:
 
     *value = PQgetvalue(result_, row_, column);
 
-    DEBUG(std::cerr << this 
-	  << " result string " << column << " " << *value << std::endl);
+    LOG_DEBUG(this << " result string " << column << " " << *value);
 
     return true;
   }
@@ -506,8 +515,7 @@ public:
     else
       *value = std::stoi(v);
 
-    DEBUG(std::cerr << this 
-	  << " result int " << column << " " << *value << std::endl);
+    LOG_DEBUG(this << " result int " << column << " " << *value);
 
     return true;
   }
@@ -519,8 +527,7 @@ public:
 
     *value = std::stoll(PQgetvalue(result_, row_, column));
 
-    DEBUG(std::cerr << this 
-	  << " result long long " << column << " " << *value << std::endl);
+    LOG_DEBUG(this << " result long long " << column << " " << *value);
 
     return true;
   }
@@ -532,8 +539,7 @@ public:
 
     *value = std::stof(PQgetvalue(result_, row_, column));
 
-    DEBUG(std::cerr << this 
-	  << " result float " << column << " " << *value << std::endl);
+    LOG_DEBUG(this << " result float " << column << " " << *value);
 
     return true;
   }
@@ -545,8 +551,7 @@ public:
 
     *value = std::stod(PQgetvalue(result_, row_, column));
 
-    DEBUG(std::cerr << this 
-	  << " result double " << column << " " << *value << std::endl);
+    LOG_DEBUG(this << " result double " << column << " " << *value);
 
     return true;
   }
@@ -620,9 +625,7 @@ public:
     std::copy(v, v + vlength, value->begin());
     PQfreemem(v);
 
-    DEBUG(std::cerr << this 
-	  << " result blob " << column << " (blob, size = " << vlength << ")"
-	  << std::endl);
+    LOG_DEBUG(this << " result blob " << column << " (blob, size = " << vlength << ")");
 
     return true;
   }
@@ -650,7 +653,8 @@ private:
   char **paramValues_;
   int *paramTypes_, *paramLengths_, *paramFormats_;
  
-  int lastId_, row_, affectedRows_;
+  long long lastId_;
+  int row_, affectedRows_, columnCount_;
 
   void handleErr(int err, PGresult *result)
   {
@@ -815,7 +819,7 @@ bool Postgres::connect(const std::string& db)
 
 bool Postgres::reconnect()
 {
-  std::cerr << this << " reconnecting..." << std::endl;
+  LOG_INFO(this << " reconnecting...");
   
   if (conn_) {
     if (PQstatus(conn_) == CONNECTION_OK) {
@@ -844,8 +848,7 @@ bool Postgres::reconnect()
 std::unique_ptr<SqlStatement> Postgres::prepareStatement(const std::string& sql)
 {
   if (PQstatus(conn_) != CONNECTION_OK)  {
-    std::cerr << "Postgres: connection lost to server, trying to reconnect..."
-	      << std::endl;
+    LOG_WARN("connection lost to server, trying to reconnect...");
     if (!reconnect()) {
       throw PostgresException("Could not reconnect to server...");
     }
@@ -867,8 +870,7 @@ void Postgres::checkConnection(std::chrono::seconds margin)
   if (maximumLifetime_ > std::chrono::seconds{0} && connectTime_ != std::chrono::steady_clock::time_point{}) {
     auto t = std::chrono::steady_clock::now();
     if (t - connectTime_ > maximumLifetime_ + margin) {
-      std::cerr << "Postgres: maximum connection lifetime passed, trying to reconnect..."
-		<< std::endl;
+      LOG_INFO("maximum connection lifetime passed, trying to reconnect...");
       if (!reconnect()) {
 	throw PostgresException("Could not reconnect to server...");
       }
@@ -881,15 +883,14 @@ void Postgres::exec(const std::string& sql, bool showQuery)
   checkConnection(std::chrono::seconds(0));
   
   if (PQstatus(conn_) != CONNECTION_OK)  {
-    std::cerr << "Postgres: connection lost to server, trying to reconnect..."
-	      << std::endl;
+    LOG_WARN("connection lost to server, trying to reconnect...");
     if (!reconnect()) {
       throw PostgresException("Could not reconnect to server...");
     }
   }
 
   if (showQuery && showQueries())
-    std::cerr << sql << std::endl;
+    LOG_INFO(sql);
   
   int err;
 
@@ -907,7 +908,7 @@ void Postgres::exec(const std::string& sql, bool showQuery)
       int result = select(FD_SETSIZE, &rfds, 0, 0, &timeout);
 
       if (result == 0) {
-	std::cerr << "Postgres: timeout while executing query" << std::endl;
+        LOG_ERROR("timeout while executing query");
 	disconnect();
 	throw PostgresException("Database timeout");
       } else if (result == -1) {

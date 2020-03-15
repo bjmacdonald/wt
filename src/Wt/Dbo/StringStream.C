@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2014 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -60,10 +60,9 @@ char *lltoa(long long value, char *result, int base = 10) {
 }
 
     } // namespace Utils
-
-#define NO_ASIO
-#define WT_WEB_UTILS_H_
-#include "../WStringStream.C"
-
   }
 }
+
+#define WT_DBO_STRINGSTREAM
+#include "../WStringStream.C"
+#undef WT_DBO_STRINGSTREAM

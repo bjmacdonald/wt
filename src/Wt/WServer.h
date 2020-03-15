@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -468,7 +468,15 @@ public:
    */
   WT_API void postAll(const std::function<void ()>& function);
 
-  WT_API void schedule(std::chrono::steady_clock::duration millis,
+  /*! \brief Schedules a function to be executed in a session.
+   *
+   * The \p function will run in the session specified by \p sessionId,
+   * after \p duration. If the session does not exist anymore,
+   * \p fallBackFunction will be executed.
+   *
+   * \sa post()
+   */
+  WT_API void schedule(std::chrono::steady_clock::duration duration,
 		       const std::string& sessionId,
 		       const std::function<void ()>& function,
 		       const std::function<void ()>& fallBackFunction
@@ -552,6 +560,17 @@ public:
    */
   WT_API WLogger& logger();
 
+#ifndef WT_TARGET_JAVA
+  /*! \brief Sets a custom logger to redirect all logging to.
+   *
+   * Instead of using the server's default logger, this will send
+   * all logging to some custom WLogSink.
+   */
+  WT_API void setCustomLogger(const WLogSink &customLogger);
+
+  const WLogSink * customLogger() const;
+#endif // WT_TARGET_JAVA
+
   /*! \brief Adds an entry to the log.
    *
    * \sa Wt::log(), WApplication::log()
@@ -591,6 +610,7 @@ private:
 
 #ifndef WT_TARGET_JAVA
   WLogger logger_;
+  const WLogSink * customLogger_;
 #endif // WT_TARGET_JAVA
 
   std::string application_, configurationFile_, appRoot_, description_;

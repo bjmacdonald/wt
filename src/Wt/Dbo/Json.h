@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2014 Emweb bvba, Leuven, Belgium.
+ * Copyright (C) 2014 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -19,9 +19,7 @@
 
 namespace Wt {
   namespace Dbo {
-    namespace Wt {
-      class EscapeOStream;
-    }
+    class EscapeOStream;
 
 /*! \class JsonSerializer Wt/Dbo/Json.h Wt/Dbo/Json.h
  *  \brief An action to serialize objects to JSON.
@@ -211,7 +209,7 @@ public:
 
 private:
     std::ostream &out_;
-    Wt::EscapeOStream *escapeOut_, *stringLiteral_;
+    EscapeOStream *escapeOut_, *stringLiteral_;
     bool first_;
     Session *session_;
 

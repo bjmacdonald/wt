@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2009 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2009 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -12,6 +12,7 @@
 
 #include <Wt/WDate.h>
 #include <Wt/WDateTime.h>
+#include <Wt/WLogger.h>
 #include <Wt/WTime.h>
 #include <Wt/WString.h>
 #include <Wt/cpp17/any.hpp>
@@ -160,8 +161,7 @@ inline bool sql_value_traits<WTime, void>
     int h = -1, m = -1, s = -1, ms = -1;
     Impl::msecsToHMS(t, h, m, s, ms);
     if (!v.setHMS(h, m, s, ms)) {
-      std::cerr << "Wt::Dbo: WTime can only hold durations < 24h"
-		<< std::endl;
+      Wt::log("warning") << "Dbo/WtSqlTraits" << ": WTime can only hold durations < 24h";
       return true;
     } else
       return false;

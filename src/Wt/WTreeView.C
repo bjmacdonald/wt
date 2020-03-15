@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -335,7 +335,7 @@ WTreeViewNode::WTreeViewNode(WTreeView *view, const WModelIndex& index,
   nodeWidget_->bindEmpty("no-expand");
   nodeWidget_->bindEmpty("col0");
 
-  int selfHeight = 0;
+  const int selfHeight = index_ == view_->rootIndex() ? 0 : 1;
   bool needLoad = view_->isExpanded(index_);
 
   if (index_ != view_->rootIndex() && !needLoad)
@@ -354,8 +354,6 @@ WTreeViewNode::WTreeViewNode(WTreeView *view, const WModelIndex& index,
   if (index_ != view_->rootIndex()) {
     updateGraphics(isLast, !view_->model()->hasChildren(index_));
     insertColumns(0, view_->columnCount());
-
-    selfHeight = 1;
 
     if (view_->selectionBehavior() == SelectionBehavior::Rows &&
 	view_->isSelected(index_))
@@ -1804,7 +1802,7 @@ void WTreeView::collapse(const WModelIndex& index)
 void WTreeView::collapseAll()
 {
   while (!expandedSet_.empty())
-    collapse(*expandedSet_.begin());
+    collapse(Utils::first(expandedSet_));
 }
 
 void WTreeView::expandToDepth(int depth)
@@ -2353,8 +2351,11 @@ int WTreeView::getIndexRow(const WModelIndex& child,
 	return result;
     }
 
-    return result + getIndexRow(parent, ancestor,
-				lowerBound - result, upperBound - result);
+    if (parent != ancestor)
+      return result + 1 + getIndexRow(parent, ancestor,
+                                      lowerBound - result, upperBound - result);
+    else
+      return result;
   }
 }
 
@@ -2743,6 +2744,73 @@ shiftModelIndexes(const WModelIndex& parent, int start, int count,
   return removed;
 }
 
+namespace {
+
+// Add all indexes under index i that are in set to toErase
+void removalsFromSet(std::vector<WModelIndex> &toErase,
+                     std::unordered_set<WModelIndex> &set,
+                     const Wt::WModelIndex &i) {
+  {
+    if (set.find(i) != set.end())
+      toErase.push_back(i);
+  }
+
+  const int rowCount = i.model()->rowCount(i);
+  for (int row = 0; row < rowCount; ++row) {
+    WModelIndex c = i.model()->index(row, 0, i);
+    removalsFromSet(toErase, set, c);
+  }
+}
+
+}
+
+int WTreeView::
+shiftModelIndexes(const WModelIndex& parent, int start, int count,
+                  const std::shared_ptr<WAbstractItemModel>& model,
+                  std::unordered_set<WModelIndex>& set)
+{
+  if (set.empty())
+    return 0;
+
+  /*
+   * handle the set of exanded model indexes:
+   *  - collect indexes in the same parent at lower rows that need to
+   *    be shifted
+   *  - if deleting, delete indexes that are within the range of deleted
+   *    rows
+   */
+  std::vector<WModelIndex> toShift;
+  std::vector<WModelIndex> toErase;
+
+  const int rowCount = model->rowCount(parent);
+  for (int row = start; row < rowCount; ++row) {
+    WModelIndex i = model->index(row, 0, parent);
+    if (row < start - count) {
+      removalsFromSet(toErase, set, i);
+    } else if (set.find(i) != set.end()) {
+      toShift.push_back(i);
+      toErase.push_back(i);
+    }
+  }
+
+  for (unsigned i = 0; i < toErase.size(); ++i)
+    set.erase(toErase[i]);
+
+  int removed = 0;
+  for (unsigned i = 0; i < toShift.size(); ++i) {
+    // for negative count: only reinsert model indexes that need
+    // not be removed (they are currently all removed)
+    if (toShift[i].row() + count >= start) {
+      WModelIndex newIndex = model->index(toShift[i].row() + count,
+                                          toShift[i].column(), parent);
+      set.insert(newIndex);
+    } else
+      ++removed;
+  }
+
+  return removed;
+}
+
 void WTreeView::shiftModelIndexes(const WModelIndex& parent,
 				  int start, int count)
 {
@@ -2901,18 +2969,18 @@ int WTreeView::pageSize() const
 
 void WTreeView::scrollTo(const WModelIndex& index, ScrollHint hint)
 {
-  int row = getIndexRow(index, rootIndex(), 0,
-			std::numeric_limits<int>::max()) + 1;
+  const int row = getIndexRow(index, rootIndex(), 0,
+                              std::numeric_limits<int>::max());
 
   WApplication *app = WApplication::instance();
 
   if (app->environment().ajax()) {
     if (viewportHeight_ != UNKNOWN_VIEWPORT_HEIGHT) {
       if (hint == ScrollHint::EnsureVisible) {
-	if (viewportTop_ + viewportHeight_ < row)
-	  hint = ScrollHint::PositionAtTop;
-	else if (row < viewportTop_)
+        if (viewportTop_ + viewportHeight_ <= row)
 	  hint = ScrollHint::PositionAtBottom;
+	else if (row < viewportTop_)
+	  hint = ScrollHint::PositionAtTop;
       }
 
       switch (hint) {

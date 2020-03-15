@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  *
@@ -15,6 +15,8 @@
 
 #include "Wt/Dbo/backend/MySQL.h"
 #include "Wt/Dbo/Exception.h"
+#include "Wt/Dbo/Logger.h"
+#include "Wt/Dbo/StringStream.h"
 
 #include "Wt/Date/date.h"
 
@@ -60,6 +62,9 @@ namespace {
 
 namespace Wt {
   namespace Dbo {
+
+LOGGER("Dbo.backend.MySQL");
+
     namespace backend {
 
 class MySQLException : public Exception
@@ -112,6 +117,7 @@ class MySQLStatement final : public SqlStatement
     {
       lastId_ = -1;
       row_ = affectedRows_ = 0;
+      columnCount_ = 0;
       result_ = nullptr;
       out_pars_ = nullptr;
       errors_ = nullptr;
@@ -126,6 +132,8 @@ class MySQLStatement final : public SqlStatement
 			      + sql + "': " + mysql_stmt_error(stmt_));
       }
 
+      columnCount_ = static_cast<int>(mysql_stmt_field_count(stmt_));
+
       paramCount_ = mysql_stmt_param_count(stmt_);
 
       if (paramCount_ > 0) {
@@ -136,14 +144,14 @@ class MySQLStatement final : public SqlStatement
         in_pars_ = nullptr;
       }
 
-      DEBUG(std::cerr <<  " new SQLStatement for: " << sql_ << std::endl);
+      LOG_DEBUG("new SQLStatement for: " << sql_);
 
       state_ = Done;
     }
 
     virtual ~MySQLStatement()
     {
-      DEBUG(std::cerr << "closing prepared stmt " << sql_ << std::endl);
+      LOG_DEBUG("closing prepared stmt " << sql_);
       for(unsigned int i = 0;   i < mysql_stmt_param_count(stmt_) ; ++i)
           freeColumn(i);
       if (in_pars_) free(in_pars_);
@@ -173,8 +181,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
 
       unsigned long * len = (unsigned long *)malloc(sizeof(unsigned long));
 
@@ -198,8 +205,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
       short * data = (short *)malloc(sizeof(short));
       *data = value;
       freeColumn(column);
@@ -215,8 +221,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
       int * data = (int *)malloc(sizeof(int));
       *data = value;
       freeColumn(column);
@@ -231,8 +236,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
       long long * data = (long long *)malloc(sizeof(long long));
       *data = value;
       freeColumn(column);
@@ -244,8 +248,7 @@ class MySQLStatement final : public SqlStatement
 
     virtual void bind(int column, float value) override
     {
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
       float * data = (float *) malloc(sizeof(float));
       *data = value;
       freeColumn(column);
@@ -260,8 +263,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-            << value << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value);
       double * data = (double *)malloc(sizeof(double));
       *data = value;
       freeColumn(column);
@@ -281,8 +283,7 @@ class MySQLStatement final : public SqlStatement
       std::tm *tm = thread_local_gmtime(&t);
       char mbstr[100];
       std::strftime(mbstr, sizeof(mbstr), "%Y-%b-%d %H:%M:%S", tm);
-      DEBUG(std::cerr << this << " bind " << column << " "
-                << mbstr << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << mbstr);
 
       MYSQL_TIME*  ts = (MYSQL_TIME*)malloc(sizeof(MYSQL_TIME));
 
@@ -327,8 +328,7 @@ class MySQLStatement final : public SqlStatement
       auto seconds = date::floor<std::chrono::seconds>(absValue) - hours - minutes;
       auto msecs = date::floor<std::chrono::milliseconds>(absValue) - hours - minutes - seconds;
 
-      DEBUG(std::cerr << this << " bind " << column << " "
-                << mbstr << std::endl);
+      LOG_DEBUG(this << " bind " << column << " " << value.count() << "ms");
 
       MYSQL_TIME* ts  = (MYSQL_TIME *)malloc(sizeof(MYSQL_TIME));
 
@@ -361,8 +361,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " (blob, size=" <<
-            value.size() << ")" << std::endl);
+      LOG_DEBUG(this << " bind " << column << " (blob, size=" << value.size() << ")");
 
       unsigned long * len = (unsigned long *)malloc(sizeof(unsigned long));
 
@@ -389,7 +388,7 @@ class MySQLStatement final : public SqlStatement
       if (column >= paramCount_)
         throw MySQLException(std::string("Try to bind too much?"));
 
-      DEBUG(std::cerr << this << " bind " << column << " null" << std::endl);
+      LOG_DEBUG(this << " bind " << column << " null");
 
       freeColumn(column);
       in_pars_[column].buffer_type = MYSQL_TYPE_NULL;
@@ -403,12 +402,12 @@ class MySQLStatement final : public SqlStatement
     virtual void execute() override
     {
       if (conn_.showQueries())
-        std::cerr << sql_ << std::endl;
+        LOG_INFO(sql_);
 
       conn_.checkConnection();
       if(mysql_stmt_bind_param(stmt_, &in_pars_[0]) == 0){
         if (mysql_stmt_execute(stmt_) == 0) {
-          if(mysql_stmt_field_count(stmt_) == 0) { // assume not select
+          if(columnCount_ == 0) { // assume not select
             affectedRows_ = mysql_stmt_affected_rows(stmt_);
            state_ = NoFirstRow;
             if (affectedRows_ == 1 ) {
@@ -502,6 +501,10 @@ class MySQLStatement final : public SqlStatement
       return false;
     }
 
+    virtual int columnCount() const override {
+      return columnCount_;
+    }
+
     virtual bool getResult(int column, std::string *value, int size) override
     {
       if (*(out_pars_[column].is_null) == 1)
@@ -524,8 +527,7 @@ class MySQLStatement final : public SqlStatement
 	str = static_cast<char*>( out_pars_[column].buffer);
         *value = std::string(str, *out_pars_[column].length);
 
-        DEBUG(std::cerr << this
-              << " result string " << column << " " << *value << std::endl);
+        LOG_DEBUG(this << " result string " << column << " " << value);
 
         return true;
       }
@@ -605,8 +607,7 @@ class MySQLStatement final : public SqlStatement
 	return false;
       }
 
-      DEBUG(std::cerr << this
-            << " result  int " << column << " " << *value << std::endl);
+      LOG_DEBUG(this << " result int " << column << " " << *value);
 
       return true;
     }
@@ -637,8 +638,7 @@ class MySQLStatement final : public SqlStatement
 	  break;
       }
 
-      DEBUG(std::cerr << this
-            << " result long long " << column << " " << *value << std::endl);
+      LOG_DEBUG(this << " result long long " << column << " " << *value);
 
       return true;
     }
@@ -654,8 +654,7 @@ class MySQLStatement final : public SqlStatement
 
        *value = *static_cast<float*>(out_pars_[column].buffer);
 
-      DEBUG(std::cerr << this
-            << " result float " << column << " " << *value << std::endl);
+      LOG_DEBUG(this << " result float " << column << " " << *value);
 
       return true;
     }
@@ -697,8 +696,7 @@ class MySQLStatement final : public SqlStatement
 	return false;
       }
 
-      DEBUG(std::cerr << this
-            << " result double " << column << " " << *value << std::endl);
+      LOG_DEBUG(this << " result double " << column << " " << *value);
 
       return true;
     }
@@ -736,8 +734,7 @@ class MySQLStatement final : public SqlStatement
       }
 
       std::time_t t = std::chrono::system_clock::to_time_t(*value);
-      DEBUG(std::cerr << this
-            << " result time " << column << " " << std::ctime(&t) << std::endl);
+      LOG_DEBUG(this << " result time " << column << " " << std::ctime(&t));
 
       return true;
     }
@@ -758,8 +755,7 @@ class MySQLStatement final : public SqlStatement
                      + std::chrono::seconds(ts->second) + msecs;
        *value = ts->neg ? -absValue : absValue;
 
-       DEBUG(std::cerr << this
-             << " result time " << column << " " << *value.count() << std::endl);
+       LOG_DEBUG(this << " result time " << column << " " << value->count() << "ms");
 
        return true;
     }
@@ -790,9 +786,7 @@ class MySQLStatement final : public SqlStatement
         value->resize(vlength);
         std::copy(v, v + vlength, value->begin());
 
-        DEBUG(std::cerr << this
-              << " result blob " << column << " (blob, size = "
-              << vlength << ")"<< std::endl);
+        LOG_DEBUG(this << " result blob " << column << " (blob, size = " << static_cast<long long>(vlength) << ")");
 
         return true;
       }
@@ -822,6 +816,7 @@ class MySQLStatement final : public SqlStatement
     static const WT_MY_BOOL mysqltrue_;
     enum { NoFirstRow, NextRow, Done } state_;
     long long lastId_, row_, affectedRows_;
+    int columnCount_;
 
     void bind_output() {
       if (!out_pars_) {
@@ -882,8 +877,7 @@ class MySQLStatement final : public SqlStatement
 	    //http://dev.mysql.com/doc/refman/5.0/en/mysql-stmt-fetch.html
 	    break;
 	  default:
-	    std::cerr << "MySQL Backend Programming Error: unknown type "
-		      << field->type << std::endl;
+            LOG_ERROR("MySQL Backend Programming Error: unknown type " << field->type);
 	  }
 	  out_pars_[i].buffer_type = field->type;
 	  out_pars_[i].length = (unsigned long *) malloc(sizeof(unsigned long));
@@ -1074,7 +1068,7 @@ std::unique_ptr<SqlStatement> MySQL::prepareStatement(const std::string& sql)
 void MySQL::executeSql(const std::string &sql)
 {
   if (showQueries())
-    std::cerr << sql << std::endl;
+    LOG_INFO(sql);
 
   checkConnection();
   if( mysql_query(impl_->mysql, sql.c_str()) != 0 ){
@@ -1174,7 +1168,7 @@ void MySQL::setFractionalSecondsPart(int fractionalSecondsPart)
 void MySQL::startTransaction()
 {
   if (showQueries())
-     std::cerr << "start transaction" << std::endl;
+     LOG_INFO("start transaction");
 
   checkConnection();
   if( mysql_query(impl_->mysql, "start transaction") != 0 ){
@@ -1190,12 +1184,11 @@ void MySQL::commitTransaction()
 {
   WT_MY_BOOL status;
   if (showQueries())
-     std::cerr << "commit transaction" << std::endl;
+     LOG_INFO("commit transaction");
 
   checkConnection();
   if( (status = mysql_commit(impl_->mysql)) != 0 ){
-    std::cerr << "error committing transaction: "
-              << mysql_error(impl_->mysql) << std::endl;
+    LOG_ERROR("error committing transaction: " << mysql_error(impl_->mysql));
     throw MySQLException(std::string("MySQL error committing transaction: ") +
                          mysql_error(impl_->mysql));
   }
@@ -1208,7 +1201,7 @@ void MySQL::rollbackTransaction()
 {
   WT_MY_BOOL status;
   if (showQueries())
-     std::cerr << "rollback" << std::endl;
+     LOG_INFO("rollback");
 
   checkConnection();
   if((status =  mysql_rollback(impl_->mysql)) != 0 ){

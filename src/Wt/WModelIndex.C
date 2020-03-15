@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
-#include <algorithm>
 #include <cstring>
-#include <functional>
+#include <utility>
+
+#include <boost/functional/hash.hpp>
 
 #include "Wt/WModelIndex.h"
 #include "Wt/WAbstractItemModel.h"
@@ -103,6 +104,17 @@ bool WModelIndex::operator< (const WModelIndex& i2) const
     return false;
   }
 
+  if (i1.isRawIndex() &&
+      i2.isRawIndex()) {
+    return i1.internalId() < i2.internalId();
+  } else if (i1.isRawIndex()) {
+    assert(!i2.isRawIndex());
+    return true;
+  } else if (i2.isRawIndex()) {
+    assert(!i1.isRawIndex());
+    return false;
+  }
+
   int i1Depth = i1.depth();
   int i2Depth = i2.depth();
   unsigned e = std::min(i1Depth, i2Depth);
@@ -176,11 +188,13 @@ WModelIndex::WModelIndex(int row, int column, const WAbstractItemModel *model,
 { }
 
 std::size_t hash_value(const Wt::WModelIndex& index) {
-  std::hash<int> intHasher;
-  std::hash< ::uint64_t > longHasher;
+  std::size_t seed = 0;
 
-  return intHasher(index.row()) + intHasher(index.column())
-    + longHasher(index.internalId());
+  boost::hash_combine(seed, index.row());
+  boost::hash_combine(seed, index.column());
+  boost::hash_combine(seed, index.internalId());
+
+  return seed;
 }
 
 void WModelIndex::encodeAsRawIndex()
@@ -217,11 +231,26 @@ bool WModelIndex::isRawIndex() const
 void WModelIndex::encodeAsRawIndexes(WModelIndexSet& indexes)
 {
   WModelIndexSet newSet;
+
   for (WModelIndexSet::iterator i = indexes.begin(); i != indexes.end(); ++i) {
     WModelIndex copy = *i;
     copy.encodeAsRawIndex();
     newSet.insert(copy);
   }
+
+  std::swap(newSet, indexes);
+}
+
+void WModelIndex::encodeAsRawIndexes(std::unordered_set<WModelIndex>& indexes)
+{
+  std::unordered_set<WModelIndex> newSet;
+
+  for (auto i = indexes.begin(); i != indexes.end(); ++i) {
+    WModelIndex copy = *i;
+    copy.encodeAsRawIndex();
+    newSet.insert(copy);
+  }
+
   std::swap(newSet, indexes);
 }
 
@@ -231,6 +260,21 @@ WModelIndex::decodeFromRawIndexes(const WModelIndexSet& encodedIndexes)
   WModelIndexSet result;
 
   for (WModelIndexSet::const_iterator i = encodedIndexes.begin();
+       i != encodedIndexes.end(); ++i) {
+    WModelIndex n = i->decodeFromRawIndex();
+    if (n.isValid())
+      result.insert(n);
+  }
+
+  return result;
+}
+
+std::unordered_set<WModelIndex>
+WModelIndex::decodeFromRawIndexes(const std::unordered_set<WModelIndex>& encodedIndexes)
+{
+  std::unordered_set<WModelIndex> result;
+
+  for (auto i = encodedIndexes.begin();
        i != encodedIndexes.end(); ++i) {
     WModelIndex n = i->decodeFromRawIndex();
     if (n.isValid())

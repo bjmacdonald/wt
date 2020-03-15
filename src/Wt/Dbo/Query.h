@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -255,7 +255,7 @@ protected:
  * can be any type for which query_result_traits are properly
  * implemented. The library provides these implementations for
  * primitive values (see sql_value_traits), database objects (ptr) and
- * <tt>boost::tuple</tt>.
+ * <tt>std::tuple</tt>.
  *
  * Simple queries can be done using Session::find(), while more elaborate
  * queries (with arbitrary result types) using Session::query().

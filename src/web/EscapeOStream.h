@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -9,9 +9,19 @@
 
 #include <Wt/WStringStream.h>
 
+#ifndef WT_DBO_ESCAPEOSTREAM
+#define WT_ESCAPEOSTREAM_API WT_API
+#else // WT_DBO_ESCAPEOSTREAM
+#define WT_ESCAPEOSTREAM_API WTDBO_API
+#endif // WT_DBO_ESCAPEOSTREAM
+
 namespace Wt {
 
-class WT_API EscapeOStream
+#ifdef WT_DBO_ESCAPEOSTREAM
+namespace Dbo {
+#endif
+
+class WT_ESCAPEOSTREAM_API EscapeOStream
 {
 public:
   enum RuleSet { Empty = 0, HtmlAttribute = 1,
@@ -87,6 +97,10 @@ private:
   static const Entry plainTextNewLinesEntries_[4];
 };
 
-}
+#ifdef WT_DBO_ESCAPEOSTREAM
+} // namespace Dbo
+#endif
+
+} // namespace Wt
 
 #endif // ESCAPE_OSTREAM_H_

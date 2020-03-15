@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -214,6 +214,10 @@ WLogger& WebSession::logInstance() const
 
 WLogEntry WebSession::log(const std::string& type) const
 {
+  if (controller_->server()->customLogger()) {
+    return WLogEntry(*controller_->server()->customLogger(), type);
+  }
+
   WLogEntry e = controller_->server()->logger().entry(type);
 
 #ifndef WT_TARGET_JAVA
@@ -2233,6 +2237,11 @@ void WebSession::notify(const WEvent& event)
   if (!app_->initialized_) {
     app_->initialized_ = true;
     app_->initialize();
+    if (!app_->internalPathValid_) {
+      WebResponse *response = handler.response();
+      if (response && response->responseType() == WebResponse::ResponseType::Page)
+        response->setStatus(404);
+    }
   }
 #endif
 
@@ -2317,8 +2326,8 @@ void WebSession::notify(const WEvent& event)
 	  return;
 	}
 
-      std::string ca = WEnvironment::getClientAddress
-	(*handler.request(), controller_->configuration());
+      std::string ca = handler.request()->clientAddress(
+            controller_->configuration().behindReverseProxy());
 
       if (ca != env_->clientAddress()) {
 	bool isInvalid = sessionIdCookie_.empty();

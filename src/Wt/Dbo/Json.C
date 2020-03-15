@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2014 Emweb bvba, Leuven, Belgium.
+ * Copyright (C) 2014 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -19,12 +19,12 @@ namespace Wt {
 
 JsonSerializer::JsonSerializer(std::ostream& out)
   : out_(out),
-    escapeOut_(new Wt::EscapeOStream(out)),
-    stringLiteral_(new Wt::EscapeOStream(*escapeOut_)),
+    escapeOut_(new EscapeOStream(out)),
+    stringLiteral_(new EscapeOStream(*escapeOut_)),
     first_(true),
     session_(NULL)
 {
-  stringLiteral_->pushEscape(Wt::EscapeOStream::JsStringLiteralDQuote);
+  stringLiteral_->pushEscape(EscapeOStream::JsStringLiteralDQuote);
 }
 
 JsonSerializer::~JsonSerializer() {

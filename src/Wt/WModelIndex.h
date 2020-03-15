@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  */
@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <set>
+#include <unordered_set>
 
 #include <Wt/WDllDefs.h>
 #include <Wt/WFlags.h>
@@ -414,6 +415,11 @@ public:
    * Topological order follows the order in which the indexes would be
    * displayed in a tree table view, from top to bottom followed by
    * left to right.
+   *
+   * An invalid index comes before all other indexes.
+   * Indexes \link encodeAsRawIndex() encoded as raw index\endlink
+   * come after the invalid index and before all other indexes, and
+   * are ordered according to their internalId().
    */
   bool operator< (const WModelIndex& other) const;
 
@@ -458,12 +464,24 @@ public:
    */
   static void encodeAsRawIndexes(WModelIndexSet& indexes);
 
+  /*! \brief Utility method for converting an entire set of indexes to raw.
+   *
+   * \sa encodeAsRawIndex()
+   */
+  static void encodeAsRawIndexes(std::unordered_set<WModelIndex>& indexes);
+
   /*! \brief Utility method to decode an entire set of raw indexes.
    *
    * \sa decodeFromRawIndex()
    */
   static
     WModelIndexSet decodeFromRawIndexes(const WModelIndexSet& encodedIndexes);
+
+  /*! \brief Utility method to decode an entire set of raw indexes.
+   *
+   * \sa decodeFromRawIndex()
+   */
+  static std::unordered_set<WModelIndex> decodeFromRawIndexes(const std::unordered_set<WModelIndex>& encodedIndexes);
 
   struct UnorderedLess {
     bool operator()(const WModelIndex& i1, const WModelIndex& i2) const;

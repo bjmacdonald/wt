@@ -1,6 +1,6 @@
 // This may look like C code, but it's really -*- C++ -*-
 /*
- * Copyright (C) 2008 Emweb bvba, Kessel-Lo, Belgium.
+ * Copyright (C) 2008 Emweb bv, Herent, Belgium.
  *
  * See the LICENSE file for terms of use.
  *
@@ -117,6 +117,14 @@ WGoogleMap::WGoogleMap(GoogleMapsVersion version)
    apiVersion_(version)
 {
   setImplementation(std::unique_ptr<WWidget>(new WContainerWidget()));
+
+  WApplication *app = WApplication::instance();
+  googlekey_ = localhost_key;
+  WApplication::readConfigurationProperty("google_api_key", googlekey_);
+
+  // init the google javascript api
+  const std::string gmuri = "//www.google.com/jsapi?key=" + googlekey_;
+  app->require(gmuri, "google");
 }
 
 WGoogleMap::~WGoogleMap()
@@ -168,13 +176,6 @@ void WGoogleMap::render(WFlags<RenderFlag> flags)
 {
   if (flags.test(RenderFlag::Full)) {
     WApplication *app = WApplication::instance();
-
-    std::string googlekey = localhost_key;
-    Wt::WApplication::readConfigurationProperty("google_api_key", googlekey);
-      
-    // init the google javascript api
-    const std::string gmuri = "//www.google.com/jsapi?key=" + googlekey;
-    app->require(gmuri, "google");
 
     std::string initFunction = 
       app->javaScriptClass() + ".init_google_maps_" + id();
@@ -239,7 +240,7 @@ void WGoogleMap::render(WFlags<RenderFlag> flags)
 	 << "google.load(\"maps\", \"" 
 	 << (apiVersion_ == GoogleMapsVersion::v2 ? '2' : '3')
 	 << "\", {other_params:\"key="
-         << googlekey
+         << googlekey_
          << "\", callback: "
 	 << initFunction << "});"
 	 << "}"; // private scope

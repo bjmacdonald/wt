@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Emweb bvba, Herent, Belgium.
+ * Copyright (C) 2014 Emweb bv, Herent, Belgium.
  *
  * All rights reserved.
  */
@@ -206,7 +206,7 @@ void SessionProcessManager::processDeadChildren(Wt::AsioWrapper::error_code ec)
 
   for (SessionProcessList::iterator it = processesToErase.begin();
 	   it != processesToErase.end(); ++it) {
-    LOG_INFO("Child process " << (*it)->processInfo().dwProcessId << " died before a session could be assigned");
+    LOG_WARN("Child process " << (*it)->processInfo().dwProcessId << " died before a session could be assigned");
     (*it)->stop();
 	SessionProcessList::iterator it2 = std::find(pendingProcesses_.begin(), pendingProcesses_.end(), *it);
 	pendingProcesses_.erase(it2);
@@ -245,7 +245,7 @@ void SessionProcessManager::removeSessionForPid(pid_t cpid)
   for (SessionProcessList::iterator it = pendingProcesses_.begin();
        it != pendingProcesses_.end(); ++it) {
     if ((*it)->pid() == cpid) {
-      LOG_INFO("Child process " << cpid << " died before a session could be assigned");
+      LOG_WARN("Child process " << cpid << " died before a session could be assigned");
       (*it)->stop();
       pendingProcesses_.erase(it);
       -- numSessions_;
