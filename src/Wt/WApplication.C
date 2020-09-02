@@ -381,6 +381,16 @@ std::string WApplication::onePixelGifUrl()
 WApplication::~WApplication()
 {
 #ifndef WT_TARGET_JAVA
+  // Fix issue #5331: if WTimer is a child of WApplication,
+  // it will outlive timerRoot_. Delete it now already.
+  for (std::size_t i = 0; i < children_.size(); ++i) {
+    WTimer *timer = dynamic_cast<WTimer*>(children_[i].get());
+    if (timer) {
+      removeChild(timer);
+    }
+  }
+  timerRoot_ = nullptr;
+
   // First remove all children owned by this WApplication (issue #6282)
   if (domRoot_) {
     auto domRoot = domRoot_.get();
@@ -388,7 +398,7 @@ WApplication::~WApplication()
       removeChild(child);
   }
   if (domRoot2_) {
-    auto domRoot = domRoot_.get();
+    auto domRoot = domRoot2_.get();
     for (WWidget *child : domRoot->children())
       removeChild(child);
   }
