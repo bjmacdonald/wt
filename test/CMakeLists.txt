@@ -1,6 +1,7 @@
 IF(ENABLE_LIBWTTEST)
   SET(TEST_SOURCES
     test.C
+    any/AnyTest.C
     auth/BCryptTest.C
     auth/SHA1Test.C
     core/BindTest.C
@@ -33,6 +34,7 @@ IF(ENABLE_LIBWTTEST)
     utils/Base64Test.C
     utils/EraseWord.C
     utils/ParseNumber.C
+    widgets/WContainerWidgetTest.C
     widgets/WSpinBoxTest.C
     widgets/WTreeViewTest.C
     length/WLengthTest.C
