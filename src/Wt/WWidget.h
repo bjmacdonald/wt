@@ -825,9 +825,8 @@ public:
 
   /*! \brief Loads content just before the widget is used.
    *
-   * This method is called after a widget is inserted in the widget
-   * hierarchy and fully constructed, but before the widget is rendered.
-   * Widgets that get inserted in the widget hierarchy will
+   * This function is called when a widget is inserted in the
+   * widget hierarchy. Widgets that get inserted in the widget hierarchy will
    * be rendered. Visible widgets are rendered immediately, and
    * invisible widgets in the back-ground (or not for a plain HTML
    * session). This method is called when the widget is directly or
@@ -1352,6 +1351,10 @@ protected:
 			   const std::string& declarations,
 			   const std::string& ruleName = std::string());
 
+  bool isGlobalWidget() const;
+
+  virtual std::string renderRemoveJs(bool recursive) = 0;
+
 private:
   /*
    * Booleans packed in a bitset.
@@ -1375,7 +1378,6 @@ private:
   void undoDisableEnable();
   virtual void setParentWidget(WWidget *parent);
 
-  bool isGlobalWidget() const;
   void setGlobalWidget(bool globalWidget);
 
   virtual WWebWidget *webWidget() = 0;

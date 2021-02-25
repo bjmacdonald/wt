@@ -171,6 +171,7 @@ WApplication::WApplication(const WEnvironment& env
   domRoot_.reset(new WContainerWidget());
   domRoot_->setGlobalUnfocused(true);
   domRoot_->setStyleClass("Wt-domRoot");
+  domRoot_->load();
 
   if (session_->type() == EntryPointType::Application)
     domRoot_->resize(WLength::Auto, WLength(100, LengthUnit::Percentage));
@@ -185,6 +186,7 @@ WApplication::WApplication(const WEnvironment& env
     widgetRoot_->resize(WLength::Auto, WLength(100, LengthUnit::Percentage));
   } else {
     domRoot2_.reset(new WContainerWidget());
+    domRoot2_->load();
   }
 
   // a define so that it shouts at us !
@@ -520,6 +522,7 @@ void WApplication::bindWidget(std::unique_ptr<WWidget> widget,
 		     "in WidgetSet mode.");
 
   widget->setId(domId);
+  widget->setJavaScriptMember("wtReparentBarrier", "true");
   domRoot2_->addWidget(std::move(widget));
 }
 
@@ -549,6 +552,7 @@ void WApplication::removeGlobalWidget(WWidget *w)
   // to be null. In that case, we don't need to remove this
   // widget from the domRoot.
   if (domRoot_) {
+    w->setGlobalWidget(false);
     auto removed = domRoot_->removeWidget(w);
     // domRoot_ should never own the global widget
 #ifndef WT_TARGET_JAVA

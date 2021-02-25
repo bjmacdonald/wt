@@ -57,10 +57,7 @@ public:
   date::local_time<typename std::common_type<Duration, std::chrono::minutes>::type>
   to_local(date::sys_time<Duration> tp) const
   {
-    using namespace date;
-    using namespace std;
-    using namespace std::chrono;
-    using LT = local_time<typename common_type<Duration, minutes>::type>;
+    using LT = date::local_time<typename std::common_type<Duration, std::chrono::minutes>::type>;
     return LT{(tp + offset_).time_since_epoch()};
   }
 
@@ -68,10 +65,7 @@ public:
   date::sys_time<typename std::common_type<Duration, std::chrono::minutes>::type>
   to_sys(date::local_time<Duration> tp) const
   {
-    using namespace date;
-    using namespace std;
-    using namespace std::chrono;
-    using ST = sys_time<typename common_type<Duration, minutes>::type>;
+    using ST = date::sys_time<typename std::common_type<Duration, std::chrono::minutes>::type>;
     return ST{(tp - offset_).time_since_epoch()};
   }
 
@@ -94,6 +88,9 @@ WLocalDateTime::WLocalDateTime(const std::chrono::system_clock::time_point& dt,
     valid_(false),
     null_(false)
 {
+  if (!zone_)
+    LOG_WARN("Invalid local date time: <no zone>");
+  else
     valid_ = WDateTime(dt).isValid();
 }
 
@@ -289,8 +286,10 @@ int WLocalDateTime::timeZoneOffset() const
   if (zone_) {
     auto info = zone_->get_info(datetime_);
     return info.offset.count() / 60;
-  } else {
+  } else if (customZone_) {
     return customZone_->offset().count();
+  } else {
+    throw WException("WLocalDateTime: timezone is null");
   }
 }
 
