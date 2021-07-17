@@ -1,4 +1,4 @@
-IF(ENABLE_SQLITE)
+IF(WT_ENABLE_SQLITE)
 
   OPTION(USE_SYSTEM_SQLITE3 "Use system-wide Sqlite3 instead of Wt's version" OFF)
   OPTION(USE_SQLITE3_BDB "Use BerkeleyDB storage with Sqlite3 API" OFF)
@@ -32,12 +32,12 @@ IF(ENABLE_SQLITE)
   SET(HAVE_SQLITE ON CACHE INTERNAL "building sqlite3 backend" FORCE)
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_SHARED_LIBS)
       CONFIGURE_FILE(wtdbosqlite3-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbosqlite3-version.rc)
       SET(Sqlite3_SRCS ${Sqlite3_SRCS} 
           ${CMAKE_CURRENT_BINARY_DIR}/wtdbosqlite3-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_SHARED_LIBS)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbosqlite3
@@ -85,7 +85,6 @@ IF(ENABLE_SQLITE)
   PROPERTIES
     EXPORT_NAME DboSqlite3
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
     )
 
   IF(MSVC)
@@ -99,23 +98,23 @@ IF(ENABLE_SQLITE)
 
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*Sqlite3.*h$")
 
-ELSE(ENABLE_SQLITE)
+ELSE(WT_ENABLE_SQLITE)
   SET(HAVE_SQLITE OFF CACHE INTERNAL "building sqlite3 backend" FORCE)
-ENDIF(ENABLE_SQLITE)
+ENDIF(WT_ENABLE_SQLITE)
 
-IF(ENABLE_POSTGRES AND POSTGRES_FOUND)
+IF(WT_ENABLE_POSTGRES AND POSTGRES_FOUND)
 
   SET(HAVE_POSTGRES ON CACHE INTERNAL "building postgres backend" FORCE)
 
   MESSAGE("** Wt::Dbo: building Postgres backend.")
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_SHARED_LIBS)
       CONFIGURE_FILE(wtdbopostgres-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
       SET(postgres_SRCS ${postgres_SRCS} 
           ${CMAKE_CURRENT_BINARY_DIR}/wtdbopostgres-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_SHARED_LIBS)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbopostgres
@@ -159,31 +158,30 @@ IF(ENABLE_POSTGRES AND POSTGRES_FOUND)
   PROPERTIES
     EXPORT_NAME DboPostgres
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
   )
 
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*Postgres.*h$")
-ELSE(ENABLE_POSTGRES AND POSTGRES_FOUND)
+ELSE(WT_ENABLE_POSTGRES AND POSTGRES_FOUND)
   MESSAGE("** Wt::Dbo: not building Postgres backend.")
 
-  IF(ENABLE_POSTGRES)
+  IF(WT_ENABLE_POSTGRES)
     MESSAGE("    Indicate the location of your postgres installation using ")
     MESSAGE("    -DPOSTGRES_PREFIX=...")
-  ENDIF(ENABLE_POSTGRES)
+  ENDIF(WT_ENABLE_POSTGRES)
 
   SET(HAVE_POSTGRES OFF CACHE INTERNAL "building postgres backend" FORCE)
-ENDIF(ENABLE_POSTGRES AND POSTGRES_FOUND)
+ENDIF(WT_ENABLE_POSTGRES AND POSTGRES_FOUND)
 
-IF(ENABLE_FIREBIRD)
+IF(WT_ENABLE_FIREBIRD)
   OPTION(USE_SYSTEM_IBPP "Use a custom IBPP library instead of Wt's version" OFF)
 
   IF(NOT USE_SYSTEM_IBPP)
     SET(IBPP_SRC_DIRECTORY ibpp/)
   ENDIF(NOT USE_SYSTEM_IBPP)
   INCLUDE(../../../../cmake/WtFindFirebirdSql.txt)
-ENDIF(ENABLE_FIREBIRD)
+ENDIF(WT_ENABLE_FIREBIRD)
 
-IF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+IF(WT_ENABLE_FIREBIRD AND FIREBIRD_FOUND)
 
   SET(HAVE_FIREBIRD ON CACHE INTERNAL "building firebird backend" FORCE)
 
@@ -202,12 +200,12 @@ IF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
   MESSAGE("** Wt::Dbo: building FirebirdSQL backend.")
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_SHARED_LIBS)
       CONFIGURE_FILE(wtdbofirebird-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbofirebird-version.rc)
       SET(firebird_SRCS ${firebird_SRCS} 
           ${CMAKE_CURRENT_BINARY_DIR}/wtdbofirebird-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_SHARED_LIBS)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbofirebird
@@ -251,22 +249,21 @@ IF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
   PROPERTIES
     EXPORT_NAME DboFirebird
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
   )
 
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*Firebird.*h$")
-ELSE(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+ELSE(WT_ENABLE_FIREBIRD AND FIREBIRD_FOUND)
   MESSAGE("** Wt::Dbo: not building Firebird backend.")
 
-  IF(ENABLE_FIREBIRD)
+  IF(WT_ENABLE_FIREBIRD)
     MESSAGE("    Indicate the location of your FirebirdSQL and IBPP installation using ")
     MESSAGE("    -DFIREBIRD_PREFIX=... -DIBPP_SRC_DIRECTORY=...")
-  ENDIF(ENABLE_FIREBIRD)
+  ENDIF(WT_ENABLE_FIREBIRD)
 
   SET(HAVE_FIREBIRD OFF CACHE INTERNAL "building firebird backend" FORCE)
-ENDIF(ENABLE_FIREBIRD AND FIREBIRD_FOUND)
+ENDIF(WT_ENABLE_FIREBIRD AND FIREBIRD_FOUND)
 
-IF(ENABLE_MYSQL AND MYSQL_FOUND)
+IF(WT_ENABLE_MYSQL AND MYSQL_FOUND)
 
   SET(HAVE_MYSQL ON CACHE INTERNAL "building mysql backend" FORCE)
 
@@ -274,12 +271,12 @@ IF(ENABLE_MYSQL AND MYSQL_FOUND)
   ADD_DEFINITIONS(${MYSQL_DEFINITIONS})
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_SHARED_LIBS)
       CONFIGURE_FILE(wtdbomysql-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbomysql-version.rc)
       SET(mysql_SRCS ${mysql_SRCS} 
           ${CMAKE_CURRENT_BINARY_DIR}/wtdbomysql-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_SHARED_LIBS)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbomysql
@@ -315,37 +312,36 @@ IF(ENABLE_MYSQL AND MYSQL_FOUND)
   PROPERTIES
     EXPORT_NAME DboMySQL
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
   )
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*MySQL.*h$")
   IF(MSVC)
     SET_TARGET_PROPERTIES(wtdbomysql PROPERTIES FOLDER "dbo")
   ENDIF(MSVC)
-ELSE(ENABLE_MYSQL AND MYSQL_FOUND)
+ELSE(WT_ENABLE_MYSQL AND MYSQL_FOUND)
   MESSAGE("** Wt::Dbo: not building MySQL backend.")
 
-  IF(ENABLE_MYSQL)
+  IF(WT_ENABLE_MYSQL)
     MESSAGE("    Indicate the location of your mariadb or mysqlclient installation using ")
     MESSAGE("    -DMYSQL_PREFIX=... and the library to search for (e.g. mariadb or ")
     MESSAGE("    mysqlclient) using -DMYSQL_LIBRARY=...")
-  ENDIF(ENABLE_MYSQL)
+  ENDIF(WT_ENABLE_MYSQL)
 
   SET(HAVE_MYSQL OFF CACHE INTERNAL "building mysql backend" FORCE)
-ENDIF(ENABLE_MYSQL AND MYSQL_FOUND)
+ENDIF(WT_ENABLE_MYSQL AND MYSQL_FOUND)
 
-IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
+IF(WT_ENABLE_MSSQLSERVER AND ODBC_FOUND)
 
   SET(HAVE_MSSQLSERVER ON CACHE INTERNAL "building Microsoft SQL Server backend" FORCE)
 
   MESSAGE("** Wt::Dbo: building Microsoft SQL Server backend.")
 
   IF(WIN32)
-    IF(SHARED_LIBS)
+    IF(WT_SHARED_LIBS)
       CONFIGURE_FILE(wtdbomssqlserver-version.rc.in
                      ${CMAKE_CURRENT_BINARY_DIR}/wtdbomssqlserver-version.rc)
       SET(mssqlserver_SRCS ${mssqlserver_SRCS}
           ${CMAKE_CURRENT_BINARY_DIR}/wtdbomssqlserver-version.rc)
-    ENDIF(SHARED_LIBS)
+    ENDIF(WT_SHARED_LIBS)
   ENDIF(WIN32)
 
   ADD_LIBRARY(wtdbomssqlserver
@@ -381,7 +377,6 @@ IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
   PROPERTIES
     EXPORT_NAME DboMSSQLServer
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
     )
 
   IF(MSVC)
@@ -394,7 +389,7 @@ IF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
   endif(MSVC)
 
   INSTALL_FILES(/include/Wt/Dbo/backend "^.*MSSQLServer.*h$")
-ELSE(ENABLE_MSSQLSERVER AND ODBC_FOUND)
+ELSE(WT_ENABLE_MSSQLSERVER AND ODBC_FOUND)
   MESSAGE("** Wt::Dbo: not building Microsoft SQL Server backend.")
   SET(HAVE_MSSQLSERVER OFF CACHE INTERNAL "building Microsoft SQL Server backend" FORCE)
-ENDIF(ENABLE_MSSQLSERVER AND ODBC_FOUND)
+ENDIF(WT_ENABLE_MSSQLSERVER AND ODBC_FOUND)

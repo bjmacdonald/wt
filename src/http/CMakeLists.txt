@@ -44,12 +44,12 @@ IF(CONNECTOR_HTTP)
  OPTION(HTTP_WITH_ZLIB "Support for zlib (http compression)" ${ZLIB_FOUND})
 
  IF(WIN32)
-   IF(SHARED_LIBS)
+   IF(WT_SHARED_LIBS)
      CONFIGURE_FILE(wthttp-version.rc.in
                     ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
      SET(libhttpsources ${libhttpsources}
          ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
-   ENDIF(SHARED_LIBS)
+   ENDIF(WT_SHARED_LIBS)
 
 # boost asio has a serious bug causing subtle data corruption
 # https://svn.boost.org/trac/boost/ticket/8935
@@ -123,7 +123,6 @@ IF(CONNECTOR_HTTP)
   PROPERTIES
     EXPORT_NAME HTTP
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-    DEBUG_POSTFIX ${DEBUG_LIB_POSTFIX}
   )
 
   IF(MSVC)
