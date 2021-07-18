@@ -1,4 +1,3 @@
-IF(BOOST_WT_FOUND)
 SET(WIDGETGALLERY_SOURCES
   main.C
   # EmwebLoadingIndicator.C
@@ -41,10 +40,10 @@ IF(TARGET Boost::headers)
   TARGET_LINK_LIBRARIES(widgetgallery.wt Boost::headers)
 ENDIF()
 
-IF (HAVE_HARU)
+IF (WT_ENABLE_HARU)
   INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
   TARGET_LINK_LIBRARIES(widgetgallery.wt ${HARU_LIB})
-ENDIF(HAVE_HARU)
+ENDIF(WT_ENABLE_HARU)
 
 #
 # If you have Wt installed somehwere, you should use the
@@ -58,6 +57,3 @@ INCLUDE_DIRECTORIES(
   ../painting
   ../gitmodel
 )
-ELSE(BOOST_WT_FOUND)
-  MESSAGE(STATUS "** Not building widgetgallery example: requires boost headers.")
-ENDIF(BOOST_WT_FOUND)

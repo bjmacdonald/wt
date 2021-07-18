@@ -1,5 +1,3 @@
-IF(BOOST_WT_FOUND)
-
 #
 # The ADD_EXAMPLE macro (defined in examples/CMakeLists.txt) ensures that
 # the example is correctly built for the requested connector. It is equivalent
@@ -28,6 +26,3 @@ ENDIF()
 # instead of the following:
 #
 INCLUDE_DIRECTORIES(${WT_SOURCE_DIR}/src)
-ELSE(BOOST_WT_FOUND)
-  MESSAGE(STATUS "** Not building chart3D example: requires boost headers.")
-ENDIF(BOOST_WT_FOUND)

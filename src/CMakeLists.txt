@@ -1,15 +1,37 @@
-SUBDIRS(web Wt)
+add_subdirectory(web)
+add_subdirectory(Wt)
 
-INCLUDE_DIRECTORIES(
-  ${CMAKE_CURRENT_SOURCE_DIR}/web
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include
-  ${CMAKE_CURRENT_BINARY_DIR} # for WConfig.h
-  ${BOOST_INCLUDE_DIRS}
-  Wt/Dbo/backend/amalgamation # for sqlite3.h
-)
+add_library(wt)
+target_compile_features(wt PUBLIC cxx_std_17)
+target_compile_definitions(wt PRIVATE WT_BUILDING)
+target_link_libraries(wt PRIVATE Boost::boost Boost::filesystem)
 
-LINK_DIRECTORIES(${BOOST_LIB_DIRS})
+if (MSVC)
+  target_compile_options(wt
+    PUBLIC 
+      /permissive-
+      /Zc:__cplusplus
+    PRIVATE
+      /MP      # Parallel build
+      /wd4267  # argument conversion possible loss of data
+      /wd4244  # initializing conversion possible loss of data
+  )
+  target_compile_definitions(wt 
+    PUBLIC
+      _CRT_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions
+      _SCL_SECURE_NO_WARNINGS # Don't deprecate the non _s versions of various standard library functions
+    PRIVATE 
+      _CRT_NONSTDC_NO_WARNINGS # Don't deprecate posix names of functions
+      # _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+      _WIN32_WINNT=0x0A00      # For Boost:asio
+  )
+endif(MSVC)
+
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include>)
+target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
+target_include_directories(wt INTERFACE $<INSTALL_INTERFACE:include>)
 
 MACRO (FILE_TO_STRING infile outfile var)
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
@@ -26,37 +48,43 @@ ENDMACRO (FILE_TO_STRING)
 FILE_TO_STRING(web/skeleton/Plain.html    Plain_html.C      Plain_html)
 FILE_TO_STRING(web/skeleton/Hybrid.html   Hybrid_html.C     Hybrid_html)
 FILE_TO_STRING(web/skeleton/Boot.html     Boot_html.C       Boot_html)
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Wt.js     Wt_js.C Wt_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Wt.min.js Wt_js.C Wt_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Boot.js     Boot_js.C Boot_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(web/skeleton/Boot.min.js Boot_js.C Boot_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(js/WCartesianChart.js WCartesianChart_js.C WCartesianChart_js)
-ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_js.C WCartesianChart_js)
-ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C JQuery_js)
-
+FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C       JQuery_js)
 FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
-FILE_TO_STRING(xml/auth_strings.xml AuthStrings_xml.C AuthStrings_xml)
-FILE_TO_STRING(xml/bootstrap_theme.xml
-    BootstrapTheme_xml.C BootstrapTheme_xml)
-FILE_TO_STRING(xml/bootstrap3_theme.xml
-    Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
-FILE_TO_STRING(xml/auth_css_theme.xml
-    AuthCssTheme_xml.C AuthCssTheme_xml)
+FILE_TO_STRING(xml/auth_strings.xml     AuthStrings_xml.C     AuthStrings_xml)
+FILE_TO_STRING(xml/bootstrap_theme.xml  BootstrapTheme_xml.C  BootstrapTheme_xml)
+FILE_TO_STRING(xml/bootstrap3_theme.xml Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
+FILE_TO_STRING(xml/auth_css_theme.xml   AuthCssTheme_xml.C    AuthCssTheme_xml)
 
-SET(libsources
+target_sources(wt PRIVATE
+  Plain_html.C
+  Hybrid_html.C
+  Boot_html.C
+  JQuery_js.C
+  Wt_xml.C
+  AuthStrings_xml.C
+  BootstrapTheme_xml.C
+  Bootstrap3Theme_xml.C
+  AuthCssTheme_xml.C
+)
+
+# JavaScript Debug Versions
+FILE_TO_STRING(web/skeleton/Wt.js    Wt_js.C   Wt_js)
+FILE_TO_STRING(web/skeleton/Boot.js  Boot_js.C Boot_js)
+FILE_TO_STRING(js/WCartesianChart.js WCartesianChart_js.C WCartesianChart_js)
+
+# JavaScript Minified versions
+FILE_TO_STRING(web/skeleton/Wt.min.js Wt_min_js.C Wt_js)
+FILE_TO_STRING(web/skeleton/Boot.min.js Boot_min_js.C Boot_js)
+FILE_TO_STRING(js/WCartesianChart.min.js WCartesianChart_min_js.C WCartesianChart_js)
+
+target_sources(wt PRIVATE 
+  $<$<CONFIG:DEBUG>:Wt_js.C Boot_js.C WCartesianChart_js.C>
+  $<$<NOT:$<CONFIG:DEBUG>>:Wt_min_js.C Boot_min_js.C WCartesianChart_min_js.C>
+)
+#target_sources(wt PRIVATE Wt_js.C Boot_js.C WCartesianChart_js.C)
+
+
+target_sources(wt PRIVATE
 Wt/FlexLayoutImpl.h Wt/FlexLayoutImpl.C
 Wt/FlexItemImpl.h Wt/FlexItemImpl.C
 Wt/PopupWindow.h Wt/PopupWindow.C
@@ -401,67 +429,60 @@ JQuery_js.C
 )
 
 IF (WT_CPP20_DATE_TZ_IMPLEMENTATION STREQUAL "date")
-  list(APPEND libsources
+	target_sources(wt PRIVATE
     Wt/Date/date.h Wt/Date/include/date/date.h
     Wt/Date/tz.h Wt/Date/include/date/tz.h Wt/Date/src/tz.cpp)
 
-  set(_TZ_BUILD_DEFS "")
-
   IF (WIN32)
-    set(_TZ_BUILD_DEFS USE_OS_TZDB=0 HAS_REMOTE_API=0)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=0)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS HAS_REMOTE_API=0)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
   ELSE (WIN32)
-    set(_TZ_BUILD_DEFS USE_OS_TZDB=1)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
   ENDIF (WIN32)
 
   IF (WT_SHARED_LIBS)
-    list(APPEND _TZ_BUILD_DEFS DATE_BUILD_DLL)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_DLL)
   ELSE (WT_SHARED_LIBS)
-    list(APPEND _TZ_BUILD_DEFS DATE_BUILD_LIB)
+    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
   ENDIF (WT_SHARED_LIBS)
-
-  set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS "${_TZ_BUILD_DEFS}")
-
-  unset(_TZ_BUILD_DEFS)
 ENDIF ()
 
-ADD_DEFINITIONS(-DWT_BUILDING)
-
-IF (MULTI_THREADED_BUILD)
-  SET(libsources ${libsources} web/SocketNotifier.h web/SocketNotifier.C)
-ENDIF(MULTI_THREADED_BUILD)
+IF (WT_MULTI_THREADED)
+  target_sources(wt PRIVATE web/SocketNotifier.h web/SocketNotifier.C)
+  target_link_libraries(wt PRIVATE Threads::Threads Boost::thread)
+ENDIF(WT_MULTI_THREADED)
 
 # How to include x86.S ?
-SET(libsources ${libsources}
+target_sources(wt PRIVATE
       Wt/Auth/bcrypt/crypt_blowfish.h Wt/Auth/bcrypt/crypt_blowfish.c
       Wt/Auth/bcrypt/crypt_gensalt.h Wt/Auth/bcrypt/crypt_gensalt.c
       Wt/Auth/bcrypt/wrapper.c)
 
-IF(HAVE_HARU)
-  SET(libsources ${libsources} Wt/WPdfImage.h Wt/WPdfImage.C Wt/Render/WPdfRenderer.h Wt/Render/WPdfRenderer.C)
-  ADD_DEFINITIONS(-DHAVE_PDF_IMAGE)
-ENDIF(HAVE_HARU)
+IF(WT_ENABLE_HARU)
+  target_sources(wt PRIVATE Wt/WPdfImage.h Wt/WPdfImage.C Wt/Render/WPdfRenderer.h Wt/Render/WPdfRenderer.C)
+ENDIF(WT_ENABLE_HARU)
 
 IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-  SET(libsources ${libsources} Wt/WRasterImage.h Wt/WRasterImage-gm.C)
+  target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-gm.C)
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "skia")
-  SET(libsources ${libsources} Wt/WRasterImage.h Wt/WRasterImage-skia.C)
+  target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-skia.C)
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-  SET(libsources ${libsources} Wt/WRasterImage.h Wt/WRasterImage-d2d1.C)
+  target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-d2d1.C)
 ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
 
-IF(HAVE_GL)
-  SET(libsources ${libsources} Wt/WServerGLWidget.h Wt/WServerGLWidget.C)
+IF(WT_ENABLE_OPENGL)
+  target_sources(wt PRIVATE Wt/WServerGLWidget.h Wt/WServerGLWidget.C)
   IF(NOT USE_SYSTEM_GLEW)
-    ADD_DEFINITIONS(-DGLEW_STATIC)
-    SET(libsources
-      ${libsources}
+    target_compile_definitions(wt PRIVATE GLEW_STATIC)
+    target_sources(wt PRIVATE 
       3rdparty/glew-1.10.0/include/GL/glew.h
       3rdparty/glew-1.10.0/include/GL/glxew.h
       3rdparty/glew-1.10.0/include/GL/wglew.h
       3rdparty/glew-1.10.0/src/glew.c
     )
   ENDIF(NOT USE_SYSTEM_GLEW)
-ENDIF(HAVE_GL)
+ENDIF(WT_ENABLE_OPENGL)
 
 SET(WT_FONTSUPPORT_SIMPLE false)
 SET(WT_FONTSUPPORT_PANGO false)
@@ -471,18 +492,18 @@ IF(WIN32)
   SET(HAVE_DIRECTWRITE true)
 ENDIF(WIN32)
 
-IF(HAVE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-  IF(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+  IF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportPango.C)
     SET(WT_FONTSUPPORT_PANGO true)
   ELSEIF(HAVE_DIRECTWRITE)
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportDirectWrite.C)
     SET(WT_FONTSUPPORT_DIRECTWRITE true)
-  ELSE(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+  ELSE(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportSimple.C)
     SET(WT_FONTSUPPORT_SIMPLE true)
-  ENDIF(HAVE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-ENDIF(HAVE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+  ENDIF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+ENDIF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 
 # check if we need -lrt, used in boost::chrone::steady_clock::now()
 SET(RT_test_fname "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/rt.c")
@@ -548,9 +569,9 @@ IF(WT_ENABLE_LIBWTTEST)
     )
   ENDIF()
 
-  IF(MULTI_THREADED_BUILD)
+  IF(WT_MULTI_THREADED)
     TARGET_LINK_LIBRARIES(wttest PRIVATE ${WT_THREAD_LIB})
-  ENDIF(MULTI_THREADED_BUILD)
+  ENDIF(WT_MULTI_THREADED)
 
   INSTALL(TARGETS wttest
           EXPORT wt-target-test
@@ -563,7 +584,7 @@ IF(WT_ENABLE_LIBWTTEST)
           NAMESPACE Wt::)
 
   IF(MSVC)
-    SET_TARGET_PROPERTIES(wttest PROPERTIES COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
+    SET_TARGET_PROPERTIES(wttest PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
 	SET_TARGET_PROPERTIES(wttest PROPERTIES FOLDER "test")
   ENDIF(MSVC)
 
@@ -577,28 +598,25 @@ ELSE(WT_ENABLE_LIBWTTEST)
   MESSAGE("** Not building libwttest")
 ENDIF(WT_ENABLE_LIBWTTEST)
 
-IF(HAVE_SSL)
+IF(WT_ENABLE_SSL)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${OPENSSL_LIBRARIES})
   INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
   IF(WIN32)
     TARGET_LINK_LIBRARIES(wt PRIVATE Crypt32.lib)
   ENDIF(WIN32)
-ELSE(HAVE_SSL)
+ELSE(WT_ENABLE_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
-  IF(WT_ENABLE_SSL)
-    MESSAGE("   Indicate the location of your OpenSSL library using -DSSL_PREFIX=...")
-  ENDIF(WT_ENABLE_SSL)
-ENDIF(HAVE_SSL)
+ENDIF(WT_ENABLE_SSL)
 
-IF(HAVE_HARU)
+IF(WT_ENABLE_HARU)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})
   INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
-ELSE(HAVE_HARU)
+ELSE(WT_ENABLE_HARU)
   MESSAGE("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")
   IF(WT_ENABLE_HARU)
     MESSAGE("   Indicate the location of your haru library using -DHARU_PREFIX=...")
   ENDIF(WT_ENABLE_HARU)
-ENDIF(HAVE_HARU)
+ENDIF(WT_ENABLE_HARU)
 
 IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   TARGET_LINK_LIBRARIES(wt PRIVATE ${GM_LIBRARIES})
@@ -614,15 +632,15 @@ ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
 ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
 
-IF(HAVE_GL)
+IF(WT_ENABLE_OPENGL)
   INCLUDE_DIRECTORIES(${GL_INCLUDE_DIRS})
   IF(USE_SYSTEM_GLEW)
     TARGET_LINK_LIBRARIES(wt PRIVATE GLEW)
   ENDIF(USE_SYSTEM_GLEW)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${GL_LIBRARIES})
-ELSE(HAVE_GL)
+ELSE(WT_ENABLE_OPENGL)
   MESSAGE("** Disabling server-side opengl rendering for WGLWidget: requires gl, glew and WRasterImage (GraphicsMagick or skia).")
-ENDIF(HAVE_GL)
+ENDIF(WT_ENABLE_OPENGL)
 
 IF(WT_FONTSUPPORT_SIMPLE)
   ADD_DEFINITIONS(-DWT_FONTSUPPORT_SIMPLE)
@@ -641,20 +659,16 @@ ELSEIF(WT_FONTSUPPORT_DIRECTWRITE)
   MESSAGE("** Enabling advanced font support using DirectWrite")
 ENDIF(WT_FONTSUPPORT_SIMPLE)
 
-IF(HAVE_UNWIND)
+IF(WT_ENABLE_UNWIND)
   ADD_DEFINITIONS(-DWT_WITH_UNWIND)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${UNWIND_LIBRARIES})
   INCLUDE_DIRECTORIES(${UNWIND_INCLUDE_DIRS})
   MESSAGE("** Enabling stacktrace prints using libunwind")
-ELSE(HAVE_UNWIND)
-  IF(WT_ENABLE_UNWIND)
-    MESSAGE("** Disabling stacktrace prints: could not find libunwind")
-  ENDIF(WT_ENABLE_UNWIND)
-ENDIF(HAVE_UNWIND)
+ENDIF(WT_ENABLE_UNWIND)
 
-IF(MULTI_THREADED_BUILD)
+IF(WT_MULTI_THREADED)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${WT_THREAD_LIB})
-ENDIF(MULTI_THREADED_BUILD)
+ENDIF(WT_MULTI_THREADED)
 
 TARGET_INCLUDE_DIRECTORIES(wt INTERFACE
   $<INSTALL_INTERFACE:include>)
@@ -683,7 +697,7 @@ PROPERTIES
 )
 
 IF(MSVC)
-  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
+  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
   TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
 ENDIF(MSVC)
 

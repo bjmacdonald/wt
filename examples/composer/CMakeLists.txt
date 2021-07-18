@@ -1,4 +1,3 @@
-IF(BOOST_WT_FOUND)
 WT_ADD_EXAMPLE(composer.wt 
   AddresseeEdit.C
   AttachmentEdit.C
@@ -23,6 +22,3 @@ INCLUDE_DIRECTORIES(
   ${WT_SOURCE_DIR}/src
   ${WT_SOURCE_DIR}/examples/treelist
 )
-ELSE(BOOST_WT_FOUND)
-  MESSAGE(STATUS "** Not building composer example: requires boost headers.")
-ENDIF(BOOST_WT_FOUND)

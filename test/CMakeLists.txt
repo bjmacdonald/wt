@@ -176,7 +176,7 @@ IF(WT_ENABLE_LIBWTTEST)
     SUBDIRS(interactive)
   ENDIF (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/interactive)
 
-  IF(CONNECTOR_HTTP)
+  IF(WT_CONNECTOR_HTTP)
     SET(HTTP_TEST_SOURCES
       test.C
       http/HttpClientServerTest.C
@@ -190,7 +190,7 @@ IF(WT_ENABLE_LIBWTTEST)
     IF(TARGET Boost::headers)
         TARGET_LINK_LIBRARIES(test.http Boost::headers)
     ENDIF()
-  ENDIF(CONNECTOR_HTTP)
+  ENDIF(WT_CONNECTOR_HTTP)
 
 ELSE (WT_ENABLE_LIBWTTEST)
   MESSAGE("** libwttest disabled, not building tests")

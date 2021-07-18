@@ -54,7 +54,7 @@ IF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
 
     get_filename_component(WT_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
-    SET(HAVE_HARU true)
+    SET(WT_ENABLE_HARU true)
     add_library(libhpdf SHARED IMPORTED)
     set_target_properties(libhpdf PROPERTIES
       IMPORTED_IMPLIB "${WT_INSTALL_DIR}/lib/libhpdf.lib"
@@ -85,7 +85,7 @@ IF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     # Windows SDK is always multithreaded
     SET(BOOST_WT_MT_FOUND true)
     SET(WT_MULTI_THREADED true)
-    SET(MULTI_THREADED_BUILD true)
+    SET(WT_MULTI_THREADED true)
     SET(WT_HAS_WRASTERIMAGE true)
   ENDIF(WIN32)
 ENDIF("${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
