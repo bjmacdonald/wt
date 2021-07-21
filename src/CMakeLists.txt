@@ -1,5 +1,5 @@
-add_subdirectory(web)
-add_subdirectory(Wt)
+# rt library logic unnecessary; Boost::chrono defines its dependencies
+
 
 add_library(wt)
 target_compile_features(wt PUBLIC cxx_std_17)
@@ -436,7 +436,6 @@ IF (WT_CPP20_DATE_TZ_IMPLEMENTATION STREQUAL "date")
   IF (WIN32)
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=0)
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS HAS_REMOTE_API=0)
-    set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
   ELSE (WIN32)
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
   ENDIF (WIN32)
@@ -505,20 +504,6 @@ IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagic
   ENDIF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 ENDIF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 
-# check if we need -lrt, used in boost::chrone::steady_clock::now()
-SET(RT_test_fname "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/rt.c")
-FILE(WRITE
-    "${RT_test_fname}"
-    "#include <time.h>\nint main() { struct timespec time1; clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1); return 0; }"
-    )
-TRY_COMPILE(RT_required
-    "${CMAKE_BINARY_DIR}" "${RT_test_fname}"
-    CMAKE_FLAGS
-    -DLINK_LIBRARIES:STRING=rt
-    )
-IF(RT_required)
-  SET(RT_LIBRARY "rt")
-ENDIF(RT_required)
 
 IF(WIN32)
   IF(WT_SHARED_LIBS)
@@ -547,56 +532,7 @@ TARGET_LINK_LIBRARIES(wt
     ${WT_SOCKET_LIBRARY}
   PRIVATE
     ${WT_MATH_LIBRARY}
-    ${RT_LIBRARY}
     )
-
-IF(WT_ENABLE_LIBWTTEST)
-  ADD_LIBRARY(wttest
-    Wt/Test/WTestEnvironment.C
-  )
-
-  SET_PROPERTY(TARGET wttest PROPERTY C_VISIBILITY_PRESET hidden)
-  SET_PROPERTY(TARGET wttest PROPERTY CXX_VISIBILITY_PRESET hidden)
-  SET_PROPERTY(TARGET wttest PROPERTY VISIBILITY_INLINES_HIDDEN YES)
-
-  TARGET_LINK_LIBRARIES(wttest PUBLIC wt)
-
-  IF(TARGET Boost::headers)
-    TARGET_LINK_LIBRARIES(
-      wttest
-    PRIVATE
-      Boost::headers
-    )
-  ENDIF()
-
-  IF(WT_MULTI_THREADED)
-    TARGET_LINK_LIBRARIES(wttest PRIVATE ${WT_THREAD_LIB})
-  ENDIF(WT_MULTI_THREADED)
-
-  INSTALL(TARGETS wttest
-          EXPORT wt-target-test
-	  RUNTIME DESTINATION bin
-	  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-	  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
-  INSTALL(EXPORT wt-target-test
-          DESTINATION ${CMAKE_INSTALL_DIR}/wt
-          NAMESPACE Wt::)
-
-  IF(MSVC)
-    SET_TARGET_PROPERTIES(wttest PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
-	SET_TARGET_PROPERTIES(wttest PROPERTIES FOLDER "test")
-  ENDIF(MSVC)
-
-  SET_TARGET_PROPERTIES(
-    wttest
-  PROPERTIES
-    EXPORT_NAME Test
-    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
-  )
-ELSE(WT_ENABLE_LIBWTTEST)
-  MESSAGE("** Not building libwttest")
-ENDIF(WT_ENABLE_LIBWTTEST)
 
 IF(WT_ENABLE_SSL)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${OPENSSL_LIBRARIES})
@@ -701,4 +637,58 @@ IF(MSVC)
   TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
 ENDIF(MSVC)
 
-SUBDIRS(isapi fcgi http)
+#
+# WT_ENABLE_LIBWTTEST
+#
+IF(WT_ENABLE_LIBWTTEST)
+  ADD_LIBRARY(wttest Wt/Test/WTestEnvironment.C)
+
+  SET_PROPERTY(TARGET wttest PROPERTY C_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wttest PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wttest PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+
+  TARGET_LINK_LIBRARIES(wttest PUBLIC wt)
+
+  IF(TARGET Boost::headers)
+    TARGET_LINK_LIBRARIES(
+      wttest
+    PRIVATE
+      Boost::headers
+    )
+  ENDIF()
+
+  IF(WT_MULTI_THREADED)
+    TARGET_LINK_LIBRARIES(wttest PRIVATE ${WT_THREAD_LIB})
+  ENDIF(WT_MULTI_THREADED)
+
+  INSTALL(TARGETS wttest
+          EXPORT wt-target-test
+	  RUNTIME DESTINATION bin
+	  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+	  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+
+  INSTALL(EXPORT wt-target-test
+          DESTINATION ${CMAKE_INSTALL_DIR}/wt
+          NAMESPACE Wt::)
+
+  IF(MSVC)
+    SET_TARGET_PROPERTIES(wttest PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
+	SET_TARGET_PROPERTIES(wttest PROPERTIES FOLDER "test")
+  ENDIF(MSVC)
+
+  SET_TARGET_PROPERTIES(
+    wttest
+  PROPERTIES
+    EXPORT_NAME Test
+    VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
+  )
+ELSE(WT_ENABLE_LIBWTTEST)
+  MESSAGE("** Not building libwttest")
+ENDIF(WT_ENABLE_LIBWTTEST)
+
+
+#add_subdirectory(web)
+#add_subdirectory(Wt)
+#add_subdirectory(isapi)
+#add_subdirectory(fcgi)
+#add_subdirectory(http)

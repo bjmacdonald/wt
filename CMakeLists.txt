@@ -4,7 +4,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
 cmake_policy(SET CMP0077 NEW)
 
 
-PROJECT(WT)
+PROJECT(WT LANGUAGES CXX)
+
+# Was min 14, now set to 17 and use std::any
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 
 #
 # Version Settings
@@ -37,6 +42,8 @@ SET(VERSION_MINOR 0)
 # Always multi-threaded build.
 # set *_STATIC in WConfig.h.in using WT_SHARED_LIBS directly (for "Windows declspec stuff")
 # Expliticly link targets to support libraries, for above reason.
+# Threads::Threads search not necessary, defined as dependency in Boost::threads
+# WT_THREAD_LIB not necessary
 
 # src/CMakeLists.txt
 # 
@@ -62,13 +69,6 @@ SET(CMAKE_MODULE_PATH
 
 SET(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE true)
 set(CMAKE_DEBUG_POSTFIX "d")
-
-# Was min 14, now set to 17 and use std::any
-IF(NOT CMAKE_CXX_STANDARD)
-  SET(CMAKE_CXX_STANDARD 17)
-ENDIF(NOT CMAKE_CXX_STANDARD)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_EXTENSIONS OFF)
 
 # unconditionally use std::any, we are C++17 or higher.
 SET(WT_ANY_IS_STD_ANY ON)
@@ -260,13 +260,10 @@ SET(WEBGROUP apache CACHE STRING "Webserver groupname (e.g. apache or www or use
 #
 IF(WT_MULTI_THREADED)
   MESSAGE("** Enabling multi threading.")
-  find_package(Threads REQUIRED)
-  set(WT_THREAD_LIB Threads::Threads)
   SET(WT_THREADED ON)
   add_compile_definitions(_REENTRANT BOOST_SPIRIT_THREADSAFE)
 ELSE(WT_MULTI_THREADED)
   MESSAGE("** Disabling multi threading.")
-  set(WT_THREAD_LIB "")
   SET(WT_THREADED OFF)
   add_compile_definitions(BOOST_DISABLE_THREADS SQLITE_THREADSAFE=0)
 ENDIF(WT_MULTI_THREADED)
