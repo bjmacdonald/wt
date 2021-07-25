@@ -81,7 +81,6 @@ target_sources(wt PRIVATE
   $<$<CONFIG:DEBUG>:Wt_js.C Boot_js.C WCartesianChart_js.C>
   $<$<NOT:$<CONFIG:DEBUG>>:Wt_min_js.C Boot_min_js.C WCartesianChart_min_js.C>
 )
-#target_sources(wt PRIVATE Wt_js.C Boot_js.C WCartesianChart_js.C)
 
 
 target_sources(wt PRIVATE
@@ -417,9 +416,6 @@ web/base64.h web/base64.cpp
 Plain_html.C
 Boot_html.C
 Hybrid_html.C
-Boot_js.C
-Wt_js.C
-WCartesianChart_js.C
 Wt_xml.C
 AuthStrings_xml.C
 BootstrapTheme_xml.C
@@ -449,7 +445,7 @@ ENDIF ()
 
 IF (WT_MULTI_THREADED)
   target_sources(wt PRIVATE web/SocketNotifier.h web/SocketNotifier.C)
-  target_link_libraries(wt PRIVATE Threads::Threads Boost::thread)
+  target_link_libraries(wt PRIVATE Boost::thread)
 ENDIF(WT_MULTI_THREADED)
 
 # How to include x86.S ?
@@ -460,49 +456,50 @@ target_sources(wt PRIVATE
 
 IF(WT_ENABLE_HARU)
   target_sources(wt PRIVATE Wt/WPdfImage.h Wt/WPdfImage.C Wt/Render/WPdfRenderer.h Wt/Render/WPdfRenderer.C)
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})
+  INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
+ELSE(WT_ENABLE_HARU)
+  MESSAGE("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")
 ENDIF(WT_ENABLE_HARU)
+
 
 IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-gm.C)
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${GM_LIBRARIES})
+  INCLUDE_DIRECTORIES(${GM_INCLUDE_DIRS})
+  target_compile_definitions(wt PRIVATE HAVE_GRAPHICSMAGICK)
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "skia")
   target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-skia.C)
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${SKIA_LIBRARIES})
+  INCLUDE_DIRECTORIES(${SKIA_INCLUDE_DIRS})
+  ADD_DEFINITIONS(${SKIA_DEFINES})
 ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
   target_sources(wt PRIVATE Wt/WRasterImage.h Wt/WRasterImage-d2d1.C)
-ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
+  TARGET_LINK_LIBRARIES(wt PRIVATE d2d1 dwrite windowscodecs shlwapi)
+ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
+  MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
+ENDIF()
 
-IF(WT_ENABLE_OPENGL)
-  target_sources(wt PRIVATE Wt/WServerGLWidget.h Wt/WServerGLWidget.C)
-  IF(NOT USE_SYSTEM_GLEW)
-    target_compile_definitions(wt PRIVATE GLEW_STATIC)
-    target_sources(wt PRIVATE 
-      3rdparty/glew-1.10.0/include/GL/glew.h
-      3rdparty/glew-1.10.0/include/GL/glxew.h
-      3rdparty/glew-1.10.0/include/GL/wglew.h
-      3rdparty/glew-1.10.0/src/glew.c
-    )
-  ENDIF(NOT USE_SYSTEM_GLEW)
-ENDIF(WT_ENABLE_OPENGL)
-
-SET(WT_FONTSUPPORT_SIMPLE false)
-SET(WT_FONTSUPPORT_PANGO false)
-SET(WT_FONTSUPPORT_DIRECTWRITE false)
-SET(HAVE_DIRECTWRITE false)
-IF(WIN32)
-  SET(HAVE_DIRECTWRITE true)
-ENDIF(WIN32)
 
 IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
   IF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportPango.C)
-    SET(WT_FONTSUPPORT_PANGO true)
-  ELSEIF(HAVE_DIRECTWRITE)
+		TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
+		INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
+		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_PANGO)
+		MESSAGE("** Enabling advanced font support using libpango")
+  ELSEIF(WIN32)
+		# DirectWrite
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportDirectWrite.C)
-    SET(WT_FONTSUPPORT_DIRECTWRITE true)
-  ELSE(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+		TARGET_LINK_LIBRARIES(wt PRIVATE dwrite)
+		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_DIRECTWRITE)
+		MESSAGE("** Enabling advanced font support using DirectWrite")
+  ELSE()
     SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportSimple.C)
-    SET(WT_FONTSUPPORT_SIMPLE true)
-  ENDIF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-ENDIF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_SIMPLE)
+		MESSAGE("** Disabling advanced font rendering support: requires libpango.")
+  ENDIF()
+ENDIF()
 
 
 IF(WIN32)
@@ -513,98 +510,30 @@ IF(WIN32)
   ENDIF(WT_SHARED_LIBS)
 ENDIF(WIN32)
 
-ADD_LIBRARY(wt ${libsources})
-
 SET_PROPERTY(TARGET wt PROPERTY C_VISIBILITY_PRESET hidden)
 SET_PROPERTY(TARGET wt PROPERTY CXX_VISIBILITY_PRESET hidden)
 SET_PROPERTY(TARGET wt PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 
-if (WT_ASIO_IS_STANDALONE_ASIO)
-  TARGET_LINK_LIBRARIES(wt
-    PRIVATE ${BOOST_WT_LIBRARIES})
-else (WT_ASIO_IS_STANDALONE_ASIO)
-  TARGET_LINK_LIBRARIES(wt
-    PUBLIC ${BOOST_WT_LIBRARIES})
-endif (WT_ASIO_IS_STANDALONE_ASIO)
-
-TARGET_LINK_LIBRARIES(wt
-  PUBLIC
-    ${WT_SOCKET_LIBRARY}
-  PRIVATE
-    ${WT_MATH_LIBRARY}
-    )
+#TARGET_LINK_LIBRARIES(wt
+#  PUBLIC
+#    ${WT_SOCKET_LIBRARY}
+#  PRIVATE
+#    ${WT_MATH_LIBRARY}
+#    )
 
 IF(WT_ENABLE_SSL)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${OPENSSL_LIBRARIES})
-  INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
-  IF(WIN32)
-    TARGET_LINK_LIBRARIES(wt PRIVATE Crypt32.lib)
-  ENDIF(WIN32)
+	target_link_libraries(wt PRIVATE OpenSSL::OpenSSL)
 ELSE(WT_ENABLE_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
 ENDIF(WT_ENABLE_SSL)
 
-IF(WT_ENABLE_HARU)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})
-  INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
-ELSE(WT_ENABLE_HARU)
-  MESSAGE("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")
-  IF(WT_ENABLE_HARU)
-    MESSAGE("   Indicate the location of your haru library using -DHARU_PREFIX=...")
-  ENDIF(WT_ENABLE_HARU)
-ENDIF(WT_ENABLE_HARU)
-
-IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${GM_LIBRARIES})
-  INCLUDE_DIRECTORIES(${GM_INCLUDE_DIRS})
-  ADD_DEFINITIONS(-DHAVE_GRAPHICSMAGICK)
-ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "skia")
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${SKIA_LIBRARIES})
-  INCLUDE_DIRECTORIES(${SKIA_INCLUDE_DIRS})
-  ADD_DEFINITIONS(${SKIA_DEFINES})
-ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-  TARGET_LINK_LIBRARIES(wt PRIVATE d2d1 dwrite windowscodecs shlwapi)
-ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-  MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
-ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
-
-IF(WT_ENABLE_OPENGL)
-  INCLUDE_DIRECTORIES(${GL_INCLUDE_DIRS})
-  IF(USE_SYSTEM_GLEW)
-    TARGET_LINK_LIBRARIES(wt PRIVATE GLEW)
-  ENDIF(USE_SYSTEM_GLEW)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${GL_LIBRARIES})
-ELSE(WT_ENABLE_OPENGL)
-  MESSAGE("** Disabling server-side opengl rendering for WGLWidget: requires gl, glew and WRasterImage (GraphicsMagick or skia).")
-ENDIF(WT_ENABLE_OPENGL)
-
-IF(WT_FONTSUPPORT_SIMPLE)
-  ADD_DEFINITIONS(-DWT_FONTSUPPORT_SIMPLE)
-  MESSAGE("** Disabling advanced font rendering support: requires libpango.")
-  IF(WT_ENABLE_PANGO)
-    MESSAGE("   Wt will use pkg-config to retrieve your libpango installation location.")
-  ENDIF(WT_ENABLE_PANGO)
-ELSEIF(WT_FONTSUPPORT_PANGO)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
-  INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
-  ADD_DEFINITIONS(-DWT_FONTSUPPORT_PANGO)
-  MESSAGE("** Enabling advanced font support using libpango")
-ELSEIF(WT_FONTSUPPORT_DIRECTWRITE)
-  TARGET_LINK_LIBRARIES(wt PRIVATE dwrite)
-  ADD_DEFINITIONS(-DWT_FONTSUPPORT_DIRECTWRITE)
-  MESSAGE("** Enabling advanced font support using DirectWrite")
-ENDIF(WT_FONTSUPPORT_SIMPLE)
 
 IF(WT_ENABLE_UNWIND)
-  ADD_DEFINITIONS(-DWT_WITH_UNWIND)
+  target_compile_definitions(wt PRIVATE WT_WITH_UNWIND)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${UNWIND_LIBRARIES})
   INCLUDE_DIRECTORIES(${UNWIND_INCLUDE_DIRS})
   MESSAGE("** Enabling stacktrace prints using libunwind")
 ENDIF(WT_ENABLE_UNWIND)
-
-IF(WT_MULTI_THREADED)
-  TARGET_LINK_LIBRARIES(wt PRIVATE ${WT_THREAD_LIB})
-ENDIF(WT_MULTI_THREADED)
 
 TARGET_INCLUDE_DIRECTORIES(wt INTERFACE
   $<INSTALL_INTERFACE:include>)
@@ -636,6 +565,7 @@ IF(MSVC)
   SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
   TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
 ENDIF(MSVC)
+
 
 #
 # WT_ENABLE_LIBWTTEST

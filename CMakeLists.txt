@@ -33,9 +33,9 @@ SET(VERSION_MINOR 0)
 #   HAVE_PANGO -> changed to WT_ENABLE_PANGO in CMakeLists.txt files
 #   HAVE_UNWIND -> changed to WT_ENABLE_UNWIND in CMakeLists.txt files
 #   MULTI_THREADED_BUILD -> changed to WT_MULTI_THREADED in CMakeLists.txt files
-#   HAVE_GL -> changed to WT_ENABLE_OPENGL in CMakeLists.txt files
 #   HAVE_HARU -> changed to WT_ENABLE_HARU in CMakeLists.txt files
 # Removed support for Mingw, Cygwin, QT4
+# Removed support for server-side OpenGL. All modern browsers have WebGL suport.
 # Defined support libraries, expecially OpenSSL & Boost are required, removed "not found" logic
 # Removed MT, etc logic from Boost.  Always link to static multi-threaded.
 # Always use Boost asio.
@@ -49,6 +49,7 @@ SET(VERSION_MINOR 0)
 # 
 # Removed unused vars, or vars with no effect:
 #   HAVE_PDF_IMAGE
+# Link in non-minfied versions of JS for Debug builds.
 
 
 #
@@ -60,6 +61,8 @@ SET(VERSION_MINOR 0)
 #      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
 #      FORCE)
 #ENDIF(NOT CMAKE_BUILD_TYPE)
+
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
 SET(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
@@ -110,7 +113,6 @@ OPTION(WT_ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
 OPTION(WT_ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
 OPTION(WT_ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
 OPTION(WT_ENABLE_QT5 "Build Qt5 interworking library (libwtwithqt5)" OFF)
-OPTION(WT_ENABLE_OPENGL "Build Wt with support for server-side opengl rendering" ON)
 OPTION(WT_ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 
 IF(WIN32)
@@ -275,15 +277,16 @@ ENDIF(WT_MULTI_THREADED)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.75.0 REQUIRED
-             COMPONENTS filesystem program_options
+             COMPONENTS filesystem program_options thread
              CONFIG)
-
+message("Boost found at ${Boost_DIR}")
 
 #
 # SSL
 #
 IF(WT_ENABLE_SSL)
   find_package(OpenSSL REQUIRED CONFIG)
+	message("OpenSSL found at ${OpenSSL_DIR}")
   SET(WT_WITH_SSL ON)
 ENDIF(WT_ENABLE_SSL)
 
@@ -325,13 +328,12 @@ ENDIF(WT_ENABLE_QT5)
 # decide on GraphicsMagick vs skia
 # todo: set default to whatever was found
 IF (WIN32)
-  SET(WT_WRASTERIMAGE_DEFAULT_IMPLEMENTATION "Direct2D")
+	SET(WT_WRASTERIMAGE_IMPLEMENTATION Direct2D CACHE STRING "Implementation for WRasterImage server-side rendering")
+	SET_PROPERTY(CACHE WT_WRASTERIMAGE_IMPLEMENTATION PROPERTY STRINGS GraphicsMagick skia Direct2D none)
 ELSE (WIN32)
-  SET(WT_WRASTERIMAGE_DEFAULT_IMPLEMENTATION "none")
+	SET(WT_WRASTERIMAGE_IMPLEMENTATION none CACHE STRING "Implementation for WRasterImage server-side rendering")
+	SET_PROPERTY(CACHE WT_WRASTERIMAGE_IMPLEMENTATION PROPERTY STRINGS GraphicsMagick skia none)
 ENDIF (WIN32)
-
-SET(WT_WRASTERIMAGE_IMPLEMENTATION ${WT_WRASTERIMAGE_DEFAULT_IMPLEMENTATION} CACHE STRING "Implementation for WRasterImage server-side rendering")
-SET_PROPERTY(CACHE WT_WRASTERIMAGE_IMPLEMENTATION PROPERTY STRINGS GraphicsMagick skia Direct2D none)
 
 IF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
   #INCLUDE(cmake/WtFindGm.txt)
@@ -352,16 +354,6 @@ ELSEIF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "Direct2D")
 ELSE (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
     MESSAGE("** Disabled WRasterimage support. Set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick, skia, or Direct2D.")
 ENDIF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
-
-#
-# OpenGL
-#
-# ToDo: Check OpenGL support on linux
-IF(WT_ENABLE_OPENGL AND WT_HAS_WRASTERIMAGE)
-  #INCLUDE(cmake/WtFindGL.txt)
-  find_package(OpenGL REQUIRED)
-  SET(WT_USE_OPENGL ON)
-ENDIF(WT_ENABLE_OPENGL AND WT_HAS_WRASTERIMAGE)
 
 #
 # Unwind
@@ -483,7 +475,7 @@ IF(${Boost_USE_STATIC_LIBS})
 ELSE()
   SET(_WTCONFIG_BOOST_STATIC "OFF")
 ENDIF()
-IF (${WT_ASIO_IMPLEMENTATION} STREQUAL "boost")
+IF (${WT_ASIO_IS_BOOST_ASIO})
   SET(_WTCONFIG_CMAKE_FIND_BOOST TRUE)
 ELSEIF(Boost_USE_STATIC_LIBS AND NOT WT_SHARED_LIBS)
   SET(_WTCONFIG_CMAKE_FIND_BOOST TRUE)
