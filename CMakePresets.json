@@ -1,0 +1,90 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "win64-base",
+      "description": "Sets generator, build and install directory, vcpkg",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "c:/git-projects-build/wt/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "c:/git-projects-build/wt/install/${presetName}",
+        "CMAKE_CXX_COMPILER": "cl"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "win64-debug",
+      "description": "Windows Debug Config",
+      "inherits": [ "win64-base" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "win64-release",
+      "description": "Windows Release Config",
+      "inherits": [ "win64-base" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-base",
+      "description": "Sets generator, build and install directory",
+      "generator": "Ninja",
+      "binaryDir": "c:/git-projects-build/wt/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        }
+      }
+    },
+    {
+      "name": "linux-warnings",
+      "description": "Enables dev warnings (-wdev)",
+      "inherits": "linux-base",
+      "warnings": {
+        "dev": true
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "win64-build-debug",
+      "configurePreset": "win64-debug",
+      "inheritConfigureEnvironment": true,
+      "description": "Windows Debug Build",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win64-build-release",
+      "configurePreset": "win64-release",
+      "inheritConfigureEnvironment": true,
+      "description": "Windows Release Build",
+      "configuration": "Release"
+    },
+    {
+      "name": "win64-build-debug-verbose",
+      "inherits": "win64-build-debug",
+      "description": "Windows Debug Verbose Build",
+      "nativeToolOptions": [ "-v" ]
+    }
+  ]
+}

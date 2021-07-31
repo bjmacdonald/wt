@@ -17,3 +17,4 @@ resources/tiny_mce
 test/interactive
 debug/
 .vscode/
+.vs/
