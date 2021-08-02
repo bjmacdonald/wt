@@ -621,7 +621,7 @@ ENDIF(WT_ENABLE_LIBWTTEST)
 install(FILES web/DomElement.h web/EscapeOStream.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Wt )
 
-#add_subdirectory(Wt)
-#add_subdirectory(isapi)
-#add_subdirectory(fcgi)
-#add_subdirectory(http)
+add_subdirectory(Wt)
+add_subdirectory(isapi)
+add_subdirectory(fcgi)
+add_subdirectory(http)
