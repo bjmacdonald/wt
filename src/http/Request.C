@@ -16,7 +16,7 @@
 #include <Wt/WSslInfo.h>
 #include <Wt/WTime.h>
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 #include <openssl/ssl.h>
 #endif
 
@@ -273,7 +273,7 @@ bool Request::acceptGzipEncoding() const
 
 std::unique_ptr<Wt::WSslInfo> Request::sslInfo() const
 {
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   if (!ssl)
     return nullptr;
 

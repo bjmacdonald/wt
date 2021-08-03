@@ -26,7 +26,7 @@
 // For ::int64_ and ::uint64_t on Windows only
 #include "Wt/WDllDefs.h"
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 #include <openssl/ssl.h>
 #endif
 
@@ -95,7 +95,7 @@ public:
 #endif
 
   Request() {
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
     ssl = nullptr;
 #endif
     http_version_major = -1;
@@ -131,7 +131,7 @@ public:
 
   std::vector<std::pair<std::string, std::string> > url_params;
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   SSL *ssl;
 #endif
   std::unique_ptr<Wt::WSslInfo> sslInfo() const;

@@ -5,25 +5,10 @@ endif()
 
 MESSAGE("** Enabling built-in httpd.")
 
-# Wt uses strstrcase for case insensitive ASCII string
-# comparisons on Linux for performance reasons. This function is however
-# not supported on many platforms (windows, solaris)
-INCLUDE(CheckFunctionExists)
-CHECK_FUNCTION_EXISTS(strcasestr  HAVE_STRCASESTR)
-CHECK_FUNCTION_EXISTS(strcasecmp  HAVE_STRCASECMP)
-CHECK_FUNCTION_EXISTS(strncasecmp HAVE_STRNCASECMP)
+add_library(wthttp)
+target_compile_definitions(wthttp PRIVATE WT_BUILDING)
 
-IF (HAVE_STRCASESTR)
-  ADD_DEFINITIONS(-DHAVE_STRCASESTR)
-ENDIF (HAVE_STRCASESTR)
-IF (HAVE_STRCASECMP)
-  ADD_DEFINITIONS(-DHAVE_STRCASECMP)
-ENDIF (HAVE_STRCASECMP)
-IF (HAVE_STRNCASECMP)
-  ADD_DEFINITIONS(-DHAVE_STRNCASECMP)
-ENDIF (HAVE_STRNCASECMP)
-
-SET(libhttpsources
+target_sources(wthttp PRIVATE
   Android.h Android.C
   Configuration.h Configuration.C
   Connection.h Connection.C
@@ -46,82 +31,51 @@ SET(libhttpsources
   WtReply.h WtReply.C
 )
 
-OPTION(HTTP_WITH_ZLIB "Support for zlib (http compression)" ${ZLIB_FOUND})
+# Wt uses strstrcase for case insensitive ASCII string comparisons on Linux for performance reasons. This function is however
+# not supported on many platforms (windows, solaris).
+# BMD This is ignored for Windows and only applies to Request.C
+if(NOT WIN32)
+  if(NOT WIN32)
+    INCLUDE(CheckFunctionExists)
+    set(WT_REQUEST_C_DEFS "")
+    foreach(_STRFN strcasestr strcasecmp strncasecmp)
+      CHECK_FUNCTION_EXISTS(${_STRFN} _HAS_STRFN)
+      if(_HAS_STRFN)
+        string(TOUPPER ${_STRFN} _STRFNU)
+        list(APPEND WT_REQUEST_C_DEFS "WT_HAVE_${_STRFNU}")
+      endif()
+    endforeach()
+  ENDIF()
+  set_source_files_properties(Request.C PROPERTIES COMPILE_DEFINITIONS ${WT_REQUEST_C_DEFS})
+endif()
 
-IF(WIN32)
-  IF(WT_SHARED_LIBS)
-    CONFIGURE_FILE(wthttp-version.rc.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
-    SET(libhttpsources ${libhttpsources}
-        ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
-  ENDIF(WT_SHARED_LIBS)
+# Boost
+target_link_libraries(wthttp PRIVATE Boost::date_time Boost::filesystem Boost::program_options Boost::thread)
 
-# boost asio has a serious bug causing subtle data corruption
-# https://svn.boost.org/trac/boost/ticket/8935
-# https://svn.boost.org/trac/boost/ticket/8933
-IF (Boost_VERSION EQUAL 105400 OR Boost_VERSION STREQUAL "1.54.0")
-  MESSAGE(FATAL_ERROR "** boost 1.54 is blacklisted for httpd on Windows (boost ticket #8935)")
-ENDIF ()
-ENDIF(WIN32)
+# SSL
+IF(WT_ENABLE_SSL)
+  target_link_libraries(wthttp PRIVATE OpenSSL::OpenSSL)
+ELSE(WT_ENABLE_SSL)
+  MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
+ENDIF(WT_ENABLE_SSL)
 
-IF (WT_ENABLE_SSL)
-  SET(MY_SSL_LIBS ${OPENSSL_LIBRARIES})
-  ADD_DEFINITIONS(-DHTTP_WITH_SSL)
-ELSE (WT_ENABLE_SSL)
-  SET(MY_SSL_LIBS "")
-ENDIF (WT_ENABLE_SSL)
 
-IF(NOT BOOST_WTHTTP_FOUND)
+# ZLib (find_package in top level CMakeLists.txt)
+IF(ZLIB_FOUND)
+  target_link_libraries(wthttp PRIVATE ZLIB::ZLIB)
+  target_compile_definitions(wthttp PUBLIC WTHTTP_WITH_ZLIB)
+ENDIF()
 
-  MESSAGE(FATAL "** Could not find all boost libraries required to build the httpd connector (thread, filesystem, programoptions, datetime)")
+TARGET_LINK_LIBRARIES(wthttp PUBLIC wt)
+#TARGET_LINK_LIBRARIES(wthttp PRIVATE ${WT_SOCKET_LIBRARY})
 
-ENDIF(NOT BOOST_WTHTTP_FOUND)
-IF(HTTP_WITH_ZLIB)
-  ADD_DEFINITIONS(-DWTHTTP_WITH_ZLIB ${ZLIB_DEFINITIONS})
-  SET(MY_ZLIB_LIBS ${ZLIB_LIBRARIES})
-  INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-ELSE(HTTP_WITH_ZLIB)
-  SET(MY_ZLIB_LIBS "")
-ENDIF(HTTP_WITH_ZLIB)
 
-INCLUDE_DIRECTORIES(
-  ${BOOST_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../web
-  ${CMAKE_CURRENT_SOURCE_DIR}/../wt
-  ${CMAKE_CURRENT_BINARY_DIR}/
-)
+IF(WIN32 AND WT_SHARED_LIBS)
+  CONFIGURE_FILE(wthttp-version.rc.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
+  target_sources(wthttp ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
+ENDIF()
 
-ADD_DEFINITIONS(${ZLIB_DEFINITIONS})
-ADD_LIBRARY(wthttp ${libhttpsources})
-
-SET_PROPERTY(TARGET wthttp PROPERTY C_VISIBILITY_PRESET hidden)
-SET_PROPERTY(TARGET wthttp PROPERTY CXX_VISIBILITY_PRESET hidden)
-SET_PROPERTY(TARGET wthttp PROPERTY VISIBILITY_INLINES_HIDDEN YES)
-
-TARGET_LINK_LIBRARIES(wthttp
-  PUBLIC
-    wt
-  PRIVATE
-    ${MY_ZLIB_LIBS}
-    ${MY_SSL_LIBS}
-    ${BOOST_WTHTTP_LIBRARIES}
-    ${WT_SOCKET_LIBRARY}
-    ${WIN32_STRSTRI_LIB}
-)
-
-IF(BOOST_WT_MT_FOUND)
-  TARGET_LINK_LIBRARIES(wthttp PRIVATE ${WT_THREAD_LIB})
-ENDIF(BOOST_WT_MT_FOUND)
-
-INSTALL(TARGETS wthttp
-  EXPORT wt-target-http
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
-INSTALL(EXPORT wt-target-http
-        DESTINATION ${CMAKE_INSTALL_DIR}/wt
-        NAMESPACE Wt::)
 
 SET_TARGET_PROPERTIES(
   wthttp
@@ -137,5 +91,16 @@ IF(MSVC)
       COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267 /wd4267"
   )
 ENDIF(MSVC)
+
+INSTALL(TARGETS wthttp
+  EXPORT wt-target-http
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+
+INSTALL(EXPORT wt-target-http
+        DESTINATION ${CMAKE_INSTALL_DIR}/wt
+        NAMESPACE Wt::)
+
 
 ADD_DEPENDENCIES(wthttp wt ${EXAMPLES_CONNECTOR})

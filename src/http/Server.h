@@ -21,9 +21,9 @@
 
 #include "TcpConnection.h"
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 #include "SslConnection.h"
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
 #include "Configuration.h"
 #include "ConnectionManager.h"
@@ -134,7 +134,7 @@ private:
   /// Acceptors used to listen for incoming http connections.
   std::vector<TcpListener> tcp_listeners_;
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   struct SslListener {
     SslListener(asio::ip::tcp::acceptor &&acceptor,
                 SslConnectionPtr new_connection);
@@ -161,7 +161,7 @@ private:
 
   /// Handle completion of an asynchronous SSL accept operation.
   void handleSslAccept(SslListener *listener, const Wt::AsioWrapper::error_code& e);
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
   void handleTimeout(asio::steady_timer *timer,
                      const std::function<void ()>& function,

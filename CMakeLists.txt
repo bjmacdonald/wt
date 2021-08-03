@@ -1,10 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
 
 # consistent handling of OPTION vars, removes need for if(not option_var) ... option() etc.
-cmake_policy(SET CMP0077 NEW)
+cmake_policy(VERSION 3.20)
+#cmake_policy(SET CMP0077 NEW)
+include(CMakePrintHelpers)
 
-
-PROJECT(WT LANGUAGES CXX)
+PROJECT(WT LANGUAGES C CXX)
 
 # Was min 14, now set to 17 and use std::any
 SET(CMAKE_CXX_STANDARD 17)
@@ -131,10 +132,10 @@ add_compile_definitions($<$<PLATFORM_ID:Windows>:_WIN32_WINNT=0x0A00>)
 # suppress excess warnings
 #add_compile_definitions($<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS>)
 
-# IDE folders, nop pdb
+# IDE folders, no pdb
 if(MSVC)
   # store debug info in objects so no pdb required for static libraries
-  foreach(flag_var CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELWITHDEBINFO)
+  foreach(flag_var CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELWITHDEBINFO)
     string(REGEX REPLACE "/Zi" "/Z7" ${flag_var} "${${flag_var}}")
   endforeach()
 
@@ -154,6 +155,13 @@ IF(WIN32)
 ELSE(WIN32)
   OPTION(WT_SHARED_LIBS "Compile shared libraries" ON)
 ENDIF(WIN32)
+
+if(WT_SHARED_LIBS)
+  SET(CMAKE_C_VISIBILITY_PRESET hidden)
+  SET(CMAKE_CXX_VISIBILITY_PRESET hidden)
+  SET(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+ENDIF()
+
 
 OPTION(WT_MULTI_THREADED "Build multi-threaded httpd deamon (if possible)" ON)
 OPTION(WT_DEBUG_ENABLED "Support for debugging, must be enabled also in wt_config.xml" OFF)
@@ -177,7 +185,7 @@ OPTION(WT_CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" 
 # DBO Build Options
 #
 OPTION(WT_ENABLE_LIBWTDBO "Build Wt::Dbo" ON)
-OPTION(WT_ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" OFF)
+OPTION(WT_ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" ON)
 OPTION(WT_ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" OFF)
 OPTION(WT_ENABLE_FIREBIRD "Build FirebirdSQL backend for Wt::Dbo" OFF)
 OPTION(WT_ENABLE_MYSQL "Build mariadb/mysql backend for Wt::Dbo" OFF)
@@ -187,30 +195,14 @@ OPTION(WT_ENABLE_MSSQLSERVER "Build Microsoft SQL Server backend for Wt::Dbo" ON
 #
 # Examples
 #
-OPTION(WT_BUILD_EXAMPLES "Build examples" OFF)
-IF(NOT WT_EXAMPLES_DESTINATION)
-  SET(WT_EXAMPLES_DESTINATION lib/Wt/examples)
-ENDIF(NOT WT_EXAMPLES_DESTINATION)
-
-SET(EXAMPLES_CONNECTOR wthttp CACHE STRING "Connector used for examples")
-IF(WT_BUILD_EXAMPLES)
-  IF(WIN32)
-    SUBDIRS(examples)
-  ELSE(WIN32)
-    IF (WT_INSTALL_EXAMPLES)
-      SUBDIRS(examples)
-    ELSE (WT_INSTALL_EXAMPLES)
-      SUBDIRS(EXCLUDE_FROM_ALL examples)
-    ENDIF (WT_INSTALL_EXAMPLES)
-  ENDIF(WIN32)
-ENDIF(WT_BUILD_EXAMPLES)
+OPTION(WT_BUILD_EXAMPLES "Build examples" ON)
 
 
 #
 # Tests
 #
-OPTION(WT_ENABLE_LIBWTTEST "Build Wt::Test" OFF)
-OPTION(WT_BUILD_TESTS "Build Wt tests" OFF)
+OPTION(WT_ENABLE_LIBWTTEST "Build Wt::Test" ON)
+OPTION(WT_BUILD_TESTS "Build Wt tests" ON)
 
 
 #
@@ -304,7 +296,6 @@ SET(WEBGROUP apache CACHE STRING "Webserver groupname (e.g. apache or www or use
 
 
 
-
 #
 # Multi Threaded
 #
@@ -324,8 +315,8 @@ ENDIF(WT_MULTI_THREADED)
 #
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.75.0 REQUIRED
-             COMPONENTS filesystem program_options thread
+find_package(Boost 1.76.0 REQUIRED
+             COMPONENTS date_time filesystem program_options thread
              CONFIG)
 message("Boost found at ${Boost_DIR}")
 
@@ -337,6 +328,14 @@ IF(WT_ENABLE_SSL)
 	message("OpenSSL found at ${OpenSSL_DIR}")
   SET(WT_WITH_SSL ON)
 ENDIF(WT_ENABLE_SSL)
+
+#
+# ZLib
+#
+find_package(zlib REQUIRED CONFIG)
+if(zlib_FOUND)
+  message("ZLIB found at ${zlib_DIR}")
+endif()
 
 #
 # Haru
@@ -429,9 +428,6 @@ ENDIF()
 
 
 
-
-
-
 #include (CheckSymbolExists)
 #INCLUDE(cmake/WtFindFcgi.txt)
 #INCLUDE(cmake/WtFindMysql.txt)
@@ -445,7 +441,7 @@ ENDIF()
 IF(WT_INSTALL_DOCUMENTATION)
   ADD_CUSTOM_TARGET(doc ALL)
 ELSE(WT_INSTALL_DOCUMENTATION)
-  ADD_CUSTOM_TARGET(doc)
+  #ADD_CUSTOM_TARGET(doc)
 ENDIF(WT_INSTALL_DOCUMENTATION)
 
 #INCLUDE(cmake/WtFindAsciidoc.txt)
@@ -459,7 +455,7 @@ IF (ASCIIDOC_FOUND)
 ENDIF (ASCIIDOC_FOUND)
 
 
-FIND_PACKAGE(Doxygen)
+#FIND_PACKAGE(Doxygen)
 IF (DOXYGEN_FOUND)
   ADD_CUSTOM_TARGET(doxygen
     ${DOXYGEN_EXECUTABLE}
@@ -493,6 +489,22 @@ IF(WT_BUILD_TESTS)
   add_subdirectory(test)
 ENDIF(WT_BUILD_TESTS)
 
+IF(NOT WT_EXAMPLES_DESTINATION)
+  SET(WT_EXAMPLES_DESTINATION lib/Wt/examples)
+ENDIF(NOT WT_EXAMPLES_DESTINATION)
+
+SET(EXAMPLES_CONNECTOR wthttp CACHE STRING "Connector used for examples")
+IF(WT_BUILD_EXAMPLES)
+  IF(WIN32)
+    add_subdirectory(examples)
+  ELSE(WIN32)
+    IF (WT_INSTALL_EXAMPLES)
+      add_subdirectory(examples)
+    ELSE (WT_INSTALL_EXAMPLES)
+      add_subdirectory(examples EXCLUDE_FROM_ALL)
+    ENDIF (WT_INSTALL_EXAMPLES)
+  ENDIF(WIN32)
+ENDIF(WT_BUILD_EXAMPLES)
 
 
 
@@ -546,3 +558,6 @@ INSTALL(FILES
   ${WT_BINARY_DIR}/wt-config.cmake
   ${WT_BINARY_DIR}/wt-config-version.cmake
   DESTINATION ${CMAKE_INSTALL_DIR}/wt)
+
+
+cmake_print_properties(TARGETS wt wthttp wtdbo PROPERTIES INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)

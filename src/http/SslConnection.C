@@ -13,11 +13,12 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifdef HTTP_WITH_SSL
+#include "SslConnection.h"
+
+#ifdef WT_WITH_SSL
 
 #include <vector>
 
-#include "SslConnection.h"
 #include "ConnectionManager.h"
 #include "Server.h"
 
@@ -220,4 +221,4 @@ void SslConnection
 } // namespace server
 } // namespace http
 
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL

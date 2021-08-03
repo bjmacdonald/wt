@@ -5,6 +5,8 @@ cmake_find_package_multi
 [requires]
 boost/1.76.0@ct/ct
 openssl/1.1.1k
+zlib/1.2.11@ct/ct
+# sqlite3/3.36.0
 
 #        if self.options.connector_http:
 #            self.requires("zlib/1.2.11@ct/ct")

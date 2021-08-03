@@ -67,7 +67,7 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void scheduleStop();
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   void registerSslHandle(SSL *ssl) { request_.ssl = ssl; }
 #endif
 

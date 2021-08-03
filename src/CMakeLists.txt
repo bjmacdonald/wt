@@ -4,7 +4,7 @@
 add_library(wt)
 target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
-target_link_libraries(wt PRIVATE Boost::boost Boost::filesystem)
+target_link_libraries(wt PUBLIC Boost::boost Boost::filesystem)
 
 if (MSVC)
   target_compile_options(wt
@@ -31,7 +31,6 @@ target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DI
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
-target_include_directories(wt INTERFACE $<INSTALL_INTERFACE:include>)
 
 MACRO (FILE_TO_STRING infile outfile var)
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
@@ -424,6 +423,7 @@ AuthCssTheme_xml.C
 JQuery_js.C
 )
 
+
 IF (WT_CPP20_DATE_TZ_IMPLEMENTATION STREQUAL "date")
 	target_sources(wt PRIVATE
     Wt/Date/date.h Wt/Date/include/date/date.h
@@ -483,21 +483,21 @@ ENDIF()
 
 IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
   IF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-    SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportPango.C)
-		TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
-		INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
-		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_PANGO)
-		MESSAGE("** Enabling advanced font support using libpango")
+    target_sources(wt PRIVATE Wt/FontSupport.h Wt/FontSupportPango.C)
+    TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
+    INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
+    target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_PANGO)
+    MESSAGE("** Enabling advanced font support using libpango")
   ELSEIF(WIN32)
-		# DirectWrite
-    SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportDirectWrite.C)
-		TARGET_LINK_LIBRARIES(wt PRIVATE dwrite)
-		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_DIRECTWRITE)
-		MESSAGE("** Enabling advanced font support using DirectWrite")
+    # DirectWrite
+    target_sources(wt PRIVATE Wt/FontSupport.h Wt/FontSupportDirectWrite.C)
+    TARGET_LINK_LIBRARIES(wt PRIVATE dwrite)
+    target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_DIRECTWRITE)
+    MESSAGE("** Enabling advanced font support using DirectWrite")
   ELSE()
-    SET(libsources ${libsources} Wt/FontSupport.h Wt/FontSupportSimple.C)
-		target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_SIMPLE)
-		MESSAGE("** Disabling advanced font rendering support: requires libpango.")
+    target_sources(wt PRIVATE Wt/FontSupport.h Wt/FontSupportSimple.C)
+    target_compile_definitions(wt PRIVATE WT_FONTSUPPORT_SIMPLE)
+    MESSAGE("** Disabling advanced font rendering support: requires libpango.")
   ENDIF()
 ENDIF()
 
@@ -506,13 +506,10 @@ IF(WIN32)
   IF(WT_SHARED_LIBS)
     CONFIGURE_FILE(Wt/wt-version.rc.in
                    ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
-    SET(libsources ${libsources} ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
+    target_sources(wt PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
   ENDIF(WT_SHARED_LIBS)
 ENDIF(WIN32)
 
-SET_PROPERTY(TARGET wt PROPERTY C_VISIBILITY_PRESET hidden)
-SET_PROPERTY(TARGET wt PROPERTY CXX_VISIBILITY_PRESET hidden)
-SET_PROPERTY(TARGET wt PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 
 #TARGET_LINK_LIBRARIES(wt
 #  PUBLIC
@@ -522,7 +519,7 @@ SET_PROPERTY(TARGET wt PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 #    )
 
 IF(WT_ENABLE_SSL)
-	target_link_libraries(wt PRIVATE OpenSSL::OpenSSL)
+  target_link_libraries(wt PRIVATE OpenSSL::OpenSSL)
 ELSE(WT_ENABLE_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
 ENDIF(WT_ENABLE_SSL)
@@ -535,8 +532,7 @@ IF(WT_ENABLE_UNWIND)
   MESSAGE("** Enabling stacktrace prints using libunwind")
 ENDIF(WT_ENABLE_UNWIND)
 
-TARGET_INCLUDE_DIRECTORIES(wt INTERFACE
-  $<INSTALL_INTERFACE:include>)
+target_include_directories(wt INTERFACE $<INSTALL_INTERFACE:include>)
 
 INSTALL(TARGETS wt
     EXPORT wt-target-wt
@@ -572,24 +568,9 @@ ENDIF(MSVC)
 #
 IF(WT_ENABLE_LIBWTTEST)
   ADD_LIBRARY(wttest Wt/Test/WTestEnvironment.C)
+  target_compile_definitions(wttest PRIVATE WT_BUILDING)
 
-  SET_PROPERTY(TARGET wttest PROPERTY C_VISIBILITY_PRESET hidden)
-  SET_PROPERTY(TARGET wttest PROPERTY CXX_VISIBILITY_PRESET hidden)
-  SET_PROPERTY(TARGET wttest PROPERTY VISIBILITY_INLINES_HIDDEN YES)
-
-  TARGET_LINK_LIBRARIES(wttest PUBLIC wt)
-
-  IF(TARGET Boost::headers)
-    TARGET_LINK_LIBRARIES(
-      wttest
-    PRIVATE
-      Boost::headers
-    )
-  ENDIF()
-
-  IF(WT_MULTI_THREADED)
-    TARGET_LINK_LIBRARIES(wttest PRIVATE ${WT_THREAD_LIB})
-  ENDIF(WT_MULTI_THREADED)
+  TARGET_LINK_LIBRARIES(wttest PUBLIC wt Boost::boost)
 
   INSTALL(TARGETS wttest
           EXPORT wt-target-test
@@ -602,8 +583,8 @@ IF(WT_ENABLE_LIBWTTEST)
           NAMESPACE Wt::)
 
   IF(MSVC)
-    SET_TARGET_PROPERTIES(wttest PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
-	SET_TARGET_PROPERTIES(wttest PROPERTIES FOLDER "test")
+    target_compile_options(wttest PRIVATE /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267)
+    set_target_properties(wttest PROPERTIES FOLDER "test")
   ENDIF(MSVC)
 
   SET_TARGET_PROPERTIES(

@@ -17,7 +17,9 @@
 #ifndef HTTP_SSL_CONNECTION_HPP
 #define HTTP_SSL_CONNECTION_HPP
 
-#ifdef HTTP_WITH_SSL
+#include <Wt/WConfig.h>
+
+#ifdef WT_WITH_SSL
 
 #include "Wt/AsioWrapper/ssl.hpp"
 
@@ -80,6 +82,6 @@ typedef std::shared_ptr<SslConnection> SslConnectionPtr;
 } // namespace server
 } // namespace http
 
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
 #endif // HTTP_SSL_CONNECTION_HPP

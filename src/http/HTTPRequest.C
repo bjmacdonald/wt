@@ -266,17 +266,17 @@ std::unique_ptr<Wt::WSslInfo> HTTPRequest::sslInfo(const Wt::Configuration &conf
   auto result = reply_->request().sslInfo();
   if (conf.behindReverseProxy() ||
       conf.isTrustedProxy(remoteAddr())) {
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
     if (!result)
       result = sslInfoFromJson();
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
     if (!result)
       result = sslInfoFromHeaders();
   }
   return result;
 }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 std::unique_ptr<Wt::WSslInfo> HTTPRequest::sslInfoFromJson() const
 {
   const char * const ssl_client_certificates = headerValue("X-Wt-Ssl-Client-Certificates");
@@ -317,7 +317,7 @@ std::unique_ptr<Wt::WSslInfo> HTTPRequest::sslInfoFromJson() const
 
   return nullptr;
 }
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
 std::unique_ptr<Wt::WSslInfo> HTTPRequest::sslInfoFromHeaders() const
 {

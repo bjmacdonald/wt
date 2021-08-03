@@ -98,12 +98,12 @@ namespace {
     return ss.str();
   }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   SSL_CTX *nativeContext(Wt::AsioWrapper::asio::ssl::context& context)
   {
     return context.native_handle();
   }
-#endif //HTTP_WITH_SSL
+#endif //WT_WITH_SSL
 
   // The interval to run WebController::expireSessions()
   static const int SESSION_EXPIRE_INTERVAL = 5;
@@ -121,13 +121,13 @@ Server::Server(const Configuration& config, Wt::WServer& wtServer)
     wt_(wtServer),
     accept_strand_(wt_.ioService()),
     // post_strand_(ioService_),
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 #if (defined(WT_ASIO_IS_BOOST_ASIO) && BOOST_VERSION >= 106600) || (defined(WT_ASIO_IS_STANDALONE_ASIO) && ASIO_VERSION >= 101100)
     ssl_context_(asio::ssl::context::sslv23),
 #else
     ssl_context_(wt_.ioService(), asio::ssl::context::sslv23),
 #endif
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
     connection_manager_(),
     sessionManager_(0),
     request_handler_(config, wt_.configuration(), accessLogger_),
@@ -207,7 +207,7 @@ void Server::start()
   if ((!config_.httpsAddress().empty() ||
        !config_.httpsListen().empty())
       && config_.parentPort() == -1) {
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
     // Configure SSL context
     if (config_.hasSslPasswordCallback())
       ssl_context_.set_password_callback(config_.sslPasswordCallback());
@@ -268,13 +268,13 @@ void Server::start()
     std::string sessionId = Wt::WRandom::generateId(SSL_MAX_SSL_SESSION_ID_LENGTH);
     SSL_CTX_set_session_id_context(native_ctx,
       reinterpret_cast<const unsigned char *>(sessionId.c_str()), sessionId.size());
-#else // HTTP_WITH_SSL
+#else // WT_WITH_SSL
     LOG_ERROR_S(&wt_, "built without support for SSL: "
                 "cannot start https server.");
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
   }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   if (config_.parentPort() == -1) {
     // Old style --https-address/--https-port
     if (!config_.httpsAddress().empty())
@@ -290,7 +290,7 @@ void Server::start()
         throw Wt::WException(std::string("Could not bind to \"") + listenStr + "\": invalid format");
     }
   }
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
   // Win32 cancels the non-blocking accept when the thread that called
   // accept exits. To avoid that this happens when called within the
@@ -416,7 +416,7 @@ void Server::addTcpEndpoint(const asio::ip::tcp::endpoint &endpoint,
   }
 }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 Server::SslListener::SslListener(asio::ip::tcp::acceptor &&acceptor,
                                  SslConnectionPtr new_connection)
   : acceptor(std::move(acceptor)), new_connection(new_connection)
@@ -473,19 +473,19 @@ void Server::addSslEndpoint(const asio::ip::tcp::endpoint &endpoint,
   }
 }
 
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
 int Server::httpPort() const
 {
   if (tcp_listeners_.empty()) {
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
     if (ssl_listeners_.empty())
       return -1;
     else
       return ssl_listeners_.front().acceptor.local_endpoint().port();
-#else // HTTP_WITH_SSL
+#else // WT_WITH_SSL
     return -1;
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
   }
 
   return tcp_listeners_.front().acceptor.local_endpoint().port();
@@ -512,7 +512,7 @@ void Server::startAccept()
                                         std::placeholders::_1)));
   }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   for (std::size_t i = 0; i < ssl_listeners_.size(); ++i) {
     asio::ip::tcp::acceptor &acceptor = ssl_listeners_[i].acceptor;
     SslConnectionPtr &new_connection = ssl_listeners_[i].new_connection;
@@ -522,7 +522,7 @@ void Server::startAccept()
                                         &ssl_listeners_[i],
                                         std::placeholders::_1)));
   }
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 }
 
 void Server::startConnect(const std::shared_ptr<asio::ip::tcp::socket>& socket)
@@ -595,11 +595,11 @@ void Server::handleResume()
     tcp_listeners_[i].acceptor.close();
   tcp_listeners_.clear();
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   for (std::size_t i = 0; i < ssl_listeners_.size(); ++i)
     ssl_listeners_[i].acceptor.close();
   ssl_listeners_.clear();
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
   
   start();
 }
@@ -624,7 +624,7 @@ void Server::handleTcpAccept(TcpListener *listener, const Wt::AsioWrapper::error
                                                     listener, std::placeholders::_1)));
 }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 void Server::handleSslAccept(SslListener *listener, const Wt::AsioWrapper::error_code& e)
 {
   if (!e) {
@@ -644,7 +644,7 @@ void Server::handleSslAccept(SslListener *listener, const Wt::AsioWrapper::error
                                           std::bind(&Server::handleSslAccept, this,
                                                     listener, std::placeholders::_1)));
 }
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
 void Server::handleStop()
 {
@@ -660,11 +660,11 @@ void Server::handleStop()
     tcp_listeners_[i].acceptor.close();
   tcp_listeners_.clear();
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
   for (std::size_t i = 0; i < ssl_listeners_.size(); ++i)
     ssl_listeners_[i].acceptor.close();
   ssl_listeners_.clear();
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
   connection_manager_.stopAll();
 }
