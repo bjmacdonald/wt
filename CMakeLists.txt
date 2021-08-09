@@ -214,7 +214,7 @@ OPTION(WT_BUILD_TESTS "Build Wt tests" ON)
 #
 # Install Options
 #
-OPTION(WT_INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" OFF)
+OPTION(WT_INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" ON)
 IF(NOT WT_DOCUMENTATION_DESTINATION)
   SET(WT_DOCUMENTATION_DESTINATION share/doc/Wt)
 ENDIF(NOT WT_DOCUMENTATION_DESTINATION)
@@ -264,7 +264,7 @@ SET(CMAKE_INSTALL_DIR "${LIB_INSTALL_DIR}/cmake" CACHE STRING
 # Runtime Configuration
 #
 IF(WIN32)
-  SET(RUNDIR "c:/witty") # Does not apply to win32
+  SET(RUNDIR "c:/app/wt") # Does not apply to win32
 
   IF(NOT DEFINED CONFIGDIR)
     SET(CONFIGDIR ${RUNDIR} CACHE STRING "Path for the configuration files")
@@ -455,7 +455,7 @@ IF (ASCIIDOC_FOUND)
 ENDIF (ASCIIDOC_FOUND)
 
 
-#FIND_PACKAGE(Doxygen)
+FIND_PACKAGE(Doxygen)
 IF (DOXYGEN_FOUND)
   ADD_CUSTOM_TARGET(doxygen
     ${DOXYGEN_EXECUTABLE}
