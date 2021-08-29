@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 2,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 20,
@@ -11,13 +11,18 @@
       "description": "Sets generator, build and install directory, vcpkg",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "c:/git-projects-build/wt/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_INSTALL_PREFIX": "c:/git-projects-build/wt/install/${presetName}",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl"
       },
       "architecture": {
         "value": "x64",
+        "strategy": "external"
+      },
+      "toolset": {
+        "value": "host=x64",
         "strategy": "external"
       },
       "vendor": {
@@ -46,7 +51,7 @@
       "name": "linux-base",
       "description": "Sets generator, build and install directory",
       "generator": "Ninja",
-      "binaryDir": "c:/git-projects-build/wt/build/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       },
@@ -71,14 +76,16 @@
       "configurePreset": "win64-debug",
       "inheritConfigureEnvironment": true,
       "description": "Windows Debug Build",
-      "configuration": "Debug"
+      "configuration": "Debug",
+      "nativeToolOptions": [ "-k 0" ]
     },
     {
       "name": "win64-build-release",
       "configurePreset": "win64-release",
       "inheritConfigureEnvironment": true,
       "description": "Windows Release Build",
-      "configuration": "Release"
+      "configuration": "Release",
+      "nativeToolOptions": [ "-k 0" ]
     },
     {
       "name": "win64-build-debug-verbose",
