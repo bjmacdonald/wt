@@ -1554,11 +1554,7 @@ void WebSession::handleRequest(Handler& handler)
             = handler.request()->getParameter("signal");
           bool isKeepAlive = requestE && signalE && *signalE == "keepAlive";
           if (isKeepAlive || !env_->ajax()) {
-            if (request.isWebSocketMessage()) {
-              renderer().multiSessionCookieUpdateNeeded_ = true;
-            } else {
-              renderer().updateMultiSessionCookie(request);
-            }
+            renderer().updateMultiSessionCookie(request);
           }
         }
 
@@ -2428,6 +2424,7 @@ void WebSession::notify(const WEvent& event)
 
       const std::string *resourceE = request.getParameter("resource");
       const std::string *signalE = getSignal(request, "");
+      const std::string *verE = request.getParameter("ver");
 
       if (signalE)
 	progressiveBoot_ = false; 
@@ -2440,8 +2437,16 @@ void WebSession::notify(const WEvent& event)
 	    "<body> </body></html>";
 	  handler.flushResponse();
 	} else {
-	  if (!resource)
-	    resource = app_->decodeExposedResource(*resourceE);
+	  if (!resource) {
+            unsigned long ver = 0;
+            try {
+              if (verE)
+                ver = Utils::stoul(*verE);
+            } catch (std::exception& e) {
+              ver = 0;
+            }
+	    resource = app_->decodeExposedResource(*resourceE, ver);
+          }
 
 	  if (resource) {
 	    try {
@@ -2457,9 +2462,10 @@ void WebSession::notify(const WEvent& event)
 	  } else {
 	    LOG_ERROR("decodeResource(): resource '" << *resourceE
 		      << "' not exposed");
+            handler.response()->setStatus(404);
 	    handler.response()->setContentType("text/html");
 	    handler.response()->out() <<
-	      "<html><body><h1>Nothing to say about that.</h1></body></html>";
+	      "<html><body><h1>Page not found.</h1></body></html>";
 	    handler.flushResponse();
 	  }
 	}
@@ -3085,6 +3091,10 @@ void WebSession::generateNewSessionId()
     sessionIdCookieChanged_ = true;
     renderer().setCookie("Wt" + sessionIdCookie_, "1", WDateTime(), "", "",
 			 env_->urlScheme() == "https");
+  }
+
+  if (controller_->server()->dedicatedSessionProcess()) {
+    controller_->server()->updateProcessSessionId(sessionId_);
   }
 }
 #endif // WT_TARGET_JAVA

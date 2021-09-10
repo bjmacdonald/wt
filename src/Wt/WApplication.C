@@ -872,17 +872,16 @@ std::string WApplication::resourceMapKey(WResource *resource)
 std::string WApplication::addExposedResource(WResource *resource)
 {
   exposedResources_[resourceMapKey(resource)] = resource;
+  resource->incrementVersion();
 
   std::string fn = resource->suggestedFileName().toUTF8();
   if (!fn.empty() && fn[0] != '/')
     fn = '/' + fn;
 
-  static unsigned long seq = 0;
-
   if (resource->internalPath().empty())
     return session_->mostRelativeUrl(fn)
       + "&request=resource&resource=" + Utils::urlEncode(resource->id())
-      + "&rand=" + std::to_string(seq++);
+      + "&ver=" + std::to_string(resource->version());
   else {
     fn = resource->internalPath() + fn;
     if (!session_->applicationName().empty() && fn[0] != '/')
@@ -921,6 +920,23 @@ WResource *WApplication::decodeExposedResource(const std::string& resourceKey)
     else
       return nullptr;
   }
+}
+
+WResource *WApplication::decodeExposedResource(const std::string& resourceKey,
+                                               unsigned long ver) const
+{
+  ResourceMap::const_iterator i = exposedResources_.find(resourceKey);
+
+  WResource *resource = nullptr;
+  if (i != exposedResources_.end())
+    resource = i->second;
+
+  if (resource
+      && resource->invalidAfterChanged()
+      && (resource->version() != ver))
+    resource = nullptr;
+
+  return resource;
 }
 
 std::string WApplication::encodeObject(WObject *object)
@@ -1409,9 +1425,6 @@ void WApplication::enableUpdates(bool enabled)
 
 void WApplication::triggerUpdate()
 {
-  if (WebSession::Handler::instance()->request())
-    return;
-
   if (!serverPush_)
     LOG_WARN("WApplication::triggerUpdate(): updates not enabled?");
 
@@ -1693,10 +1706,10 @@ void WApplication::streamJavaScriptPreamble(WStringStream& out, bool all)
     if (preamble.type == JavaScriptFunction) {
       out << scope << '.' << (char *)preamble.name
 	  << " = function() { return ("
-	  << (char *)preamble.src << ").apply(" << scope << ", arguments) };";
+	  << (char *)preamble.src << ").apply(" << scope << ", arguments) };\n";
     } else {
       out << scope << '.' << (char *)preamble.name
-	  << " = " << (char *)preamble.src << '\n';
+	  << " = " << (char *)preamble.src << ";\n";
     }
   }
 

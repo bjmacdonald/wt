@@ -328,6 +328,16 @@ IF(WT_ENABLE_SSL)
 	message("OpenSSL found at ${OpenSSL_DIR}")
   SET(WT_WITH_SSL ON)
 ENDIF(WT_ENABLE_SSL)
+IF (ENABLE_SAML)
+  find_package(OpenSAML)
+  if(OpenSAML_FOUND)
+    set(WT_HAS_SAML TRUE)
+  endif()
+ENDIF (ENABLE_SAML)
+
+IF (ENABLE_UNWIND)
+  INCLUDE(cmake/WtFindUnwind.txt)
+ENDIF (ENABLE_UNWIND)
 
 #
 # ZLib

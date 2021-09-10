@@ -146,6 +146,8 @@ void WServer::setServerConfiguration(const std::string &applicationPath,
 
   impl_->serverConfiguration_->setOptions(applicationPath, args, serverConfigurationFile);
 
+  dedicatedProcessEnabled_ = impl_->serverConfiguration_->parentPort() != -1;
+
   configuration().setDefaultEntryPoint(impl_->serverConfiguration_
                                        ->deployPath());
 }
@@ -186,7 +188,10 @@ bool WServer::start()
     Utils::add(trustedProxies, Configuration::Network::fromString("127.0.0.1"));
     Utils::add(trustedProxies, Configuration::Network::fromString("::1"));
     configuration().setTrustedProxies(trustedProxies);
-    dedicatedProcessEnabled_ = true;
+    updateProcessSessionIdCallback_ = [this] (const std::string& sessionId)
+    {
+      impl_->server_->updateProcessSessionId(sessionId);
+    };
   }
 
   try {

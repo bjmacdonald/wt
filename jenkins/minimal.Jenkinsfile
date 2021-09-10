@@ -7,7 +7,17 @@ def host_ccache_dir
 
 def thread_count = 5
 
-node('docker') {
+// This is a workaround because there is no proper way to abort earlier builds (yet).
+// See: https://stackoverflow.com/a/55818301 and https://www.jenkins.io/doc/pipeline/steps/pipeline-milestone-step/
+// A proper way to do this should be added in https://issues.jenkins.io/browse/JENKINS-43353
+// Keep an eye on https://github.com/jenkinsci/workflow-job-plugin/pull/200
+def buildNumber = env.BUILD_NUMBER as int;
+if (buildNumber > 1) {
+    milestone(buildNumber - 1);
+}
+milestone(buildNumber);
+
+node('wt') {
     user_id = sh(returnStdout: true, script: 'id -u').trim()
     user_name = sh(returnStdout: true, script: 'id -un').trim()
     group_id = sh(returnStdout: true, script: 'id -g').trim()
@@ -44,11 +54,10 @@ pipeline {
     }
     options {
         buildDiscarder logRotator(numToKeepStr: '20')
-        disableConcurrentBuilds()
     }
     agent {
         dockerfile {
-            label 'docker'
+            label 'wt'
             dir 'jenkins'
             filename 'minimal.Dockerfile'
             args "--env CCACHE_DIR=${container_ccache_dir} --env CCACHE_MAXSIZE=20G --volume ${host_ccache_dir}:${container_ccache_dir}:z"
@@ -99,15 +108,15 @@ pipeline {
         cleanup {
             cleanWs()
         }
-        regression {
+        failure {
             mail to: env.EMAIL,
                  subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
                  body: "Something is wrong with ${env.BUILD_URL}"
         }
-        fixed {
+        unstable {
             mail to: env.EMAIL,
-                 subject: "Fixed Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Build ${env.BUILD_URL} is OK"
+                 subject: "Unstable Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
         }
     }
 }

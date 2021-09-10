@@ -7,7 +7,7 @@ def host_ccache_dir
 
 def thread_count = 5
 
-node('docker') {
+node('wt') {
     user_id = sh(returnStdout: true, script: 'id -u').trim()
     user_name = sh(returnStdout: true, script: 'id -un').trim()
     group_id = sh(returnStdout: true, script: 'id -g').trim()
@@ -48,7 +48,7 @@ pipeline {
     }
     agent {
         dockerfile {
-            label 'docker'
+            label 'wt'
             dir 'jenkins'
             filename 'minver.Dockerfile'
             args "--env CCACHE_DIR=${container_ccache_dir} --env CCACHE_MAXSIZE=20G --volume ${host_ccache_dir}:${container_ccache_dir}:z"
@@ -96,15 +96,15 @@ pipeline {
         cleanup {
             cleanWs()
         }
-        regression {
+        failure {
             mail to: env.EMAIL,
                  subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
                  body: "Something is wrong with ${env.BUILD_URL}"
         }
-        fixed {
+        unstable {
             mail to: env.EMAIL,
-                 subject: "Fixed Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Build ${env.BUILD_URL} is OK"
+                 subject: "Unstable Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
         }
     }
 }
