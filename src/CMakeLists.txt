@@ -447,6 +447,7 @@ IF (WT_MULTI_THREADED)
   target_sources(wt PRIVATE web/SocketNotifier.h web/SocketNotifier.C)
   target_link_libraries(wt PRIVATE Boost::thread)
 ENDIF(WT_MULTI_THREADED)
+
 IF(WT_HAS_SAML)
   set(samlsources
     Wt/Auth/Saml/Assertion.h Wt/Auth/Saml/Assertion.C
@@ -461,10 +462,8 @@ IF(WT_HAS_SAML)
     COMPILE_DEFINITIONS
       XSEC_HAVE_OPENSSL=1
   )
-  list(APPEND libsources ${samlsources})
+  target_sources(wt PRIVATE ${samlsources})
 ENDIF(WT_HAS_SAML)
-
-ADD_DEFINITIONS(-DWT_BUILDING)
 
 # How to include x86.S ?
 target_sources(wt PRIVATE

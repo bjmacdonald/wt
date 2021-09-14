@@ -169,6 +169,7 @@ OPTION(WT_ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
 OPTION(WT_ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
 OPTION(WT_ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
 OPTION(WT_ENABLE_QT5 "Build Qt5 interworking library (libwtwithqt5)" OFF)
+OPTION(WT_ENABLE_SAML "Build built-in SAML service provider for Wt::Auth" OFF)
 OPTION(WT_ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 
 IF(WIN32)
@@ -328,16 +329,17 @@ IF(WT_ENABLE_SSL)
 	message("OpenSSL found at ${OpenSSL_DIR}")
   SET(WT_WITH_SSL ON)
 ENDIF(WT_ENABLE_SSL)
-IF (ENABLE_SAML)
+
+
+#
+# SAML
+#
+IF (WT_ENABLE_SAML)
   find_package(OpenSAML)
   if(OpenSAML_FOUND)
     set(WT_HAS_SAML TRUE)
   endif()
-ENDIF (ENABLE_SAML)
-
-IF (ENABLE_UNWIND)
-  INCLUDE(cmake/WtFindUnwind.txt)
-ENDIF (ENABLE_UNWIND)
+ENDIF (WT_ENABLE_SAML)
 
 #
 # ZLib
