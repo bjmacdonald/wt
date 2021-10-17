@@ -16,7 +16,7 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # Version Settings
 #
 SET(VERSION_SERIES 4)
-SET(VERSION_MAJOR 5)
+SET(VERSION_MAJOR 6)
 SET(VERSION_MINOR 0)
 
 # Renamed and reorganised options, added WT prefix to all.
