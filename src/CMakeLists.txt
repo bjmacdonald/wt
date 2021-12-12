@@ -52,6 +52,7 @@ FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
 FILE_TO_STRING(xml/auth_strings.xml     AuthStrings_xml.C     AuthStrings_xml)
 FILE_TO_STRING(xml/bootstrap_theme.xml  BootstrapTheme_xml.C  BootstrapTheme_xml)
 FILE_TO_STRING(xml/bootstrap3_theme.xml Bootstrap3Theme_xml.C Bootstrap3Theme_xml)
+FILE_TO_STRING(xml/bootstrap5_theme.xml Bootstrap5Theme_xml.C Bootstrap5Theme_xml)
 FILE_TO_STRING(xml/auth_css_theme.xml   AuthCssTheme_xml.C    AuthCssTheme_xml)
 
 target_sources(wt PRIVATE
@@ -63,6 +64,7 @@ target_sources(wt PRIVATE
   AuthStrings_xml.C
   BootstrapTheme_xml.C
   Bootstrap3Theme_xml.C
+  Bootstrap5Theme_xml.C
   AuthCssTheme_xml.C
 )
 
@@ -113,6 +115,9 @@ Wt/WApplication.h Wt/WApplication.C
 Wt/WAudio.h Wt/WAudio.C
 Wt/WBatchEditProxyModel.h Wt/WBatchEditProxyModel.C
 Wt/WBootstrapTheme.h Wt/WBootstrapTheme.C
+Wt/WBootstrap2Theme.h Wt/WBootstrap2Theme.C
+Wt/WBootstrap3Theme.h Wt/WBootstrap3Theme.C
+Wt/WBootstrap5Theme.h Wt/WBootstrap5Theme.C
 Wt/WBorder.h Wt/WBorder.C
 Wt/WBorderLayout.h Wt/WBorderLayout.C
 Wt/WBoxLayout.h Wt/WBoxLayout.C
@@ -412,15 +417,6 @@ web/XSSUtils.h web/XSSUtils.C
 web/SslUtils.h web/SslUtils.C
 web/UriUtils.h web/UriUtils.C
 web/base64.h web/base64.cpp
-Plain_html.C
-Boot_html.C
-Hybrid_html.C
-Wt_xml.C
-AuthStrings_xml.C
-BootstrapTheme_xml.C
-Bootstrap3Theme_xml.C
-AuthCssTheme_xml.C
-JQuery_js.C
 )
 
 
