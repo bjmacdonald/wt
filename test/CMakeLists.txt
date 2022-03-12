@@ -40,6 +40,7 @@ SET(TEST_SOURCES
   utils/Base64Test.C
   utils/EraseWord.C
   utils/ParseNumber.C
+  utils/RoundJsString.C
   widgets/WContainerWidgetTest.C
   widgets/WSpinBoxTest.C
   widgets/WTreeViewTest.C
