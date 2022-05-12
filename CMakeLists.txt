@@ -17,7 +17,7 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 #
 SET(VERSION_SERIES 4)
 SET(VERSION_MAJOR 7)
-SET(VERSION_MINOR 0)
+SET(VERSION_MINOR 2)
 
 # Renamed and reorganised options, added WT prefix to all.
 # Removed DEBUG_LIB_POSTFIX and use global CMAKE_DEBUG_POSTFIX.
@@ -411,7 +411,7 @@ ELSEIF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "Direct2D")
     SET(WT_HAS_WRASTERIMAGE true)
   ENDIF (WIN32)
 ELSE (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
-    MESSAGE("** Disabled WRasterimage support. Set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick, skia, or Direct2D.")
+    MESSAGE("** Disabled WRasterimage support. Set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or Direct2D.")
 ENDIF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
 
 #

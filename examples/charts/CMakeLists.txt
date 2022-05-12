@@ -1,9 +1,9 @@
 WT_ADD_EXAMPLE(charts.wt
-	PanelList.C
-	ChartConfig.C
-	ChartsExample.C
-	CsvUtil.C
-	ChartsApplication.C
+  PanelList.C
+  ChartConfig.C
+  ChartsExample.C
+  CsvUtil.C
+  ChartsApplication.C
 )
 IF(TARGET Boost::headers)
   TARGET_LINK_LIBRARIES(charts.wt Boost::headers)
