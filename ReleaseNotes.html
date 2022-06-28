@@ -41,6 +41,25 @@ behaviour.
     since it was unmaintained and dependent on very specific Skia versions, and we have good alternatives
     with GraphicsMagick and Direct2D.
   </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10341" target="_blank">Issue #10341</a>:
+    Fixed an issue where JavaScript validators would incorrectly mark a <a href="classWt_1_1WLineEdit.html">WLineEdit</a>
+    that used an
+    <a href="classWt_1_1WLineEdit.html#a0639ec7e420ba32ffb148303a79fb969">input mask</a>
+    as invalid, since they would not take the input mask into account.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10362" target="_blank">Issue #10362</a>:
+    <a href="classWt_1_1WPanel.html#aefd66ff6dd8e2a1108e70efec4eab1b5">WPanel::collapse()</a> and
+    <a href="classWt_1_1WPanel.html#a2ac9a05172675559b6f988083a4fd666">WPanel::expand()</a>
+    would cause a segmentation fault with
+    <a href="classWt_1_1WBootstrap5Theme.html">WBootstrap5Theme</a>. Now they do nothing.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10348" target="_blank">Issue #10348</a>:
+    Dbo: fixed an issue where reentrant use of prepared statements with parameters with the Postgres backend could
+    cause a "Binding too many parameters" exception to be thrown.
+  </li>
 </ul>
 
 <h2>Release 4.7.2 (May 12, 2022)</h2>

@@ -1,3 +1,5 @@
+#!/usr/bin/env groovy
+
 def user_id
 def user_name
 def group_id
@@ -45,12 +47,12 @@ pipeline {
     }
     options {
         buildDiscarder logRotator(numToKeepStr: '20')
-        disableConcurrentBuilds()
+        disableConcurrentBuilds abortPrevious: true
     }
     agent {
         dockerfile {
             label 'wt'
-            dir 'jenkins'
+            dir 'jenkins/linux'
             filename 'minver.Dockerfile'
             args "--env CCACHE_DIR=${container_ccache_dir} --env CCACHE_MAXSIZE=20G --volume ${host_ccache_dir}:${container_ccache_dir}:z"
             additionalBuildArgs """--build-arg USER_ID=${user_id} \
@@ -72,7 +74,7 @@ pipeline {
                     sh "make -C examples -k -j${thread_count}"
                 }
                 dir('test') {
-                    warnError('non-mt test.wt failed') {
+                    warnError('st test.wt failed') {
                         sh "../build-st/test/test.wt"
                     }
                 }

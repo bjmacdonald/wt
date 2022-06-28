@@ -1,3 +1,5 @@
+#!/usr/bin/env groovy
+
 properties([
     pipelineTriggers([
         pollSCM('@midnight')
@@ -118,7 +120,7 @@ node('wt') {
         }
         def image = docker.build("wt-full:${env.BRANCH_NAME}-${env.BUILD_ID}",
                                  """./jenkins \
-                                    -f ./jenkins/full.Dockerfile \
+                                    -f ./jenkins/linux/full.Dockerfile \
                                     --build-arg USER_ID=${user_id} \
                                     --build-arg USER_NAME=${user_name} \
                                     --build-arg GROUP_ID=${group_id} \
