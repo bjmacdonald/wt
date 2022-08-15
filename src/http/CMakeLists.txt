@@ -9,26 +9,26 @@ add_library(wthttp)
 target_compile_definitions(wthttp PRIVATE WT_BUILDING)
 
 target_sources(wthttp PRIVATE
-  Android.h Android.C
-  Configuration.h Configuration.C
-  Connection.h Connection.C
-  ConnectionManager.h ConnectionManager.C
-  HTTPRequest.h HTTPRequest.C
-  MimeTypes.h MimeTypes.C
-  ProxyReply.h ProxyReply.C
-  Reply.h Reply.C
-  Request.h Request.C
-  RequestHandler.h RequestHandler.C
-  RequestParser.h RequestParser.C
-  Server.h Server.C
-  SessionProcess.h SessionProcess.C
-  SessionProcessManager.h SessionProcessManager.C
-  SslConnection.h SslConnection.C
-  StaticReply.h StaticReply.C
-  StockReply.h StockReply.C
-  TcpConnection.h TcpConnection.C
-  WServer.C
-  WtReply.h WtReply.C
+    Android.h Android.C
+    Configuration.h Configuration.C
+    Connection.h Connection.C
+    ConnectionManager.h ConnectionManager.C
+    HTTPRequest.h HTTPRequest.C
+    MimeTypes.h MimeTypes.C
+    ProxyReply.h ProxyReply.C
+    Reply.h Reply.C
+    Request.h Request.C
+    RequestHandler.h RequestHandler.C
+    RequestParser.h RequestParser.C
+    Server.h Server.C
+    SessionProcess.h SessionProcess.C
+    SessionProcessManager.h SessionProcessManager.C
+    SslConnection.h SslConnection.C
+    StaticReply.h StaticReply.C
+    StockReply.h StockReply.C
+    TcpConnection.h TcpConnection.C
+    WServer.C
+    WtReply.h WtReply.C
 )
 
 # Wt uses strstrcase for case insensitive ASCII string comparisons on Linux for performance reasons. This function is however
@@ -65,6 +65,12 @@ IF(ZLIB_FOUND)
   target_link_libraries(wthttp PRIVATE ZLIB::ZLIB)
   target_compile_definitions(wthttp PUBLIC WTHTTP_WITH_ZLIB)
 ENDIF()
+
+if(NOT APPLE OR SHARED_LIBS)
+  SET_PROPERTY(TARGET wthttp PROPERTY C_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wthttp PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wthttp PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+endif()
 
 TARGET_LINK_LIBRARIES(wthttp PUBLIC wt)
 #TARGET_LINK_LIBRARIES(wthttp PRIVATE ${WT_SOCKET_LIBRARY})

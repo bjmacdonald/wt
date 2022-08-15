@@ -441,8 +441,8 @@ protected:
 
 private:
   WTemplate *impl_;
-  WText *caption_;
-  WText *closeIcon_;
+  WTemplate *caption_;
+  WInteractWidget *closeIcon_;
   WContainerWidget *titleBar_;
   WContainerWidget *contents_;
   WContainerWidget *layoutContainer_;

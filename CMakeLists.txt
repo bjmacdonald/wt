@@ -129,6 +129,7 @@ SET(WT_ANY_IS_STD_ANY ON)
 SET(WT_ASIO_IS_BOOST_ASIO ON)
 add_compile_definitions($<$<PLATFORM_ID:Windows>:_WIN32_WINNT=0x0A00>)
 
+
 # suppress excess warnings
 #add_compile_definitions($<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS>)
 
@@ -169,6 +170,7 @@ OPTION(WT_ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
 OPTION(WT_ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
 OPTION(WT_ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
 OPTION(WT_ENABLE_QT5 "Build Qt5 interworking library (libwtwithqt5)" OFF)
+OPTION(WT_ENABLE_QT6 "Build Qt6 interworking library (libwtwithqt6)" OFF)
 OPTION(WT_ENABLE_SAML "Build built-in SAML service provider for Wt::Auth" OFF)
 OPTION(WT_ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 
@@ -380,6 +382,10 @@ ENDIF(WT_ENABLE_PANGO)
 IF(WT_ENABLE_QT5)
   FIND_PACKAGE(Qt5Core)
 ENDIF(WT_ENABLE_QT5)
+
+IF(WT_ENABLE_QT6)
+  FIND_PACKAGE(Qt6 CONFIG COMPONENTS Core)
+ENDIF(WT_ENABLE_QT6)
 
 #
 # Raster Image

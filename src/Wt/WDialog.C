@@ -4,6 +4,7 @@
  * See the LICENSE file for terms of use.
  */
 #include "Wt/WApplication.h"
+#include "Wt/WBootstrap5Theme.h"
 #include "Wt/WContainerWidget.h"
 #include "Wt/WDialog.h"
 #include "Wt/WEnvironment.h"
@@ -287,9 +288,7 @@ void WDialog::create()
   titleBar_ = new WContainerWidget();
   app->theme()->apply(this, titleBar_, DialogTitleBar);
 
-  caption_ = new WText();
-  caption_->setInline(false);
-  titleBar_->addWidget(std::unique_ptr<WText>(caption_));
+  caption_ = titleBar_->addNew<WTemplate>(tr("Wt.WDialog.titlebar"));
 
   contents_ = new WContainerWidget();
   app->theme()->apply(this, contents_, DialogBody);
@@ -469,18 +468,12 @@ void WDialog::rejectWhenEscapePressed(bool enable)
 
 void WDialog::setWindowTitle(const WString& windowTitle)
 {
-  caption_->setText
-    (WString::fromUTF8("<h4>" + Utils::htmlEncode(windowTitle.toUTF8())
-                       + "</h4>"));
+  caption_->bindString("title", windowTitle, TextFormat::Plain);
 }
 
 WString WDialog::windowTitle() const
 {
-  std::string text = caption_->text().toUTF8();
-  if (text.length() > 9)
-    return WString::fromUTF8(text.substr(4, text.length() - 9));
-  else
-    return WString::Empty;
+  return caption_->resolveStringValue("title");
 }
 
 void WDialog::setTitleBarEnabled(bool enable)
@@ -492,10 +485,13 @@ void WDialog::setClosable(bool closable)
 {
   if (closable) {
     if (!closeIcon_) {
-      std::unique_ptr<WText> closeIcon(closeIcon_ = new WText());
-      titleBar_->insertWidget(0, std::move(closeIcon));
-      WApplication::instance()->theme()->apply
-        (this, closeIcon_, DialogCloseIcon);
+      auto theme = WApplication::instance()->theme();
+      if (std::dynamic_pointer_cast<WBootstrap5Theme>(theme)) {
+        closeIcon_ = titleBar_->addNew<WPushButton>();
+      } else {
+        closeIcon_ = titleBar_->insertWidget(0, std::make_unique<WText>());
+      }
+      theme->apply(this, closeIcon_, DialogCloseIcon);
       closeIcon_->clicked().connect(this, &WDialog::reject);
     }
   } else {

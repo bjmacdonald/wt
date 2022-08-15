@@ -6,6 +6,12 @@ target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
 target_link_libraries(wt PUBLIC Boost::boost Boost::filesystem)
 
+if(NOT APPLE OR SHARED_LIBS)
+  SET_PROPERTY(TARGET wt PROPERTY C_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wt PROPERTY CXX_VISIBILITY_PRESET hidden)
+  SET_PROPERTY(TARGET wt PROPERTY VISIBILITY_INLINES_HIDDEN YES)
+endif()
+
 if (MSVC)
   target_compile_options(wt
     PUBLIC 
@@ -492,8 +498,6 @@ ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
 ENDIF()
-
-
 IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
   IF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
     target_sources(wt PRIVATE Wt/FontSupport.h Wt/FontSupportPango.C)
