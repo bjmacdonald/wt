@@ -250,17 +250,8 @@ SET(LIB_INSTALL_DIR "lib" CACHE STRING
 SET(CMAKE_INSTALL_DIR "${LIB_INSTALL_DIR}/cmake" CACHE STRING
   "Name for CMake package configuration directory within ${CMAKE_INSTALL_PREFIX}")
 
-
-
 # target_compile_options(libbiogears_cdm PRIVATE $<$<PLATFORM_ID:Windows>:/bigobj>  PRIVATE $<$<PLATFORM_ID:Windows>:/MP${Biogears_BUILD_PARALLEL_LEVEL}>)
 # add_definitions() ??
-
-
-
-# Boost is used nearly everywhere, so we can put these here
-#INCLUDE_DIRECTORIES(${BOOST_INCLUDE_DIRS})
-#LINK_DIRECTORIES(${BOOST_LIB_DIRS})
-
 
 
 #
@@ -319,9 +310,15 @@ ENDIF(WT_MULTI_THREADED)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.76.0 REQUIRED
-             COMPONENTS date_time filesystem program_options thread
+             COMPONENTS date_time filesystem program_options thread system
              CONFIG)
 message("Boost found at ${Boost_DIR}")
+
+# Translate variables from official cmake names to internally used names (from WtFindBoost)
+SET(BOOST_FS_LIB Boost::filesystem)
+SET(BOOST_PO_LIB Boost::program_options)
+SET(BOOST_SYSTEM_LIB Boost::system)
+SET(BOOST_THREAD_LIB Boost::thread)
 
 #
 # SSL
