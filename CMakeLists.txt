@@ -163,7 +163,6 @@ if(WT_SHARED_LIBS)
   SET(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 ENDIF()
 
-
 OPTION(WT_MULTI_THREADED "Build multi-threaded httpd deamon (if possible)" ON)
 OPTION(WT_DEBUG_ENABLED "Support for debugging, must be enabled also in wt_config.xml" OFF)
 OPTION(WT_ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
@@ -196,22 +195,13 @@ OPTION(WT_ENABLE_MSSQLSERVER "Build Microsoft SQL Server backend for Wt::Dbo" ON
 
 
 #
-# Examples
+# Other Options
 #
 OPTION(WT_BUILD_EXAMPLES "Build examples" ON)
-
-
-#
-# Tests
-#
 OPTION(WT_ENABLE_LIBWTTEST "Build Wt::Test" ON)
 OPTION(WT_BUILD_TESTS "Build Wt tests" ON)
-
-
-#
-# Documentation
-#
-
+option(DEBUG_JS "Serve non-minified JavaScript from the filesystem instead of embedding it, for debugging." OFF)
+mark_as_advanced(DEBUG_JS)
 
 
 #
