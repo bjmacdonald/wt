@@ -11,6 +11,8 @@
 #endif // WT_WIN32
 #endif // WT_WITH_SSL
 
+#include <Wt/WException.h>
+
 #include "SslUtils.h"
 
 #ifdef WT_WITH_SSL
@@ -124,16 +126,16 @@ namespace Wt {
       std::vector<Wt::WSslCertificate::DnAttribute> issuerDn
         = getDnAttributes(X509_get_issuer_name(x509));
       Wt::WDateTime validityStart
-        = dateToWDate(X509_get_notBefore(x509));
+        = dateToWDate(X509_get0_notBefore(x509));
       Wt::WDateTime validityEnd
-        = dateToWDate(X509_get_notAfter(x509));
+        = dateToWDate(X509_get0_notAfter(x509));
 
       std::string pemCert = Wt::Ssl::exportToPem(x509);
 
       return WSslCertificate(subjectDn, issuerDn, validityStart, validityEnd, pemCert);
     }
 
-    Wt::WDateTime dateToWDate(ASN1_TIME *date)
+    Wt::WDateTime dateToWDate(const ASN1_TIME *date)
     {
       // Got my wisdom from ITU-T rec X.680 (07/2002) and RFC 3280
       Wt::WDateTime retval;
@@ -241,6 +243,42 @@ namespace Wt {
       }
 
       return context;
+    }
+
+    EVP_PKEY* readPrivateKeyFromFile(const std::string& path)
+    {
+      const auto file = std::fopen(path.c_str(), "rb");
+      if (!file) {
+        return nullptr;
+      }
+      const auto pkey = PEM_read_PrivateKey(file, nullptr, nullptr, nullptr);
+      std::fclose(file);
+      return pkey;
+    }
+
+    std::string rs256(EVP_PKEY* pkey, const std::string& message)
+    {
+      auto ctx = EVP_MD_CTX_new();
+      int status = EVP_DigestSignInit(ctx, nullptr, EVP_sha256(), nullptr, pkey);
+      if (status != 1) {
+        throw WException("RS256 digest failed: could not initialize!");
+      }
+      status = EVP_DigestSignUpdate(ctx, message.c_str(), message.size());
+      if (status != 1) {
+        throw WException("RS256 digest failed: EVP_DigestSignUpdate failed");
+      }
+      std::size_t slen{};
+      status = EVP_DigestSignFinal(ctx, nullptr, &slen);
+      if (status != 1) {
+        throw WException("RS256 digest failed: EVP_DigestSignFinal failed");
+      }
+      std::string result(slen, '\0');
+      status = EVP_DigestSignFinal(ctx, reinterpret_cast<unsigned char *>(&result[0]), &slen);
+      if (status != 1) {
+        throw WException("RS256 digest failed: EVP_DigestSignFinal failed");
+      }
+      EVP_MD_CTX_free(ctx);
+      return result;
     }
   }
 }
