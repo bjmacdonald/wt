@@ -56,14 +56,10 @@ target_include_directories(wtdbo PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 target_include_directories(wtdbo INTERFACE $<INSTALL_INTERFACE:include>)
 
 INSTALL(TARGETS wtdbo
-    EXPORT wt-target-dbo
+    EXPORT wt-targets
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
-INSTALL(EXPORT wt-target-dbo
-        DESTINATION ${CMAKE_INSTALL_DIR}/wt
-        NAMESPACE Wt::)
 
 SET_TARGET_PROPERTIES(
   wtdbo

@@ -547,22 +547,72 @@ ELSEIF(Boost_USE_STATIC_LIBS AND NOT WT_SHARED_LIBS)
 ELSE()
   SET(_WTCONFIG_CMAKE_FIND_BOOST FALSE)
 ENDIF()
-CONFIGURE_FILE(
-  ${WT_SOURCE_DIR}/wt-config.cmake.in
-  ${WT_BINARY_DIR}/wt-config.cmake
-  @ONLY
-)
+#CONFIGURE_FILE(
+#  ${WT_SOURCE_DIR}/wt-config.cmake.in
+#  ${WT_BINARY_DIR}/wt-config.cmake
+#  @ONLY
+#)
 UNSET(_WTCONFIG_CMAKE_FIND_BOOST)
 UNSET(_WTCONFIG_BOOST_STATIC)
-CONFIGURE_FILE(
-  ${WT_SOURCE_DIR}/wt-config-version.cmake.in
-  ${WT_BINARY_DIR}/wt-config-version.cmake
-  @ONLY
-)
-INSTALL(FILES
-  ${WT_BINARY_DIR}/wt-config.cmake
-  ${WT_BINARY_DIR}/wt-config-version.cmake
-  DESTINATION ${CMAKE_INSTALL_DIR}/wt)
 
+#CONFIGURE_FILE(
+#  ${WT_SOURCE_DIR}/wt-config-version.cmake.in
+#  ${WT_BINARY_DIR}/wt-config-version.cmake
+#  @ONLY
+#)
+
+#INSTALL(FILES
+#  ${WT_BINARY_DIR}/wt-config.cmake
+#  ${WT_BINARY_DIR}/wt-config-version.cmake
+#  DESTINATION ${CMAKE_INSTALL_DIR}/wt)
 
 cmake_print_properties(TARGETS wt wthttp wtdbo PROPERTIES INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)
+
+# default filename is the export name (wt-targets in this case)
+#INSTALL(EXPORT wt-targets
+#        DESTINATION ${CMAKE_INSTALL_DIR}/Wt
+#        NAMESPACE Wt::
+#        FILE wt-targets.cmake)
+
+include(CMakePackageConfigHelpers)
+
+# This exports the targets with paths set to the build tree.
+EXPORT(EXPORT wt-targets 
+       NAMESPACE Wt::
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-targets.cmake"
+)
+
+# write version file to the build tree location
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-config-version.cmake"
+  VERSION "${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}"
+  COMPATIBILITY AnyNewerVersion
+)
+
+# copy file for build tree - this and the above execute during config, the 
+# install() functions below only when the INSTALL target is being built
+configure_file(
+  cmake/wt-config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-config.cmake"
+  COPYONLY
+)
+
+
+set(ConfigPackageLocation lib/cmake/wt)
+
+# default filename would be based on the export name (wt-targets in this case)
+install(EXPORT wt-targets
+  FILE wt-targets.cmake
+  NAMESPACE Wt::
+  DESTINATION ${ConfigPackageLocation}
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/wt/wt-config-version.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)
