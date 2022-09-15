@@ -333,9 +333,9 @@ ENDIF (WT_ENABLE_SAML)
 #
 # ZLib
 #
-find_package(zlib REQUIRED CONFIG)
-if(zlib_FOUND)
-  message("ZLIB found at ${zlib_DIR}")
+find_package(ZLIB REQUIRED CONFIG)
+if(ZLIB_FOUND)
+  message("ZLIB found at ${ZLIB_DIR}")
 endif()
 
 #
