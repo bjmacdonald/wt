@@ -6,12 +6,25 @@ target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
 target_link_libraries(wt PUBLIC Boost::boost Boost::filesystem)
 
+function(file_to_string infile outfile var)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
+    COMMAND ${CMAKE_COMMAND}
+      ARGS -Dinfile:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/${infile}
+           -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${outfile}
+           -Dvar:STRING=${var}
+           -P ${CMAKE_CURRENT_SOURCE_DIR}/filetostring.cmake
+    MAIN_DEPENDENCY
+      ${CMAKE_CURRENT_SOURCE_DIR}/${infile}
+    DEPENDS
+      ${CMAKE_CURRENT_SOURCE_DIR}/filetostring.cmake
+  )
+endfunction()
 if(NOT APPLE OR SHARED_LIBS)
   SET_PROPERTY(TARGET wt PROPERTY C_VISIBILITY_PRESET hidden)
   SET_PROPERTY(TARGET wt PROPERTY CXX_VISIBILITY_PRESET hidden)
   SET_PROPERTY(TARGET wt PROPERTY VISIBILITY_INLINES_HIDDEN YES)
 endif()
-
 if (MSVC)
   target_compile_options(wt
     PUBLIC 
@@ -32,23 +45,10 @@ if (MSVC)
       _WIN32_WINNT=0x0A00      # For Boost:asio
   )
 endif(MSVC)
-
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Wt/Date/include>)
 target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
-
-MACRO (FILE_TO_STRING infile outfile var)
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${outfile}
-               COMMAND ${CMAKE_COMMAND}
-                   ARGS -Dinfile:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/${infile}
-                        -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${outfile}
-                        -Dvar:STRING=${var}
-                        -P ${CMAKE_CURRENT_SOURCE_DIR}/filetostring.cmake
-           MAIN_DEPENDENCY
-                ${CMAKE_CURRENT_SOURCE_DIR}/${infile}
-)
-ENDMACRO (FILE_TO_STRING)
 
 FILE_TO_STRING(web/skeleton/Plain.html    Plain_html.C      Plain_html)
 FILE_TO_STRING(web/skeleton/Hybrid.html   Hybrid_html.C     Hybrid_html)
@@ -423,6 +423,15 @@ web/XSSUtils.h web/XSSUtils.C
 web/SslUtils.h web/SslUtils.C
 web/UriUtils.h web/UriUtils.C
 web/base64.h web/base64.cpp
+Plain_html.C
+Boot_html.C
+Hybrid_html.C
+Wt_xml.C
+AuthStrings_xml.C
+BootstrapTheme_xml.C
+Bootstrap3Theme_xml.C
+Bootstrap5Theme_xml.C
+AuthCssTheme_xml.C
 )
 
 

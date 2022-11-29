@@ -31,7 +31,7 @@
 #endif
 
 namespace skeletons {
-  extern const char * AuthCssTheme_xml1;
+  extern const char* AuthCssTheme_xml;
 }
 
 namespace Wt {
@@ -140,7 +140,7 @@ void WCssTheme::apply(WWidget *widget, WWidget *child, int widgetRole) const
   case AuthWidgets:
     WApplication *app = WApplication::instance();
     app->useStyleSheet(WApplication::relativeResourcesUrl() + "form.css");
-    app->builtinLocalizedStrings().useBuiltin(skeletons::AuthCssTheme_xml1);
+    app->builtinLocalizedStrings().useBuiltin(skeletons::AuthCssTheme_xml);
     break;
   }
 }
@@ -308,7 +308,7 @@ void WCssTheme::applyValidationStyle(WWidget *widget,
   if (app->environment().ajax()) {
     WStringStream js;
     js << WT_CLASS ".setValidationState(" << widget->jsRef() << ","
-       << (validation.state() == ValidationState::Valid ? 1 : 0) << ","
+       << (validation.state() == ValidationState::Valid) << ","
        << validation.message().jsStringLiteral() << ","
        << styles.value() << ");";
 

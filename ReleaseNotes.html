@@ -20,7 +20,60 @@ newer version of Wt. It lists changes in the library that may break
 the way you build Wt, the way you configure Wt or the Wt API and
 behaviour.
 
-<h2>Release 4.9.0 (October 2022)</h2>
+<h2>Release 4.9.0 (November 2022)</h2>
+
+<h3>Backwards incompatible changes</h3>
+
+<h4>Removal of jQuery</h4>
+
+<p>
+  We removed every use of jQuery from Wt, and jQuery is now no longer automatically loaded.
+  This means that if you relied on the included jQuery version (for example, the <code>$</code> object or function),
+  you will have to make some changes to make it work with Wt 4.9.0. There are several options:
+</p>
+
+<ul>
+  <li>
+    <p>
+      Replace your uses of jQuery with vanilla JavaScript, which is what we did.
+    </p>
+    <p>
+      For example, the <code>$</code> function can often be replaced with
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector" target="_blank">querySelector</a> or
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll" target="_blank">querySelectorAll</a>.
+    </p>
+  </li>
+  <li>
+    <p>
+      Load jQuery yourself using
+      <a href="classWt_1_1WApplication.html#ae88546224ed32cade783da188b145138">WApplication::require()</a>.
+      <a href="classWt_1_1WApplication.html#aa2add60804ff75b3798fc270050654c5">WApplication::requireJQuery()</a>
+      has been marked as deprecated.
+    </p>
+    <p>
+    For example:
+    <code>application->require("https://code.jquery.com/jquery-3.6.1.slim.min.js", "$");</code>.
+    </p>
+  </li>
+  <li>
+    <p>
+      Change your <code>wt_config.xml</code>, adding a <code>&lt;head-matter&gt;</code> section
+      that loads jQuery through a <code>&lt;script&gt;</code> tag:
+    </p>
+    <p>
+      <code>
+        &lt;head-matter&gt;<br>
+        &nbsp;&nbsp;&lt;script<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;src="https://code.jquery.com/jquery-3.6.1.slim.min.js"<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA="<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;crossorigin="anonymous"&gt;&lt;/script&gt;<br>
+        &lt;/head-matter&gt;
+      </code>
+    </p>
+  </li>
+</ul>
+
+<h3>Other</h3>
 
 <ul>
   <li>
@@ -29,18 +82,6 @@ behaviour.
     minifier from the old version of Google Closure compiler we were using to
     <a href="https://terser.org/" target="_blank">terser</a>.
   </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/8801" target="_blank">Issue #8801</a>:
-    We have adopted a policy to determine what is the minimum version of our dependencies we support.
-    This makes it clear to users and customers what they can expect, and it makes it so we don't need
-    to have a discussion every time we decide to bump the minimum requirements.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/10825" target="_blank">Issue #10825</a>:
-    Fixed an issue in <a href="classWt_1_1WGoogleMap.html">WGoogleMap</a> where some left-over
-    JavaScript code in
-    <a href="classWt_1_1WGoogleMap.html#ad5b1aabd260b3b05e9888718264c40e2">setMapTypeControl</a>
-    targeting the v2 API would cause a JavaScript error.
   <li>
     <a href="https://redmine.webtoolkit.eu/issues/9570" target="_blank">Issue #9570</a>:
     All uses of <code>WT_CXX14</code> and <code>WT_CXX14ONLY</code> were removed in Wt's
@@ -53,8 +94,72 @@ behaviour.
     Changed some Boost.Phoenix includes to silence deprecation warnings.
   </li>
   <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10911" target="_blank">Issue #10911</a>:
+    Fixed OpenSSL 3.0 deprecation warnings.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/9252" target="_blank">Issue #9252</a>:
+    Fixed a deprecation warning in the Pango font support implementation.
+  </li>
+  <li>
+    <tt><a href="https://redmine.webtoolkit.eu/issues/9076" target="_blank">Issue #9076</a></tt>:
+    The Wt::WDateEdit gave a javascript error when opening the calendar popup if the application was rendered in widgetset mode.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10966" target="_blank">Issue #10966</a>:
+    Added a JavaScript formatter to format Wt's JavaScript code.
+    Its usage is detailed in the Wt source tree at
+    <a
+      href="https://github.com/emweb/wt/blob/master/doc/development/javascript.md"
+      target="_blank"><code>doc/development/javascript.md</code></a>.
+  </li>
+</ul>
+
+
+<h2>Release 4.8.2 (November 4, 2022)</h2>
+
+<p>
+  Wt 4.8.2 is a patch release that addresses the following issue:
+</p>
+
+<ul>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10970" target="_blank">Issue #10970</a>:
+    Sending an <code>OPTIONS *</code> request could cause an assertion failure when trying
+    to match the request to an entry point. This could cause a crash if assertions are enabled,
+    though they usually aren't in production builds. Since these types of requests are not properly
+    supported by <code>wthttp</code>, <code>OPTIONS *</code> requests are now rejected.
+  </li>
+</ul>
+
+<h2>Release 4.8.1 (September 22, 2022)</h2>
+
+<p>
+  As usual, Wt 4.8.1 is a patch release, but we also added a document
+  clarifying our policy on which minimum versions of libraries Wt requires
+  (<a href="https://redmine.webtoolkit.eu/issues/8801" target="_blank">issue #8801</a>).
+  You can find this document in Wt's source tree at
+  <a
+    href="https://github.com/emweb/wt/blob/master/doc/MinimumDependencyVersions.md"
+    target="_blank"><code>doc/MinimumDependencyVersions.md</code></a>.
+</p>
+
+<p>
+  That aside, Wt 4.8.1 addresses the following issues:
+</p>
+
+<ul>
+  <li>
     <a href="https://redmine.webtoolkit.eu/issues/10909" target="_blank">Issue #10909</a>:
-    <a href="classWt_1_1WPdfImage.html">WPdfImage</a>: fixed compatibility with libharu 2.4.0.
+    <a href="classWt_1_1WPdfImage.html">WPdfImage</a>: Fixed compatibility with recent libharu
+    versions (2.4.0 and up, excluding version 2.4.1).
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10825" target="_blank">Issue #10825</a>:
+    Fixed an issue in <a href="classWt_1_1WGoogleMap.html">WGoogleMap</a> where some left-over
+    JavaScript code in
+    <a href="classWt_1_1WGoogleMap.html#ad5b1aabd260b3b05e9888718264c40e2">setMapTypeControl</a>
+    targeting the v2 API would cause a JavaScript error.
   </li>
   <li>
     <a href="https://redmine.webtoolkit.eu/issues/10834" target="_blank">Issue #10834</a>:
@@ -62,14 +167,6 @@ behaviour.
     <a href="https://redmine.webtoolkit.eu/issues/9442">issue #9442</a>,
     <code>dbo_test46</code> would fail with the MySQL/MariaDB and the SQL Server
     backends because they sort null values differently from PostgreSQL.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/10911" target="_blank">Issue #10911</a>:
-    Fixed OpenSSL 3.0 deprecation warnings.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/9252" target="_blank">Issue #9252</a>:
-    Fixed a deprecation warning in the Pango font support implementation.
   </li>
 </ul>
 

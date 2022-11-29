@@ -40,3 +40,15 @@ RUN BOOST_VERSION=1.71.0 ;\
           -j${THREAD_COUNT} \
           install) \
  && rm -rf ${BOOSTDIR}
+
+USER ${USER_ID}
+
+RUN cd "${HOME}" && wget -qO- https://get.pnpm.io/install.sh | bash -
+
+RUN export PNPM_HOME="${HOME}/.local/share/pnpm"; \
+    export PATH="${PNPM_HOME}:${PATH}"; \
+    cd "${HOME}" \
+ && pnpm env use --global lts \
+ && pnpm config set store-dir "${HOME}/.pnpm-store"
+
+USER root

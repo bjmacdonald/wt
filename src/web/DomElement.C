@@ -1309,8 +1309,9 @@ std::string DomElement::asJavaScript(EscapeOStream& out,
         if (removeAllChildren_ == 0)
           out << WT_CLASS << ".setHtml(" << var_ << ", '');\n";
         else {
-          out << "$(" << var_ << ").children(':gt(" << (removeAllChildren_ - 1)
-              << ")').remove();";
+          out << "(Array.from(" << var_ << ".querySelectorAll(':scope > *')).slice(" << removeAllChildren_ 
+              << ")).forEach( elem => elem.remove());";
+
         }
       }
     }
@@ -1404,7 +1405,7 @@ std::string DomElement::asJavaScript(EscapeOStream& out,
 
     for (unsigned i = 0; i < childrenToSave_.size(); ++i) {
       out << "var c" << var_ << (int)i << '='
-          << "$('#" << childrenToSave_[i] << "')";
+          << WT_CLASS ".$('" << childrenToSave_[i] << "')";
       // In IE, contents is deleted by setting innerHTML
       if (app->environment().agentIsIE())
         out << ".detach()";
