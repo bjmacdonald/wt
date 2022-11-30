@@ -53,7 +53,6 @@ target_include_directories(wt PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 FILE_TO_STRING(web/skeleton/Plain.html    Plain_html.C      Plain_html)
 FILE_TO_STRING(web/skeleton/Hybrid.html   Hybrid_html.C     Hybrid_html)
 FILE_TO_STRING(web/skeleton/Boot.html     Boot_html.C       Boot_html)
-FILE_TO_STRING(web/skeleton/jquery.min.js JQuery_js.C       JQuery_js)
 FILE_TO_STRING(xml/wt.xml Wt_xml.C Wt_xml)
 FILE_TO_STRING(xml/auth_strings.xml     AuthStrings_xml.C     AuthStrings_xml)
 FILE_TO_STRING(xml/bootstrap_theme.xml  BootstrapTheme_xml.C  BootstrapTheme_xml)
@@ -423,15 +422,6 @@ web/XSSUtils.h web/XSSUtils.C
 web/SslUtils.h web/SslUtils.C
 web/UriUtils.h web/UriUtils.C
 web/base64.h web/base64.cpp
-Plain_html.C
-Boot_html.C
-Hybrid_html.C
-Wt_xml.C
-AuthStrings_xml.C
-BootstrapTheme_xml.C
-Bootstrap3Theme_xml.C
-Bootstrap5Theme_xml.C
-AuthCssTheme_xml.C
 )
 
 
