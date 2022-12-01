@@ -64,7 +64,6 @@ target_sources(wt PRIVATE
   Plain_html.C
   Hybrid_html.C
   Boot_html.C
-  JQuery_js.C
   Wt_xml.C
   AuthStrings_xml.C
   BootstrapTheme_xml.C
