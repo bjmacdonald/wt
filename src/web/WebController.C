@@ -37,8 +37,12 @@
 #include <boost/filesystem.hpp>
 #endif
 
+#include <boost/utility/string_view.hpp>
+
 #include <algorithm>
 #include <csignal>
+
+#define WT_REDIRECT_SECRET_HEADER "X-Wt-Redirect-Secret"
 
 namespace {
   std::string str(const std::string *strPtr)
@@ -69,8 +73,6 @@ WebController::WebController(WServer& server,
 #endif // WT_THREADED
     server_(server)
 {
-  CgiParser::init();
-
 #ifndef WT_DEBUG_JS
   WObject::seedId(WRandom::get());
 #else
@@ -158,6 +160,11 @@ void WebController::sessionDeleted()
 }
 
 Configuration& WebController::configuration()
+{
+  return conf_;
+}
+
+const Configuration& WebController::configuration() const
 {
   return conf_;
 }
@@ -597,9 +604,25 @@ void WebController::removeUploadProgressUrl(const std::string& url)
   uploadProgressUrls_.erase(url.substr(url.find("?") + 1));
 }
 
-std::string WebController::computeRedirectHash(const std::string& url)
+std::string WebController::computeRedirectHash(const std::string& secret,
+                                               const std::string& url)
 {
-  return Utils::base64Encode(Utils::md5(redirectSecret_ + url));
+  return Utils::base64Encode(Utils::md5(secret + url));
+}
+
+std::string WebController::redirectSecret(const Wt::WebRequest &request) const
+{
+#ifndef WT_TARGET_JAVA
+  if (configuration().behindReverseProxy() ||
+      configuration().isTrustedProxy(request.remoteAddr())) {
+    const auto secretHeader = request.headerValue(WT_REDIRECT_SECRET_HEADER);
+    if (secretHeader && secretHeader[0] != '\0') {
+      return secretHeader;
+    }
+  }
+#endif // WT_TARGET_JAVA
+
+  return redirectSecret_;
 }
 
 void WebController::handleRequest(WebRequest *request)
@@ -648,24 +671,7 @@ void WebController::handleRequest(WebRequest *request)
 
   const std::string *requestE = request->getParameter("request");
   if (requestE && *requestE == "redirect") {
-    const std::string *urlE = request->getParameter("url");
-    const std::string *hashE = request->getParameter("hash");
-
-    if (urlE && hashE) {
-      if (*hashE != computeRedirectHash(*urlE))
-        hashE = nullptr;
-    }
-
-    if (urlE && hashE) {
-      request->setRedirect(*urlE);
-    } else {
-      request->setContentType("text/html");
-      request->out()
-        << "<title>Error occurred.</title>"
-        << "<h2>Error occurred.</h2><p>Invalid redirect.</p>" << std::endl;
-    }
-
-    request->flush(WebResponse::ResponseState::ResponseDone);
+    handleRedirect(request);
     return;
   }
 
@@ -814,6 +820,28 @@ void WebController::handleRequest(WebRequest *request)
 
   if (!handled)
     handleRequest(request);
+}
+
+void WebController::handleRedirect(Wt::WebRequest *request)
+{
+  const std::string *urlE = request->getParameter("url");
+  const std::string *hashE = request->getParameter("hash");
+
+  if (urlE && hashE) {
+    if (*hashE != computeRedirectHash(redirectSecret(*request), *urlE))
+      hashE = nullptr;
+  }
+
+  if (urlE && hashE) {
+    request->setRedirect(*urlE);
+  } else {
+    request->setContentType("text/html");
+    request->out()
+            << "<title>Error occurred.</title>"
+            << "<h2>Error occurred.</h2><p>Invalid redirect.</p>" << std::endl;
+  }
+
+  request->flush(WebResponse::ResponseState::ResponseDone);
 }
 
 std::unique_ptr<WApplication> WebController

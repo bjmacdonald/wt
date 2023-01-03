@@ -1097,10 +1097,11 @@ std::string WApplication::encodeUntrustedUrl(const std::string& url) const
     && session_->hasSessionIdInUrl();
 
   if (needRedirect) {
-    WebController *c = session_->controller();
     return "?request=redirect&url=" + Utils::urlEncode(url)
       + "&hash="
-      + Utils::urlEncode(c->computeRedirectHash(url));
+      + Utils::urlEncode(
+              WebController::computeRedirectHash(
+                      environment().redirectSecret_, url));
   } else
     return url;
 }
@@ -1470,6 +1471,14 @@ WApplication::UpdateLock::UpdateLock(WApplication *app)
 #ifndef WT_THREADED
   return;
 #else
+
+  // check if 'app' is a nullptr to prevent an access violation
+  // in the following code
+  if (!app) {
+    ok_ = false;
+    return;
+  }
+
   /*
    * If we are already handling this application, then we already have
    * exclusive access, unless we are not having the lock (e.g. from a

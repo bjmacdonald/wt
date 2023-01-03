@@ -39,6 +39,7 @@ SET(TEST_SOURCES
     utf8/XmlTest.C
     utils/Base64Test.C
     utils/EraseWord.C
+    utils/HtmlEncode.C
     utils/ParseNumber.C
     utils/RoundJsString.C
     utils/XmlUtils.C
