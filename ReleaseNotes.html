@@ -20,7 +20,46 @@ newer version of Wt. It lists changes in the library that may break
 the way you build Wt, the way you configure Wt or the Wt API and
 behaviour.
 
-<h2>Release 4.9.1 (TBD)</h2>
+<h2>Release 4.10.0 (TBD)</h2>
+
+<ul>
+  <li>
+    <a href="https://redmine.emweb.be/issues/11210" target="_blank">Issue #11210</a>:
+    <a href="classWt_1_1WTable.html#a03df7cedfb502dcc010493d4a71ee53c">WTable::headerCount()</a>
+    has been made <code>const</code>.
+  </li>
+  <li>
+    The obsolete CMake options
+    <code>ENABLE_EXT</code>, <code>WT_NO_STD_LOCALE</code> and <code>WT_NO_STD_WSTRING</code>
+    were removed.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/7814" target="_blank">Issue #7814</a>:
+    The <code>SameSite</code> attribute of the <code>Set-Cookie</code> HTTP header is now rendered by Wt. To avoid adding yet another parameter to the <code>WApplication::setCookie()</code> method, the class <a href="classWt_1_1Http_1_1Cookie.html">Http::Cookie</a> was introducted that allows configuring all cookie attributes using setters. Objects of this type can be passed to the new <a href="classWt_1_1WApplication.html#a5a76e2ae72a7ba5624c3dc12897728f5">setCookie()</a> and <a href="classWt_1_1WApplication.html#add89ecede3de74cb2338337ca730b2dc">removeCookie()</a> methods in <code>WApplication</code>.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/7279">Issue #7279</a>:
+    added <a href="classWt_1_1WEmailEdit.html">WEmailEdit</a> and
+    <a href="classWt_1_1WEmailValidator.html">WEmailValidator</a>, implementing
+    a <code>&lt;input type="email"&gt;</code>.
+  </li>
+</ul>
+
+<h2>Release 4.9.2 (TBD)</h2>
+
+<p>
+  Wt 4.9.2 is a patch release that addresses the following issues:
+</p>
+
+<ul>
+  <li>
+    <a href="https://redmine.emweb.be/issues/11262" target="_blank">Issue #11262</a>:
+    fixed an issue where 32 bit Linux builds could cause <code>stat()</code> to
+    fail with <code>EOVERFLOW</code>.
+  </li>
+</ul>
+
+<h2>Release 4.9.1 (January 20, 2023)</h2>
 
 <p>
   Wt 4.9.1 is a patch release that addresses the following issues:
@@ -28,10 +67,59 @@ behaviour.
 
 <ul>
   <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11230" target="_blank">Issue #11230</a>:
+    fixed an issue with
+    <a href="classWt_1_1WApplication.html#a5c811d91d3999ac881ce87bebaade864">WApplication::suspend()</a>
+    where widgets would incorrectly believe they were still
+    <a href="classWt_1_1WWidget.html#a7bffb7966160ff8a58fff9d31ef21078">rendered</a> when unsuspending.
+    This would cause problems with e.g. <a href="classWt_1_1WTextEdit.html">WTextEdit</a>
+    inside of a
+    <a href="classWt_1_1WTemplate.html">WTemplate</a>.
+  </li>
+  <li>
     <a href="https://redmine.webtoolkit.eu/issues/11240" target="_blank">Issue #11240</a>:
     fixed an issue where the lazy loading logic breaks when removing and inserting a large
     number of rows in a <a href="classWt_1_1WTreeView.html">WTreeView</a>
     (<a href="https://github.com/emweb/wt/pull/199" target="_blank">PR #199</a> by John Stark).
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11180" target="_blank">Issue #11180</a>:
+    fixes a regression in Wt 4.9.0 where
+    <a href="namespaceWt.html#af4b6ed5fd28b4f5fa141b153c1107349accf2281a355c2c9cd4698ac30bea7820">WidgetSet</a> mode
+    failed with a "classList is undefined" error.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11207" target="_blank">Issue #11207</a>:
+    fixes a regression in Wt 4.9.0 where
+    <a href="classWt_1_1WWidget.html#a5d403e0390841df77a23445b28044d5d">scroll visibility</a> didn't work anymore.
+  </li>
+  <li>
+    Fixed a couple of <a href="classWt_1_1WDialog.html">WDialog</a>-related regressions when using
+    <a href="classWt_1_1WBootstrap5Theme.html">WBootstrap5Theme</a>:
+    <ul>
+      <li>
+        <a href="https://redmine.webtoolkit.eu/issues/11233" target="_blank">Issue #11233</a>:
+        hidden <a href="classWt_1_1WDialog.html">WDialog</a>s would remain visible.
+      </li>
+      <li>
+        <a href="https://redmine.webtoolkit.eu/issues/11248" target="_blank">Issue #11248</a>:
+        contents of a dialog could be cut off when
+        <a href="classWt_1_1WWidget.html#afc4bfcc92fa39010cac8775f3332dfa5">setting the width</a>,
+        and
+        <a href="classWt_1_1WDialog.html#a0a3517bffbd049b988e80bb85ae18c46">resizing of dialogs</a>
+        didn't work.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11261" target="_blank">Issue #11261</a>:
+    added a missing <code>#include &lt;algorithm&gt;</code> to <code>WModelIndex.C</code>
+    to fix compilation issues with Boost 1.81.0 and Visual Studio 2017.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/8223" target="_blank">Issue #8223</a>:
+    fixed compilation on 32-bit Raspberry Pi OS: Wt now links with <code>-latomic</code>
+    if necessary.
   </li>
 </ul>
 

@@ -81,9 +81,9 @@ SUBDIRS(backend)
 INSTALL_FILES(/include/Wt/Dbo "^[^.]+\\.h$")
 INSTALL_FILES(/include/Wt FILES ${WCONFIG_H_PATH})
 
-IF (ASCIIDOC_FOUND)
-  ASCIIDOC_FILE(dbo-tutorial
-    ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.doc
-    ${CMAKE_SOURCE_DIR}/doc/tutorial/dbo.html)
-ENDIF (ASCIIDOC_FOUND)
+  IF (ASCIIDOC_FOUND)
+    ASCIIDOC_FILE(dbo-tutorial
+      ${WT_SOURCE_DIR}/doc/tutorial/dbo.doc
+      ${WT_SOURCE_DIR}/doc/tutorial/dbo.html)
+  ENDIF (ASCIIDOC_FOUND)
 

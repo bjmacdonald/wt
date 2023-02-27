@@ -17,7 +17,7 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 #
 SET(VERSION_SERIES 4)
 SET(VERSION_MAJOR 9)
-SET(VERSION_MINOR 0)
+SET(VERSION_MINOR 1)
 
 # Renamed and reorganised options, added WT prefix to all.
 # Removed DEBUG_LIB_POSTFIX and use global CMAKE_DEBUG_POSTFIX.
@@ -64,7 +64,6 @@ option(INSTALL_THEMES "Install the source files for Wt's themes" ON)
 OPTION(ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
 OPTION(ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" ON)
 OPTION(ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" ON)
-OPTION(ENABLE_EXT "Build Wt Ext library with JavaScript-only widgets (http://extjs.com/) DEPRECATED" OFF)
 OPTION(ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" ON)
 OPTION(ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" ON)
 OPTION(ENABLE_FIREBIRD "Build FirebirdSQL backend for Wt::Dbo" ON)
@@ -76,8 +75,6 @@ OPTION(ENABLE_QT6 "Build Qt6 interworking library (libwtwithqt6)" ON)
 OPTION(ENABLE_SAML "Build built-in SAML service provider for Wt::Auth" OFF)
 OPTION(ENABLE_LIBWTTEST "Build Wt::Test" ON)
 OPTION(ENABLE_LIBWTDBO "Build Wt::Dbo" ON)
-OPTION(WT_NO_STD_LOCALE "Build Wt to run on a system without std::locale support" OFF)
-OPTION(WT_NO_STD_WSTRING "Build Wt to run on a system without std::wstring support" OFF)
 OPTION(ENABLE_OPENGL "Build Wt with support for server-side opengl rendering" ON)
 OPTION(ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 
@@ -488,12 +485,12 @@ FIND_PACKAGE(Doxygen)
 IF (DOXYGEN_FOUND)
   ADD_CUSTOM_TARGET(doxygen
     ${DOXYGEN_EXECUTABLE}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    WORKING_DIRECTORY ${WT_SOURCE_DIR}
     COMMENT "Doxygen ...")
   ADD_DEPENDENCIES(doc doxygen)
   ADD_CUSTOM_TARGET(doxygen-examples
     ${DOXYGEN_EXECUTABLE}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/examples
+    WORKING_DIRECTORY ${WT_SOURCE_DIR}/examples
     COMMENT "Doxygen for examples ...")
   ADD_DEPENDENCIES(doc doxygen-examples)
 ENDIF (DOXYGEN_FOUND)
@@ -536,28 +533,32 @@ IF(WT_BUILD_EXAMPLES)
 ENDIF(WT_BUILD_EXAMPLES)
 
 
+IF(INSTALL_RESOURCES)
+  INSTALL(DIRECTORY ${WT_SOURCE_DIR}/resources DESTINATION
+    ${CMAKE_INSTALL_PREFIX}/share/Wt/)
+ENDIF(INSTALL_RESOURCES)
 
 if(INSTALL_THEMES)
-  install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/themes
+  install(DIRECTORY ${WT_SOURCE_DIR}/src/themes
           DESTINATION ${CMAKE_INSTALL_PREFIX}/share/Wt/
           PATTERN "node_modules" EXCLUDE)
 endif()
 
 IF(INSTALL_EXAMPLES)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/examples/
+  INSTALL(DIRECTORY ${WT_SOURCE_DIR}/examples/
           DESTINATION ${CMAKE_INSTALL_PREFIX}/${EXAMPLES_DESTINATION}
           PATTERN "examples/*"
           PATTERN "node_modules" EXCLUDE)
 ENDIF(INSTALL_EXAMPLES)
 
 IF(INSTALL_DOCUMENTATION)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/reference/html DESTINATION
+  INSTALL(DIRECTORY ${WT_SOURCE_DIR}/doc/reference/html DESTINATION
     ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_DESTINATION}/reference)
-  INSTALL(FILES ${PROJECT_SOURCE_DIR}/doc/reference/wt.qch DESTINATION
+  INSTALL(FILES ${WT_SOURCE_DIR}/doc/reference/wt.qch DESTINATION
     ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_DESTINATION}/reference)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/examples/html DESTINATION
+  INSTALL(DIRECTORY ${WT_SOURCE_DIR}/doc/examples/html DESTINATION
     ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_DESTINATION}/examples)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/tutorial DESTINATION
+  INSTALL(DIRECTORY ${WT_SOURCE_DIR}/doc/tutorial DESTINATION
     ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_DESTINATION})
 ENDIF(INSTALL_DOCUMENTATION)
 

@@ -150,6 +150,8 @@ Wt/WDefaultLoadingIndicator.h Wt/WDefaultLoadingIndicator.C
 Wt/WDialog.h Wt/WDialog.C
 Wt/WDoubleSpinBox.h Wt/WDoubleSpinBox.C
 Wt/WDoubleValidator.h Wt/WDoubleValidator.C
+Wt/WEmailEdit.h Wt/WEmailEdit.C
+Wt/WEmailValidator.h Wt/WEmailValidator.C
 Wt/WEnvironment.h Wt/WEnvironment.C
 Wt/WEvent.h Wt/WEvent.C
 Wt/WException.h Wt/WException.C
@@ -367,6 +369,7 @@ Wt/Json/Serializer.h Wt/Json/Serializer.C
 Wt/Json/Value.h Wt/Json/Value.C
 Wt/Http/HttpUtils.h Wt/Http/HttpUtils.C
 Wt/Http/Client.h Wt/Http/Client.C
+Wt/Http/Cookie.h Wt/Http/Cookie.C
 Wt/Http/Message.h Wt/Http/Message.C
 Wt/Http/Request.h Wt/Http/Request.C
 Wt/Http/Response.h Wt/Http/Response.C
@@ -402,6 +405,7 @@ web/EscapeOStream.h web/EscapeOStream.C
 web/FileServe.h web/FileServe.C
 web/ColorUtils.h web/ColorUtils.C
 web/ImageUtils.h web/ImageUtils.C
+web/InfraUtils.h web/InfraUtils.C
 web/RefEncoder.h web/RefEncoder.C
 web/SoundManager.h web/SoundManager.C
 web/WebController.h web/WebController.C
