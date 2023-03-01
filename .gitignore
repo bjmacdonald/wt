@@ -1,8 +1,7 @@
 *~
 *.db
 *.autosave
-build*/*
-cmake-build-*
+build
 .DS_Store
 CMakeLists.txt.user
 wt.tags
@@ -17,7 +16,6 @@ examples/widgetgallery/docroot/resources
 resources/tiny_mce
 resources/tinymce
 test/interactive
-debug/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json

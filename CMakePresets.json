@@ -1,16 +1,15 @@
 {
-  "version": 2,
+  "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 24,
     "patch": 0
   },
   "configurePresets": [
     {
-      "name": "win64-base",
-      "description": "Sets generator, build and install directory, vcpkg",
+      "name": "w64",
+      "description": "Clion sets generator and build, install directories.",
       "hidden": true,
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
@@ -24,7 +23,50 @@
       "toolset": {
         "value": "host=x64",
         "strategy": "external"
-       },
+       }
+    },
+    {
+      "name": "jb-w64",
+      "description": "Clion sets generator and build, install directories.",
+      "inherits": [ "w64" ],
+      "hidden": true,
+      "generator": "Ninja",
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
+        }
+      }
+    },
+    {
+      "name": "jb-w64-dbg",
+      "description": "Windows Debug",
+      "inherits": [ "jb-w64" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "jb-w64-rel",
+      "description": "Windows Release",
+      "inherits": [ "jb-w64" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "jb-w64-rdb",
+      "description": "Windows RelWithDebInfo",
+      "inherits": [ "jb-w64" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "vs-w64",
+      "description": "Visual Studio sets generator and build, install directories.",
+      "hidden": true,
+      "inherits": [ "w64" ],
+      "generator": "Visual Studio 17 2022",
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "hostOS": [ "Windows" ],
@@ -34,23 +76,31 @@
       }
     },
     {
-      "name": "win64-debug",
-      "description": "Windows Debug Config",
-      "inherits": [ "win64-base" ],
+      "name": "vs-w64-dbg",
+      "description": "Windows Debug",
+      "inherits": [ "vs-w64" ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "win64-release",
-      "description": "Windows Release Config",
-      "inherits": [ "win64-base" ],
+      "name": "vs-w64-rel",
+      "description": "Windows Release",
+      "inherits": [ "vs-w64" ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "linux-base",
+      "name": "vs-w64-rdb",
+      "description": "Windows RelWithDebInfo",
+      "inherits": [ "vs-w64" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "lnx-base",
       "description": "Sets generator, build and install directory",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
@@ -64,9 +114,9 @@
       }
     },
     {
-      "name": "linux-warnings",
+      "name": "lnx-warnings",
       "description": "Enables dev warnings (-wdev)",
-      "inherits": "linux-base",
+      "inherits": "lnx-base",
       "warnings": {
         "dev": true
       }
@@ -74,26 +124,28 @@
   ],
   "buildPresets": [
     {
-      "name": "win64-build-debug",
-      "configurePreset": "win64-debug",
-      "inheritConfigureEnvironment": true,
-      "description": "Windows Debug Build",
-      "configuration": "Debug",
+      "name": "jb-build-dbg",
+      "configurePreset": "jb-w64-dbg",
+      "description": "Windows x64 Debug Build",
       "nativeToolOptions": [ "-k 0" ]
     },
     {
-      "name": "win64-build-release",
-      "configurePreset": "win64-release",
-      "inheritConfigureEnvironment": true,
-      "description": "Windows Release Build",
-      "configuration": "Release",
+      "name": "jb-build-rel",
+      "configurePreset": "jb-w64-rel",
+      "description": "Windows x64 Release Build",
       "nativeToolOptions": [ "-k 0" ]
     },
     {
-      "name": "win64-build-debug-verbose",
-      "inherits": "win64-build-debug",
-      "description": "Windows Debug Verbose Build",
-      "nativeToolOptions": [ "-v" ]
+      "name": "vs-build-dbg",
+      "configurePreset": "vs-w64-dbg",
+      "description": "Windows x64 Debug Build",
+      "nativeToolOptions": [ "-k 0" ]
+    },
+    {
+      "name": "vs-build-rel",
+      "configurePreset": "vs-w64-rel",
+      "description": "Windows x64 Release Build",
+      "nativeToolOptions": [ "-k 0" ]
     }
   ]
 }
