@@ -2,7 +2,6 @@
 
 
 add_library(wt)
-target_compile_features(wt PUBLIC cxx_std_17)
 target_compile_definitions(wt PRIVATE WT_BUILDING)
 target_link_libraries(wt PUBLIC Boost::boost Boost::filesystem)
 
@@ -440,17 +439,17 @@ IF (WT_CPP20_DATE_TZ_IMPLEMENTATION STREQUAL "date")
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS USE_OS_TZDB=1)
   ENDIF (WIN32)
 
-  IF (WT_SHARED_LIBS)
+  IF (SHARED_LIBS)
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_DLL)
-  ELSE (WT_SHARED_LIBS)
+  ELSE (SHARED_LIBS)
     set_source_files_properties(Wt/Date/src/tz.cpp PROPERTIES COMPILE_DEFINITIONS DATE_BUILD_LIB)
-  ENDIF (WT_SHARED_LIBS)
+  ENDIF (SHARED_LIBS)
 ENDIF ()
 
-IF (WT_MULTI_THREADED)
+IF (MULTI_THREADED)
   target_sources(wt PRIVATE web/SocketNotifier.h web/SocketNotifier.C)
   target_link_libraries(wt PRIVATE Boost::thread)
-ENDIF(WT_MULTI_THREADED)
+ENDIF(MULTI_THREADED)
 
 IF(WT_HAS_SAML)
   set(samlsources
@@ -475,13 +474,13 @@ target_sources(wt PRIVATE
       Wt/Auth/bcrypt/crypt_gensalt.h Wt/Auth/bcrypt/crypt_gensalt.c
       Wt/Auth/bcrypt/wrapper.c)
 
-IF(WT_ENABLE_HARU)
+IF(ENABLE_HARU)
   target_sources(wt PRIVATE Wt/WPdfImage.h Wt/WPdfImage.C Wt/Render/WPdfRenderer.h Wt/Render/WPdfRenderer.C)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${HARU_LIBRARIES})
   INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
-ELSE(WT_ENABLE_HARU)
+ELSE(ENABLE_HARU)
   MESSAGE("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")
-ENDIF(WT_ENABLE_HARU)
+ENDIF(ENABLE_HARU)
 
 
 IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
@@ -500,8 +499,8 @@ ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
 ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
   MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or skia.")
 ENDIF()
-IF(WT_ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
-  IF(WT_ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+IF(ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+  IF(ENABLE_PANGO AND NOT "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
     target_sources(wt PRIVATE Wt/FontSupport.h Wt/FontSupportPango.C)
     TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
     INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
@@ -522,11 +521,11 @@ ENDIF()
 
 
 IF(WIN32)
-  IF(WT_SHARED_LIBS)
+  IF(SHARED_LIBS)
     CONFIGURE_FILE(Wt/wt-version.rc.in
                    ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
     target_sources(wt PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/wt-version.rc)
-  ENDIF(WT_SHARED_LIBS)
+  ENDIF(SHARED_LIBS)
 ENDIF(WIN32)
 
 if(DEBUG_JS)
@@ -541,19 +540,19 @@ endif()
 #    ${WT_MATH_LIBRARY}
 #    )
 
-IF(WT_ENABLE_SSL)
+IF(WT_WITH_SSL)
   target_link_libraries(wt PRIVATE OpenSSL::OpenSSL)
-ELSE(WT_ENABLE_SSL)
+ELSE(WT_WITH_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
-ENDIF(WT_ENABLE_SSL)
+ENDIF(WT_WITH_SSL)
 
 
-IF(WT_ENABLE_UNWIND)
+IF(ENABLE_UNWIND)
   target_compile_definitions(wt PRIVATE WT_WITH_UNWIND)
   TARGET_LINK_LIBRARIES(wt PRIVATE ${UNWIND_LIBRARIES})
   INCLUDE_DIRECTORIES(${UNWIND_INCLUDE_DIRS})
   MESSAGE("** Enabling stacktrace prints using libunwind")
-ENDIF(WT_ENABLE_UNWIND)
+ENDIF(ENABLE_UNWIND)
 
 target_include_directories(wt INTERFACE $<INSTALL_INTERFACE:include>)
 
@@ -577,15 +576,15 @@ PROPERTIES
 )
 
 IF(MSVC)
-  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
+  SET_TARGET_PROPERTIES(wt PROPERTIES COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267")
   TARGET_LINK_LIBRARIES(wt PRIVATE winmm)
 ENDIF(MSVC)
 
 
 #
-# WT_ENABLE_LIBWTTEST
+# ENABLE_LIBWTTEST
 #
-IF(WT_ENABLE_LIBWTTEST)
+IF(ENABLE_LIBWTTEST)
   ADD_LIBRARY(wttest Wt/Test/WTestEnvironment.C)
   target_compile_definitions(wttest PRIVATE WT_BUILDING)
 
@@ -608,9 +607,9 @@ IF(WT_ENABLE_LIBWTTEST)
     EXPORT_NAME Test
     VERSION ${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}
   )
-ELSE(WT_ENABLE_LIBWTTEST)
+ELSE(ENABLE_LIBWTTEST)
   MESSAGE("** Not building libwttest")
-ENDIF(WT_ENABLE_LIBWTTEST)
+ENDIF(ENABLE_LIBWTTEST)
 
 
 #add_subdirectory(web)

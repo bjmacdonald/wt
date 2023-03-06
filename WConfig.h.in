@@ -20,8 +20,8 @@
 #define WTHTTP_CONFIGURATION "${WTHTTP_CONFIGURATION}"
 
 
-#cmakedefine WT_SHARED_LIBS
-#ifndef WT_SHARED_LIBS
+#cmakedefine SHARED_LIBS
+#ifndef SHARED_LIBS
 #  define WT_STATIC
 #  define WTDBO_STATIC
 #  define WTDBOPOSTGRES_STATIC

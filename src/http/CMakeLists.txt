@@ -1,4 +1,4 @@
-IF(NOT WT_CONNECTOR_HTTP)
+IF(NOT CONNECTOR_HTTP)
   MESSAGE("** Disabling built-in httpd.")
   return()
 endif()
@@ -53,11 +53,11 @@ endif()
 target_link_libraries(wthttp PRIVATE Boost::date_time Boost::filesystem Boost::program_options Boost::thread)
 
 # SSL
-IF(WT_ENABLE_SSL)
+IF(WT_WITH_SSL)
   target_link_libraries(wthttp PRIVATE OpenSSL::OpenSSL)
-ELSE(WT_ENABLE_SSL)
+ELSE(WT_WITH_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
-ENDIF(WT_ENABLE_SSL)
+ENDIF(WT_WITH_SSL)
 
 
 # ZLib (find_package in top level CMakeLists.txt)
@@ -76,7 +76,7 @@ TARGET_LINK_LIBRARIES(wthttp PUBLIC wt)
 #TARGET_LINK_LIBRARIES(wthttp PRIVATE ${WT_SOCKET_LIBRARY})
 
 
-IF(WIN32 AND WT_SHARED_LIBS)
+IF(WIN32 AND SHARED_LIBS)
   CONFIGURE_FILE(wthttp-version.rc.in
                  ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
   target_sources(wthttp ${CMAKE_CURRENT_BINARY_DIR}/wthttp-version.rc)
@@ -94,7 +94,7 @@ IF(MSVC)
   SET_TARGET_PROPERTIES(
       wthttp
     PROPERTIES
-      COMPILE_FLAGS "${WT_BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267 /wd4267"
+      COMPILE_FLAGS "${BUILD_PARALLEL} /wd4251 /wd4275 /wd4355 /wd4800 /wd4996 /wd4101 /wd4267 /wd4267"
   )
 ENDIF(MSVC)
 

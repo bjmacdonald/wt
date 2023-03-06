@@ -1,4 +1,4 @@
-IF(NOT WT_ENABLE_LIBWTTEST)
+IF(NOT ENABLE_LIBWTTEST)
   MESSAGE("** libwttest disabled, not building tests")
   return()
 ENDIF()
@@ -83,7 +83,7 @@ IF(TARGET Boost::headers)
   TARGET_LINK_LIBRARIES(test.wt Boost::headers)
 ENDIF()
 
-IF(WT_ENABLE_LIBWTDBO)
+IF(ENABLE_LIBWTDBO)
   # Test all dbo backends
   SET(DBO_TEST_SOURCES
       test.C
@@ -182,7 +182,7 @@ IF(WT_ENABLE_LIBWTDBO)
     ENDIF()
     MESSAGE("** Testing Wt::Dbo using Microsoft SQL Server backend")
   ENDIF(HAVE_MSSQLSERVER)
-ENDIF(WT_ENABLE_LIBWTDBO)
+ENDIF(ENABLE_LIBWTDBO)
 
 INCLUDE_DIRECTORIES(${WT_SOURCE_DIR}/src)
 
@@ -190,10 +190,10 @@ IF (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/interactive)
   SUBDIRS(interactive)
 ENDIF (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/interactive)
 
-IF(WT_CONNECTOR_HTTP)
+IF(CONNECTOR_HTTP)
   add_executable(test.http test.C http/HttpClientServerTest.C)
   target_link_libraries(test.http wt wthttp Boost::boost)
   IF(MSVC)
     SET_TARGET_PROPERTIES(test.http PROPERTIES FOLDER "test")
   ENDIF(MSVC)  
-ENDIF(WT_CONNECTOR_HTTP)
+ENDIF(CONNECTOR_HTTP)
