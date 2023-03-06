@@ -1,3 +1,4 @@
+IF(BOOST_WT_FOUND)
 SET(WIDGETGALLERY_SOURCES
   main.C
   BaseTemplate.h BaseTemplate.C

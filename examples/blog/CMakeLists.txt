@@ -1,3 +1,4 @@
+IF(BOOST_WT_FOUND)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckLibraryExists)
 
@@ -47,3 +48,6 @@ ENDIF(CRYPT_LIB_EXISTS)
 INCLUDE_DIRECTORIES(
   ${WT_SOURCE_DIR}/src
 )
+ELSE(BOOST_WT_FOUND)
+  MESSAGE(STATUS "** Not building blog example: requires boost headers.")
+ENDIF(BOOST_WT_FOUND)

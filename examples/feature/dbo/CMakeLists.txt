@@ -1,8 +1,8 @@
 SET(tutorial_libs ${EXAMPLES_DBO_LIBS})
 
-#IF (WT_MULTI_THREADED)
+#IF (MULTI_THREADED)
 #  SET(tutorial_libs ${tutorial_libs} ${BOOST_THREAD_LIB})
-#ENDIF (WT_MULTI_THREADED)
+#ENDIF (MULTI_THREADED)
 
 SUBDIRS(
     tutorial9
@@ -45,9 +45,9 @@ ENDIF(MSVC)
 
 INCLUDE_DIRECTORIES(${WT_SOURCE_DIR}/src)
 
-IF(WT_INSTALL_EXAMPLES)
+IF(INSTALL_EXAMPLES)
   INSTALL(TARGETS dbo-tutorial1 dbo-tutorial2 dbo-tutorial3
     dbo-tutorial4 dbo-tutorial5 dbo-tutorial6
     dbo-tutorial7 dbo-tutorial8
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/${WT_EXAMPLES_DESTINATION}/feature/dbo/)
-ENDIF(WT_INSTALL_EXAMPLES)
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${EXAMPLES_DESTINATION}/feature/dbo/)
+ENDIF(INSTALL_EXAMPLES)

@@ -7,8 +7,8 @@ include(CMakePrintHelpers)
 
 PROJECT(WT LANGUAGES C CXX)
 
-# Was min 14, now set to 17 and use std::any
-SET(CMAKE_CXX_STANDARD 17)
+# Was min 14, now set to 20 and use std::any
+SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -57,15 +57,15 @@ SET(VERSION_MINOR 1)
 # Global CMAKE settings
 #
 OPTION(BUILD_EXAMPLES "Build examples" ON)
-OPTION(INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" OFF)
+OPTION(INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" ON)
 OPTION(INSTALL_EXAMPLES "Install examples (binaries and source)" OFF)
 OPTION(INSTALL_RESOURCES "Install resources directory" ON)
 option(INSTALL_THEMES "Install the source files for Wt's themes" ON)
 OPTION(ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
-OPTION(ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" ON)
-OPTION(ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" ON)
+OPTION(ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
+OPTION(ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
 OPTION(ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" ON)
-OPTION(ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" ON)
+OPTION(ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" OFF)
 OPTION(ENABLE_FIREBIRD "Build FirebirdSQL backend for Wt::Dbo" OFF)
 OPTION(ENABLE_MYSQL "Build mariadb/mysql backend for Wt::Dbo" OFF)
 OPTION(ENABLE_MSSQLSERVER "Build Microsoft SQL Server backend for Wt::Dbo" OFF)
@@ -75,15 +75,37 @@ OPTION(ENABLE_QT6 "Build Qt6 interworking library (libwtwithqt6)" OFF)
 OPTION(ENABLE_SAML "Build built-in SAML service provider for Wt::Auth" OFF)
 OPTION(ENABLE_LIBWTTEST "Build Wt::Test" ON)
 OPTION(ENABLE_LIBWTDBO "Build Wt::Dbo" ON)
-OPTION(ENABLE_OPENGL "Build Wt with support for server-side opengl rendering" ON)
+OPTION(ENABLE_OPENGL "Build Wt with support for server-side opengl rendering" OFF) # BMD All modern browsers support WebGL
 OPTION(ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 
-#IF(NOT CMAKE_BUILD_TYPE)
-#  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-#      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-#      FORCE)
-#ENDIF(NOT CMAKE_BUILD_TYPE)
+option(DEBUG_JS "Serve non-minified JavaScript from the filesystem instead of embedding it, for debugging." OFF)
+mark_as_advanced(DEBUG_JS)
 
+# Fixup Windows declspec stuff
+IF(NOT SHARED_LIBS)
+  SET(WT_STATIC true)
+  SET(WTHTTP_STATIC true)
+  SET(WT_EXT_STATIC true)
+  SET(WTDBO_STATIC true)
+  SET(WTDBOSQLITE3_STATIC true)
+  SET(WTDBOPOSTGRES_STATIC true)
+  SET(WTDBOFIREBIRD_STATIC true)
+  SET(WTDBOMYSQL_STATIC true)
+  SET(WTDBOMSSQLSERVER_STATIC true)
+ENDIF(NOT SHARED_LIBS)
+
+IF(NOT MULTI_THREADED)
+  OPTION(MULTI_THREADED "Build multi-threaded httpd deamon (if possible)" ON)
+ENDIF(NOT MULTI_THREADED)
+
+SET(BUILD_SHARED_LIBS ${SHARED_LIBS})
+
+IF(NOT CMAKE_CXX_STANDARD)
+  ##### BMD ######
+  SET(CMAKE_CXX_STANDARD 20)
+ENDIF(NOT CMAKE_CXX_STANDARD)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 
 #########################################################################################
 #  Configure with Conan
@@ -165,7 +187,7 @@ if(MSVC)
   #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
   SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
-  SET(WT_BUILD_PARALLEL "/MP" CACHE STRING "MSVC option for parallel builds (/MP or /MPx)")
+  SET(BUILD_PARALLEL "/MP" CACHE STRING "MSVC option for parallel builds (/MP or /MPx)")
 ENDIF(MSVC)
 
 
@@ -173,56 +195,31 @@ ENDIF(MSVC)
 # Main Build Options
 #
 IF(WIN32)
-  OPTION(WT_SHARED_LIBS "Compile shared libraries" OFF)
+  OPTION(SHARED_LIBS "Compile shared libraries" OFF)
 ELSE(WIN32)
-  OPTION(WT_SHARED_LIBS "Compile shared libraries" ON)
+  OPTION(SHARED_LIBS "Compile shared libraries" ON)
 ENDIF(WIN32)
 
-if(WT_SHARED_LIBS)
+if(SHARED_LIBS)
   SET(CMAKE_C_VISIBILITY_PRESET hidden)
   SET(CMAKE_CXX_VISIBILITY_PRESET hidden)
   SET(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 ENDIF()
 
-OPTION(WT_MULTI_THREADED "Build multi-threaded httpd deamon (if possible)" ON)
-OPTION(WT_DEBUG_ENABLED "Support for debugging, must be enabled also in wt_config.xml" OFF)
-OPTION(WT_ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
-OPTION(WT_ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
-OPTION(WT_ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
-OPTION(WT_ENABLE_QT5 "Build Qt5 interworking library (libwtwithqt5)" OFF)
-OPTION(WT_ENABLE_QT6 "Build Qt6 interworking library (libwtwithqt6)" OFF)
-OPTION(WT_ENABLE_SAML "Build built-in SAML service provider for Wt::Auth" OFF)
-OPTION(WT_ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
-
 IF(WIN32)
-  SET(WT_CONNECTOR_FCGI OFF)
-  OPTION(WT_CONNECTOR_ISAPI "Compile in ISAPI connector (libwtisapi) ?" OFF)
+  SET(CONNECTOR_FCGI OFF)
+  OPTION(CONNECTOR_ISAPI "Compile in ISAPI connector (libwtisapi) ?" OFF)
 ELSE(WIN32)
-  OPTION(WT_CONNECTOR_FCGI "Compile in FCGI connector (libwtfcgi) ?" OFF)
-  SET(WT_CONNECTOR_ISAPI OFF)
+  OPTION(CONNECTOR_FCGI "Compile in FCGI connector (libwtfcgi) ?" OFF)
+  SET(CONNECTOR_ISAPI OFF)
 ENDIF(WIN32)
-OPTION(WT_CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" ON)
-
-
-#
-# DBO Build Options
-#
-OPTION(WT_ENABLE_LIBWTDBO "Build Wt::Dbo" ON)
-OPTION(WT_ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" ON)
-OPTION(WT_ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" OFF)
-OPTION(WT_ENABLE_FIREBIRD "Build FirebirdSQL backend for Wt::Dbo" OFF)
-OPTION(WT_ENABLE_MYSQL "Build mariadb/mysql backend for Wt::Dbo" OFF)
-OPTION(WT_ENABLE_MSSQLSERVER "Build Microsoft SQL Server backend for Wt::Dbo" ON)
+OPTION(CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" ON)
 
 
 #
 # Other Options
 #
-OPTION(WT_BUILD_EXAMPLES "Build examples" ON)
-OPTION(WT_ENABLE_LIBWTTEST "Build Wt::Test" ON)
-OPTION(WT_BUILD_TESTS "Build Wt tests" ON)
-option(DEBUG_JS "Serve non-minified JavaScript from the filesystem instead of embedding it, for debugging." OFF)
-mark_as_advanced(DEBUG_JS)
+OPTION(BUILD_TESTS "Build Wt tests" ON)
 
 
 #
@@ -304,15 +301,16 @@ SET(WEBGROUP apache CACHE STRING "Webserver groupname (e.g. apache or www or use
 #
 # Multi Threaded
 #
-IF(WT_MULTI_THREADED)
+IF(MULTI_THREADED)
   MESSAGE("** Enabling multi threading.")
+  SET(MULTI_THREADED_BUILD ON)
   SET(WT_THREADED ON)
   add_compile_definitions(_REENTRANT BOOST_SPIRIT_THREADSAFE)
-ELSE(WT_MULTI_THREADED)
+ELSE(MULTI_THREADED)
   MESSAGE("** Disabling multi threading.")
   SET(WT_THREADED OFF)
   add_compile_definitions(BOOST_DISABLE_THREADS SQLITE_THREADSAFE=0)
-ENDIF(WT_MULTI_THREADED)
+ENDIF(MULTI_THREADED)
 
 
 #
@@ -330,26 +328,29 @@ SET(BOOST_FS_LIB Boost::filesystem)
 SET(BOOST_PO_LIB Boost::program_options)
 SET(BOOST_SYSTEM_LIB Boost::system)
 SET(BOOST_THREAD_LIB Boost::thread)
+SET(BOOST_WT_FOUND True)
+SET(BOOST_WT_MT_FOUND True)
+
 
 #
 # SSL
 #
-IF(WT_ENABLE_SSL)
+IF(ENABLE_SSL)
   find_package(OpenSSL REQUIRED CONFIG)
 	message("OpenSSL found at ${OpenSSL_DIR}")
   SET(WT_WITH_SSL ON)
-ENDIF(WT_ENABLE_SSL)
+ENDIF(ENABLE_SSL)
 
 
 #
 # SAML
 #
-IF (WT_ENABLE_SAML)
+IF (ENABLE_SAML)
   find_package(OpenSAML)
   if(OpenSAML_FOUND)
     set(WT_HAS_SAML TRUE)
   endif()
-ENDIF (WT_ENABLE_SAML)
+ENDIF (ENABLE_SAML)
 
 #
 # ZLib
@@ -363,7 +364,7 @@ endif()
 # Haru
 #
 # ToDo: Haru requires porting libharu which requires libpng as well.
-IF(WT_ENABLE_HARU)
+IF(ENABLE_HARU)
   INCLUDE(cmake/WtFindHaru.txt)
   SET(WT_HAS_WPDFIMAGE true)
 
@@ -373,27 +374,27 @@ IF(WT_ENABLE_HARU)
       add_compile_definitions(HPDF_DLL)
     ENDIF(HARU_DYNAMIC)
   ENDIF(WIN32)
-ENDIF(WT_ENABLE_HARU)
+ENDIF(ENABLE_HARU)
 
 #
 # Pango
 #
 # ToDo: Pango has loads of dependencies.  Nightmare.
-IF (WT_ENABLE_PANGO)
+IF (ENABLE_PANGO)
   INCLUDE(cmake/WtFindPangoFt2.txt)
-ENDIF(WT_ENABLE_PANGO)
+ENDIF(ENABLE_PANGO)
 
 #
 # QT5
 #
 # This has no effect outside of getting the package.
-IF(WT_ENABLE_QT5)
+IF(ENABLE_QT5)
   FIND_PACKAGE(Qt5Core)
-ENDIF(WT_ENABLE_QT5)
+ENDIF(ENABLE_QT5)
 
-IF(WT_ENABLE_QT6)
+IF(ENABLE_QT6)
   FIND_PACKAGE(Qt6 CONFIG COMPONENTS Core)
-ENDIF(WT_ENABLE_QT6)
+ENDIF(ENABLE_QT6)
 
 #
 # Raster Image
@@ -431,27 +432,16 @@ ENDIF (${WT_WRASTERIMAGE_IMPLEMENTATION} STREQUAL "GraphicsMagick")
 #
 # Unwind
 #
-IF (WT_ENABLE_UNWIND)
+IF (ENABLE_UNWIND)
   INCLUDE(cmake/WtFindUnwind.txt)
-ENDIF(WT_ENABLE_UNWIND)
+ENDIF(ENABLE_UNWIND)
 
 
 #
 # C++20 date or Hinnant date
 #
-SET(WT_CPP20_DATE_TZ_DEFAULT_IMPLEMENTATION "date")
-SET(WT_CPP20_DATE_TZ_IMPLEMENTATION ${WT_CPP20_DATE_TZ_DEFAULT_IMPLEMENTATION} CACHE STRING
-  "Implementation for Wt::cpp20::date. Defaults to \"date\": an included implementation of date and timezone support by Howard Hinnant. Use \"std\" for C++20's \"std::chrono\" implementation.")
-SET_PROPERTY(CACHE WT_CPP20_DATE_TZ_IMPLEMENTATION PROPERTY STRINGS date std)
-
-IF (${WT_CPP20_DATE_TZ_IMPLEMENTATION} STREQUAL "date")
-  SET(WT_DATE_TZ_USE_DATE ON)
-ELSEIF(${WT_CPP20_DATE_TZ_IMPLEMENTATION} STREQUAL "std")
-  SET(WT_DATE_TZ_USE_STD ON)
-ELSE()
-  MESSAGE(FATAL_ERROR "WT_CPP20_DATE_TZ_IMPLEMENTATION must be date or std")
-ENDIF()
-
+SET(WT_CPP20_DATE_TZ_IMPLEMENTATION "std")
+SET(WT_DATE_TZ_USE_STD ON)
 
 
 #include (CheckSymbolExists)
@@ -460,8 +450,6 @@ ENDIF()
 #INCLUDE(cmake/WtFindPostgresql.txt)
 #INCLUDE(cmake/WtFindOdbc.txt)
 #INCLUDE(cmake/WtFindSystemLibraries.txt)
-
-
 
 
 IF(WT_INSTALL_DOCUMENTATION)
@@ -511,16 +499,16 @@ ENDIF(APPLE)
 # Include source for build.
 #
 add_subdirectory(src)
-IF(WT_BUILD_TESTS)
+IF(BUILD_TESTS)
   add_subdirectory(test)
-ENDIF(WT_BUILD_TESTS)
+ENDIF(BUILD_TESTS)
 
 IF(NOT WT_EXAMPLES_DESTINATION)
   SET(WT_EXAMPLES_DESTINATION lib/Wt/examples)
 ENDIF(NOT WT_EXAMPLES_DESTINATION)
 
 SET(EXAMPLES_CONNECTOR wthttp CACHE STRING "Connector used for examples")
-IF(WT_BUILD_EXAMPLES)
+IF(BUILD_EXAMPLES)
   IF(WIN32)
     add_subdirectory(examples)
   ELSE(WIN32)
@@ -530,7 +518,7 @@ IF(WT_BUILD_EXAMPLES)
       add_subdirectory(examples EXCLUDE_FROM_ALL)
     ENDIF (WT_INSTALL_EXAMPLES)
   ENDIF(WIN32)
-ENDIF(WT_BUILD_EXAMPLES)
+ENDIF(BUILD_EXAMPLES)
 
 
 IF(INSTALL_RESOURCES)
@@ -591,7 +579,7 @@ ELSE()
 ENDIF()
 IF (${WT_ASIO_IS_BOOST_ASIO})
   SET(_WTCONFIG_CMAKE_FIND_BOOST TRUE)
-ELSEIF(Boost_USE_STATIC_LIBS AND NOT WT_SHARED_LIBS)
+ELSEIF(Boost_USE_STATIC_LIBS AND NOT SHARED_LIBS)
   SET(_WTCONFIG_CMAKE_FIND_BOOST TRUE)
 ELSE()
   SET(_WTCONFIG_CMAKE_FIND_BOOST FALSE)

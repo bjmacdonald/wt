@@ -1,6 +1,6 @@
-IF(NOT WT_MULTI_THREADED)
+IF(NOT MULTI_THREADED_BUILD)
   MESSAGE(STATUS "** Not building socketnotifier feature example: requires a multi-threaded build.")
-ELSE(NOT WT_MULTI_THREADED)
+ELSE(NOT MULTI_THREADED_BUILD)
 
   IF (MINGW)
     MESSAGE(STATUS "** Not building socketnotifier example for lack of getaddrinfo freeaddrinfo.")
@@ -19,4 +19,4 @@ ELSE(NOT WT_MULTI_THREADED)
     TARGET_LINK_LIBRARIES(socketnotifier.wt ${WT_SOCKET_LIBRARY})
   ENDIF (MINGW)
 
-ENDIF(NOT WT_MULTI_THREADED)
+ENDIF(NOT MULTI_THREADED_BUILD)
