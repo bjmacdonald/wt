@@ -81,6 +81,13 @@ OPTION(ENABLE_UNWIND "Build Wt with stacktrace support using libunwind" OFF)
 option(DEBUG_JS "Serve non-minified JavaScript from the filesystem instead of embedding it, for debugging." OFF)
 mark_as_advanced(DEBUG_JS)
 
+IF(NOT DOCUMENTATION_DESTINATION)
+  SET(DOCUMENTATION_DESTINATION share/doc/Wt)
+ENDIF(NOT DOCUMENTATION_DESTINATION)
+IF(NOT EXAMPLES_DESTINATION)
+  SET(EXAMPLES_DESTINATION lib/Wt/examples)
+ENDIF(NOT EXAMPLES_DESTINATION)
+
 # Fixup Windows declspec stuff
 IF(NOT SHARED_LIBS)
   SET(WT_STATIC true)
@@ -221,36 +228,6 @@ OPTION(CONNECTOR_HTTP "Compile in stand-alone httpd connector (libwthttp) ?" ON)
 #
 OPTION(BUILD_TESTS "Build Wt tests" ON)
 
-
-#
-# Install Options
-#
-OPTION(WT_INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" ON)
-IF(NOT WT_DOCUMENTATION_DESTINATION)
-  SET(WT_DOCUMENTATION_DESTINATION share/doc/Wt)
-ENDIF(NOT WT_DOCUMENTATION_DESTINATION)
-IF(WT_INSTALL_DOCUMENTATION)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/reference/html DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/${WT_DOCUMENTATION_DESTINATION}/reference)
-  INSTALL(FILES ${PROJECT_SOURCE_DIR}/doc/reference/wt.qch DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/${WT_DOCUMENTATION_DESTINATION}/reference)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/examples/html DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/${WT_DOCUMENTATION_DESTINATION}/examples)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/tutorial DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/${WT_DOCUMENTATION_DESTINATION})
-ENDIF(WT_INSTALL_DOCUMENTATION)
-
-OPTION(WT_INSTALL_EXAMPLES "Install examples (binaries and source)" OFF)
-IF(WT_INSTALL_EXAMPLES)
-  INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/examples/ DESTINATION
-      ${CMAKE_INSTALL_PREFIX}/${WT_EXAMPLES_DESTINATION} PATTERN "examples/*")
-ENDIF(WT_INSTALL_EXAMPLES)
-
-OPTION(WT_INSTALL_RESOURCES "Install resources directory" ON)
-IF(WT_INSTALL_RESOURCES)
-  INSTALL(DIRECTORY   ${PROJECT_SOURCE_DIR}/resources
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/share/Wt/)
-ENDIF(WT_INSTALL_RESOURCES)
 
 SET(LIB_INSTALL_DIR "lib" CACHE STRING
   "Name for library directory within ${CMAKE_INSTALL_PREFIX}")
@@ -503,10 +480,6 @@ IF(BUILD_TESTS)
   add_subdirectory(test)
 ENDIF(BUILD_TESTS)
 
-IF(NOT WT_EXAMPLES_DESTINATION)
-  SET(WT_EXAMPLES_DESTINATION lib/Wt/examples)
-ENDIF(NOT WT_EXAMPLES_DESTINATION)
-
 SET(EXAMPLES_CONNECTOR wthttp CACHE STRING "Connector used for examples")
 IF(BUILD_EXAMPLES)
   IF(WIN32)
@@ -601,7 +574,7 @@ UNSET(_WTCONFIG_BOOST_STATIC)
 #INSTALL(FILES
 #  ${WT_BINARY_DIR}/wt-config.cmake
 #  ${WT_BINARY_DIR}/wt-config-version.cmake
-#  DESTINATION ${CMAKE_INSTALL_DIR}/wt)
+#  DESTINATION ${CMAKE_INSTALL_DIR}/Wt)
 
 cmake_print_properties(TARGETS wt wthttp wtdbo PROPERTIES INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)
 
@@ -635,7 +608,7 @@ configure_file(
 )
 
 
-set(ConfigPackageLocation lib/cmake/wt)
+set(ConfigPackageLocation lib/cmake/Wt)
 
 # default filename would be based on the export name (wt-targets in this case)
 install(EXPORT wt-targets
@@ -647,7 +620,7 @@ install(EXPORT wt-targets
 install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/wt/wt-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/Wt/wt-config-version.cmake"
   DESTINATION
     ${ConfigPackageLocation}
   COMPONENT
