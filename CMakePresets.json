@@ -66,7 +66,7 @@
       "description": "Visual Studio sets generator and build, install directories.",
       "hidden": true,
       "inherits": [ "w64" ],
-      "generator": "Visual Studio 17 2022",
+      "generator": "Ninja",
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "hostOS": [ "Windows" ],
