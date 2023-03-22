@@ -8,13 +8,24 @@
   "configurePresets": [
     {
       "name": "w64",
-      "description": "Clion sets generator and build, install directories.",
+      "description": "Sets generator and build, install directories.",
       "hidden": true,
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "c:/app/wt/${presetName}",
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl"
+      },
+      "generator": "Ninja",
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
+        },
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ],
+          "enableMicrosoftCodeAnalysis": true,
+          "enableClangTidyCodeAnalysis": false
+        }
       },
       "architecture": {
         "value": "x64",
@@ -26,75 +37,25 @@
        }
     },
     {
-      "name": "jb-w64",
-      "description": "Clion sets generator and build, install directories.",
-      "inherits": [ "w64" ],
-      "hidden": true,
-      "generator": "Ninja",
-      "vendor": {
-        "jetbrains.com/clion": {
-          "toolchain": "Visual Studio"
-        }
-      }
-    },
-    {
-      "name": "jb-w64-dbg",
+      "name": "w64-cfg-dbg",
       "description": "Windows Debug",
-      "inherits": [ "jb-w64" ],
+      "inherits": [ "w64" ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "jb-w64-rel",
+      "name": "w64-cfg-rel",
       "description": "Windows Release",
-      "inherits": [ "jb-w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "jb-w64-rdb",
-      "description": "Windows RelWithDebInfo",
-      "inherits": [ "jb-w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-      }
-    },
-    {
-      "name": "vs-w64",
-      "description": "Visual Studio sets generator and build, install directories.",
-      "hidden": true,
       "inherits": [ "w64" ],
-      "generator": "Ninja",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ],
-          "enableMicrosoftCodeAnalysis": true,
-          "enableClangTidyCodeAnalysis": false
-        }
-      }
-    },
-    {
-      "name": "vs-w64-dbg",
-      "description": "Windows Debug",
-      "inherits": [ "vs-w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "vs-w64-rel",
-      "description": "Windows Release",
-      "inherits": [ "vs-w64" ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "vs-w64-rdb",
+      "name": "w64-cfg-rdb",
       "description": "Windows RelWithDebInfo",
-      "inherits": [ "vs-w64" ],
+      "inherits": [ "w64" ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
@@ -124,27 +85,21 @@
   ],
   "buildPresets": [
     {
-      "name": "jb-build-dbg",
-      "configurePreset": "jb-w64-dbg",
+      "name": "w64-build-dbg",
+      "configurePreset": "w64-cfg-dbg",
       "description": "Windows x64 Debug Build",
       "nativeToolOptions": [ "-k 0" ]
     },
     {
-      "name": "jb-build-rel",
-      "configurePreset": "jb-w64-rel",
+      "name": "w64-build-rel",
+      "configurePreset": "w64-cfg-rel",
       "description": "Windows x64 Release Build",
       "nativeToolOptions": [ "-k 0" ]
     },
     {
-      "name": "vs-build-dbg",
-      "configurePreset": "vs-w64-dbg",
-      "description": "Windows x64 Debug Build",
-      "nativeToolOptions": [ "-k 0" ]
-    },
-    {
-      "name": "vs-build-rel",
-      "configurePreset": "vs-w64-rel",
-      "description": "Windows x64 Release Build",
+      "name": "w64-build-rdb",
+      "configurePreset": "w64-cfg-rel",
+      "description": "Windows x64 RelWithDebInfo Build",
       "nativeToolOptions": [ "-k 0" ]
     }
   ]
