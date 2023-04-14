@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="widgetgallery.wt" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--docroot docroot --approot approot --resources-dir $PROJECT_DIR$/../../../../app/wt/resources --http-address 0.0.0.0 --http-port 8080" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$ProjectFileDir$/examples/widgetgallery" PASS_PARENT_ENVS_2="true" PROJECT_NAME="WT" TARGET_NAME="widgetgallery.wt" CONFIG_NAME="w64-cfg-dbg - w64-build-dbg" RUN_TARGET_PROJECT_NAME="WT" RUN_TARGET_NAME="widgetgallery.wt">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
