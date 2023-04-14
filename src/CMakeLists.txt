@@ -321,6 +321,7 @@ Wt/Auth/PasswordStrengthValidator.h Wt/Auth/PasswordStrengthValidator.C
 Wt/Auth/PasswordVerifier.h Wt/Auth/PasswordVerifier.C
 Wt/Auth/RegistrationModel.h Wt/Auth/RegistrationModel.C
 Wt/Auth/RegistrationWidget.h Wt/Auth/RegistrationWidget.C
+Wt/Auth/ResendEmailVerificationWidget.h Wt/Auth/ResendEmailVerificationWidget.C
 Wt/Auth/Token.h Wt/Auth/Token.C
 Wt/Auth/UpdatePasswordWidget.h Wt/Auth/UpdatePasswordWidget.C
 Wt/Auth/User.h Wt/Auth/User.C
@@ -398,6 +399,7 @@ web/md5.h web/md5.c
 web/sha1.h web/sha1.c
 web/CgiParser.h web/CgiParser.C
 web/Configuration.h web/Configuration.C
+web/DateUtils.h web/DateUtils.C
 web/DomElement.h web/DomElement.C
 web/EntryPoint.h web/EntryPoint.C
 web/EscapeOStream.h web/EscapeOStream.C

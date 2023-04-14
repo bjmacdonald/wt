@@ -8,6 +8,7 @@ SET(TEST_SOURCES
     any/AnyTest.C
     auth/BCryptTest.C
     auth/SHA1Test.C
+    configuration/EntryPointTest.C
     core/BindTest.C
     core/ObservingPtrTest.C
     chart/WChartTest.C
@@ -39,6 +40,7 @@ SET(TEST_SOURCES
     utf8/Utf8Test.C
     utf8/XmlTest.C
     utils/Base64Test.C
+    utils/DateUtils.C
     utils/EraseWord.C
     utils/HtmlEncode.C
     utils/InfraUtils.C
@@ -157,18 +159,18 @@ IF(ENABLE_LIBWTDBO)
     MESSAGE("** Testing Wt::Dbo using Firebird backend")
   ENDIF(HAVE_FIREBIRD)
 
-  IF(HAVE_SQLITE)
-    ADD_EXECUTABLE(       test.sqlite3 ${DBO_TEST_SOURCES})
-    TARGET_LINK_LIBRARIES(test.sqlite3 wt wttest wtdbo wtdbosqlite3 ${BOOST_TEST_LIBRARIES})
-    SET_TARGET_PROPERTIES(test.sqlite3 PROPERTIES COMPILE_FLAGS "-DSQLITE3")
-    IF(MSVC)
-      SET_TARGET_PROPERTIES(test.sqlite3 PROPERTIES FOLDER "test")
-    ENDIF(MSVC)
-    IF(TARGET Boost::headers)
-      TARGET_LINK_LIBRARIES(test.sqlite3 Boost::headers)
-    ENDIF()
-    MESSAGE("** Testing Wt::Dbo using Sqlite3 backend")
-  ENDIF(HAVE_SQLITE)
+    IF(HAVE_SQLITE)
+      ADD_EXECUTABLE(       test.sqlite3 ${DBO_TEST_SOURCES} dbo/SqliteTest.C)
+      TARGET_LINK_LIBRARIES(test.sqlite3 wt wttest wtdbo wtdbosqlite3 ${BOOST_TEST_LIBRARIES})
+      SET_TARGET_PROPERTIES(test.sqlite3 PROPERTIES COMPILE_FLAGS "-DSQLITE3")
+      IF(MSVC)
+        SET_TARGET_PROPERTIES(test.sqlite3 PROPERTIES FOLDER "test")
+      ENDIF(MSVC)
+      IF(TARGET Boost::headers)
+        TARGET_LINK_LIBRARIES(test.sqlite3 Boost::headers)
+      ENDIF()
+      MESSAGE("** Testing Wt::Dbo using Sqlite3 backend")
+    ENDIF(HAVE_SQLITE)
 
   IF(HAVE_MSSQLSERVER)
     ADD_EXECUTABLE(       test.mssqlserver ${DBO_TEST_SOURCES})

@@ -61,6 +61,74 @@ behaviour.
     <a href="classWt_1_1Mail_1_1Client.html#af7bf43e793d265034c6cb343636b4024">Mail::Client::connect()</a> first.
     <code>send()</code> was fixed to log an error and return <code>false</code> instead.
   </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11376" target="_blank">Issue #11376</a>:
+    fixed an issue with redirects when using wtfcgi.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/8760" target="_blank">Issue #8760</a>:
+    extended <a href="classWt_1_1Auth_1_1AuthWidget.html">Auth::AuthWidget</a> with the option to resend verificiation emails. When email verification is configured to be required and the email somehow got lost, the user would be stuck not being able to log in.
+    When the user tries to log in now, an info message will be shown saying they need to verify their email first along with a new button to resend the verification email. The user must then enter the email address again in a dialog before the email is sent.<br/>
+    The virtual methods <a href="classWt_1_1Auth_1_1AuthWidget.html#a42f87508868746e5ccef5695fcbd8763">AuthWidget::letResendEmailVerification()</a> and <a href="classWt_1_1Auth_1_1AuthWidget.html#af45dea06ac5751e96499d62507fea69d">AuthWidget::createResendEmailVerificationView()</a> can be used to customize the UI.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11412" target="_blank">Issue #11412</a>:
+    shift-click to open a new window did not work for links to internal paths. Shift-click is now handled by the browser, like ctrl- and meta-click.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11423" target="_blank">Issue #11423</a>:
+    <a href="classWt_1_1WResource.html#a12b871c53120ad1c7c708210f60422be">WResource::internalPath()</a>
+    now returns the empty string for static resources, since it doesn't make sense for static resources.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11426" target="_blank">Issue #11426</a>:
+    <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html">Sqlite3</a>:
+    fixed multiple issues with dates and timestamps:
+    <ul>
+      <li>
+        Timestamps before 1970 would not be saved properly on Windows, because of limitations
+        of the <code>gmtime</code> function on Windows. The new implementation uses the
+        <a href="https://github.com/HowardHinnant/date" target="_blank">date</a>
+        library instead.
+      </li>
+      <li>
+        There was a bug in the conversion to a date time string if
+        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">ISO8601AsText</a>
+        was set as the
+        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
+        For timestamps before 1970 the millisecond part would be saved as a negative integer, e.g.
+        December 31, 1969 23:59:59.999 would be saved as
+        <code>1970-01-01T00:00:00.0-1</code> instead of <code>1969-12-31T23:59:59.999</code>.
+      </li>
+      <li>
+        There was a bug in the conversion to and from Julian days if
+        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">JulianDaysAsReal</a>
+        was set as the
+        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
+        The decimal part was divided by 1000, and it was ahead by 12 hours due to it using
+        midnight rather than noon 1 January 4713 BCE as the reference timestamp. It is now
+        consistent with SQLite's own
+        <a href="https://sqlite.org/lang_datefunc.html" target="_blank">julianday()</a>
+        function.
+      </li>
+      <li>
+        There was a bug in the conversion to UNIX timestamps if
+        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">UnixTimeAsInteger</a>
+        was set as the
+        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
+        The date part was discarded, and the time was saved as a number of milliseconds instead of seconds.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="classWt_1_1WServer.html#aa17f85dc130b616b3fcf63aa857ff579">WServer::addResource()</a>
+    can now take a <code>shared_ptr</code> instead of a raw pointer,
+    enforcing that the resource lives at least as long as the server, unless removed with
+    <a href="classWt_1_1WServer.html#a9f5a82118198a1d2341fb89572fd8693">WServer::removeEntryPoint()</a>.
+    The overload that takes a raw pointer is now deprecated.
+    This also fixes <a href="https://redmine.webtoolkit.eu/issues/11301" target="_blank">issue #11301</a>, where there
+    could be a use-after-free in <code>test.http</code>.
+  </li>
 </ul>
 
 <h2>Release 4.9.2 (TBD)</h2>
@@ -74,6 +142,25 @@ behaviour.
     <a href="https://redmine.emweb.be/issues/11262" target="_blank">Issue #11262</a>:
     fixed an issue where 32 bit Linux builds could cause <code>stat()</code> to
     fail with <code>EOVERFLOW</code>.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11424" target="_blank">Issue #11424</a>:
+    fixed redundant calls of
+    <a href="classWt_1_1WDialog.html#afe7c5f57ddb5fd1bc67334c931401e98">WDialog::setClosable(false)</a>
+    causing a "widget not in container" error to be logged.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/10908" target="_blank">Issue #10908</a>:
+    fixed an issue with
+    <a href="classWt_1_1WBootstrap5Theme.html">WBootstrap5Theme</a>
+    where the selection of a
+    <a href="classWt_1_1WSuggestionPopup.html">WSuggestionPopup</a>
+    was not updated when using the arrow keys. We also made sure to scroll the currently
+    selected option into view when selected using the arrow keys.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11433" target="_blank">Issue #11433</a>:
+    fixed a regression in the treeview-dragdrop example where dropping a file on the folder view was not working anymore.
   </li>
 </ul>
 
