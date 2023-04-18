@@ -20,118 +20,8 @@ newer version of Wt. It lists changes in the library that may break
 the way you build Wt, the way you configure Wt or the Wt API and
 behaviour.
 
-<h2>Release 4.10.0 (TBD)</h2>
 
-<ul>
-  <li>
-    <a href="https://redmine.emweb.be/issues/11210" target="_blank">Issue #11210</a>:
-    <a href="classWt_1_1WTable.html#a03df7cedfb502dcc010493d4a71ee53c">WTable::headerCount()</a>
-    has been made <code>const</code>.
-  </li>
-  <li>
-    The obsolete CMake options
-    <code>ENABLE_EXT</code>, <code>WT_NO_STD_LOCALE</code> and <code>WT_NO_STD_WSTRING</code>
-    were removed.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/7814" target="_blank">Issue #7814</a>:
-    The <code>SameSite</code> attribute of the <code>Set-Cookie</code> HTTP header is now rendered by Wt. To avoid adding yet another parameter to the <code>WApplication::setCookie()</code> method, the class <a href="classWt_1_1Http_1_1Cookie.html">Http::Cookie</a> was introducted that allows configuring all cookie attributes using setters. Objects of this type can be passed to the new <a href="classWt_1_1WApplication.html#a5a76e2ae72a7ba5624c3dc12897728f5">setCookie()</a> and <a href="classWt_1_1WApplication.html#add89ecede3de74cb2338337ca730b2dc">removeCookie()</a> methods in <code>WApplication</code>.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/7279">Issue #7279</a>:
-    added <a href="classWt_1_1WEmailEdit.html">WEmailEdit</a> and
-    <a href="classWt_1_1WEmailValidator.html">WEmailValidator</a>, implementing
-    a <code>&lt;input type="email"&gt;</code>.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11377" target="_blank">Issue #11377</a>:
-    when using wtisapi with WebSockets enabled in the <code>wt_config.xml</code>, Wt would
-    try and fail to establish a WebSockets connection (this is not supported by ISAPI). Wt
-    now disables WebSockets (and notifies this in the logs) when using ISAPI.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11384" target="_blank">Issue #11384</a>:
-    it was possible for
-    <a href="classWt_1_1Mail_1_1Client.html#af7bf43e793d265034c6cb343636b4024">Mail::Client::connect()</a> to
-    throw an exception if the DNS resolver failed to resolve the SMTP server's hostname. We changed this to
-    log an error and return <code>false</code> instead (as indicated by its documentation).
-    <a href="classWt_1_1Mail_1_1Client.html#a958089e2b169f9baed3107b40b958bb9">Mail::Client::send()</a> could
-    cause a null pointer to be dereferenced, either because a TLS connection was attempted while Wt was
-    built without OpenSSL, or because the user did not call
-    <a href="classWt_1_1Mail_1_1Client.html#af7bf43e793d265034c6cb343636b4024">Mail::Client::connect()</a> first.
-    <code>send()</code> was fixed to log an error and return <code>false</code> instead.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11376" target="_blank">Issue #11376</a>:
-    fixed an issue with redirects when using wtfcgi.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/8760" target="_blank">Issue #8760</a>:
-    extended <a href="classWt_1_1Auth_1_1AuthWidget.html">Auth::AuthWidget</a> with the option to resend verificiation emails. When email verification is configured to be required and the email somehow got lost, the user would be stuck not being able to log in.
-    When the user tries to log in now, an info message will be shown saying they need to verify their email first along with a new button to resend the verification email. The user must then enter the email address again in a dialog before the email is sent.<br/>
-    The virtual methods <a href="classWt_1_1Auth_1_1AuthWidget.html#a42f87508868746e5ccef5695fcbd8763">AuthWidget::letResendEmailVerification()</a> and <a href="classWt_1_1Auth_1_1AuthWidget.html#af45dea06ac5751e96499d62507fea69d">AuthWidget::createResendEmailVerificationView()</a> can be used to customize the UI.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11412" target="_blank">Issue #11412</a>:
-    shift-click to open a new window did not work for links to internal paths. Shift-click is now handled by the browser, like ctrl- and meta-click.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11423" target="_blank">Issue #11423</a>:
-    <a href="classWt_1_1WResource.html#a12b871c53120ad1c7c708210f60422be">WResource::internalPath()</a>
-    now returns the empty string for static resources, since it doesn't make sense for static resources.
-  </li>
-  <li>
-    <a href="https://redmine.webtoolkit.eu/issues/11426" target="_blank">Issue #11426</a>:
-    <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html">Sqlite3</a>:
-    fixed multiple issues with dates and timestamps:
-    <ul>
-      <li>
-        Timestamps before 1970 would not be saved properly on Windows, because of limitations
-        of the <code>gmtime</code> function on Windows. The new implementation uses the
-        <a href="https://github.com/HowardHinnant/date" target="_blank">date</a>
-        library instead.
-      </li>
-      <li>
-        There was a bug in the conversion to a date time string if
-        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">ISO8601AsText</a>
-        was set as the
-        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
-        For timestamps before 1970 the millisecond part would be saved as a negative integer, e.g.
-        December 31, 1969 23:59:59.999 would be saved as
-        <code>1970-01-01T00:00:00.0-1</code> instead of <code>1969-12-31T23:59:59.999</code>.
-      </li>
-      <li>
-        There was a bug in the conversion to and from Julian days if
-        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">JulianDaysAsReal</a>
-        was set as the
-        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
-        The decimal part was divided by 1000, and it was ahead by 12 hours due to it using
-        midnight rather than noon 1 January 4713 BCE as the reference timestamp. It is now
-        consistent with SQLite's own
-        <a href="https://sqlite.org/lang_datefunc.html" target="_blank">julianday()</a>
-        function.
-      </li>
-      <li>
-        There was a bug in the conversion to UNIX timestamps if
-        <a href="namespaceWt_1_1Dbo_1_1backend.html#a834555b81f67cf1e17b6e73d1a948067">UnixTimeAsInteger</a>
-        was set as the
-        <a href="classWt_1_1Dbo_1_1backend_1_1Sqlite3.html#a571f4019950aafc2b855d46d4e7072d5">date time storage</a>.
-        The date part was discarded, and the time was saved as a number of milliseconds instead of seconds.
-      </li>
-    </ul>
-  </li>
-  <li>
-    <a href="classWt_1_1WServer.html#aa17f85dc130b616b3fcf63aa857ff579">WServer::addResource()</a>
-    can now take a <code>shared_ptr</code> instead of a raw pointer,
-    enforcing that the resource lives at least as long as the server, unless removed with
-    <a href="classWt_1_1WServer.html#a9f5a82118198a1d2341fb89572fd8693">WServer::removeEntryPoint()</a>.
-    The overload that takes a raw pointer is now deprecated.
-    This also fixes <a href="https://redmine.webtoolkit.eu/issues/11301" target="_blank">issue #11301</a>, where there
-    could be a use-after-free in <code>test.http</code>.
-  </li>
-</ul>
-
-<h2>Release 4.9.2 (TBD)</h2>
+<h2>Release 4.9.2 (April 18, 2023)</h2>
 
 <p>
   Wt 4.9.2 is a patch release that addresses the following issues:
@@ -161,6 +51,20 @@ behaviour.
   <li>
     <a href="https://redmine.webtoolkit.eu/issues/11433" target="_blank">Issue #11433</a>:
     fixed a regression in the treeview-dragdrop example where dropping a file on the folder view was not working anymore.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11496" target="_blank">Issue #11496</a>:
+    <a href="classWt_1_1Auth_1_1Saml_1_1Service.html">Saml::Service</a>:
+    added missing implementation for
+    <a
+      href="classWt_1_1Auth_1_1Saml_1_1Service.html#ae6be709a6ebc43302425da239622c05b">setAuthnContextComparison()</a>
+    and properly implemented
+    <a
+      href="classWt_1_1Auth_1_1Saml_1_1Service.html#aa5cca89e64b80cc66fcff8f64fda4360">setNameIdPolicyAllowCreate()</a>.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11379" target="_blank">Issue #11379</a>:
+    fixed a JavaScript error in <a href="classWt_1_1WPaintedWidget.html">WPaintedWidget</a>.
   </li>
 </ul>
 
