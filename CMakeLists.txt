@@ -16,8 +16,8 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # Version Settings
 #
 SET(VERSION_SERIES 4)
-SET(VERSION_MAJOR 9)
-SET(VERSION_MINOR 2)
+SET(VERSION_MAJOR 10)
+SET(VERSION_MINOR 0)
 
 # Renamed and reorganised options, added WT prefix to all.
 # Removed DEBUG_LIB_POSTFIX and use global CMAKE_DEBUG_POSTFIX.
@@ -319,9 +319,33 @@ IF(ENABLE_SSL)
 ENDIF(ENABLE_SSL)
 
 
+<<<<<<<
 #
 # SAML
 #
+=======
+set(ZLIB_ROOT ${ZLIB_PREFIX})
+find_package(ZLIB)
+
+INCLUDE(cmake/WtFindBoost.txt)
+INCLUDE(cmake/WtFindFcgi.txt)
+INCLUDE(cmake/WtFindMysql.txt)
+INCLUDE(cmake/WtFindPostgresql.txt)
+INCLUDE(cmake/WtFindOdbc.txt)
+INCLUDE(cmake/WtFindGm.txt)
+
+find_package(OpenGL)
+find_package(GLEW)
+
+find_package(Asciidoctor)
+
+set(HPDF_ROOT ${HARU_PREFIX})
+find_package(HPDF)
+
+set(OPENSSL_ROOT_DIR ${SSL_PREFIX})
+find_package(OpenSSL)
+
+>>>>>>>
 IF (ENABLE_SAML)
   find_package(OpenSAML)
   if(OpenSAML_FOUND)
@@ -429,21 +453,72 @@ SET(WT_DATE_TZ_USE_STD ON)
 #INCLUDE(cmake/WtFindSystemLibraries.txt)
 
 
+<<<<<<<
+
+=======
+IF(WT_ASIO_IS_STANDALONE_ASIO)
+IF(NOT EXISTS "${ASIO_PREFIX}/include/asio.hpp")
+MESSAGE(FATAL_ERROR "WT_ASIO_IMPLEMENTATION is set to standalone, but Asio was not found in ASIO_PREFIX")
+ENDIF(NOT EXISTS "${ASIO_PREFIX}/include/asio.hpp")
+INCLUDE_DIRECTORIES("${ASIO_PREFIX}/include")
+ENDIF(WT_ASIO_IS_STANDALONE_ASIO)
+
+FIND_PACKAGE(Doxygen)
+
+# Boost is used nearly everywhere, so we can put these here
+INCLUDE_DIRECTORIES(${BOOST_INCLUDE_DIRS})
+LINK_DIRECTORIES(${BOOST_LIB_DIRS})
+IF(WIN32)
+  IF(BOOST_DYNAMIC)
+    ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+  ELSE(BOOST_DYNAMIC)
+    # You could expect that this is the default when BOOST_ALL_DYN_LINK
+    # is not set, but this is problematic for cygwin
+    ADD_DEFINITIONS(-DBOOST_THREAD_USE_LIB)
+  ENDIF(BOOST_DYNAMIC)
+  ADD_DEFINITIONS(
+      -D_CRT_SECURE_NO_WARNINGS
+      -D_SCL_SECURE_NO_WARNINGS
+      )
+ENDIF(WIN32)
+
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
+IF(DEBUG)
+  SET(WT_DEBUG_ENABLED 1)
+ELSE(DEBUG)
+  SET(WT_DEBUG_ENABLED 0)
+ENDIF(DEBUG)
+
+>>>>>>>
 IF(INSTALL_DOCUMENTATION)
   ADD_CUSTOM_TARGET(doc ALL)
 ELSE(INSTALL_DOCUMENTATION)
   ADD_CUSTOM_TARGET(doc)
 ENDIF(INSTALL_DOCUMENTATION)
 
-#INCLUDE(cmake/WtFindAsciidoc.txt)
-IF (ASCIIDOC_FOUND)
-  MACRO (ASCIIDOC_FILE target infile outfile)
-    ADD_CUSTOM_TARGET(${target}
-       ${ASCIIDOC_EXECUTABLE} -a toc -a numbered -a icons -a  theme=emweb -a pygments -a linkcss -o ${outfile} ${infile}
-       COMMENT "Asciidoc ${infile}")
-    ADD_DEPENDENCIES(doc ${target})
-  ENDMACRO (ASCIIDOC_FILE)
-ENDIF (ASCIIDOC_FOUND)
+if(ASCIIDOCTOR_FOUND)
+  macro(ASCIIDOC_FILE target infile outfile)
+    add_custom_target(${target}
+      Asciidoctor::asciidoctor
+        -a toc
+        -a numbered
+        -a icons=font
+        -a source-highlighter=highlight.js
+        -a linkcss
+        -a stylesheet=wt.css
+        -o "${outfile}"
+        "${infile}"
+       DEPENDS "${infile}"
+       BYPRODUCTS "${outfile}"
+       COMMENT "Asciidoctor ${infile}")
+    add_dependencies(doc ${target})
+  endmacro()
+endif()
 
 
 FIND_PACKAGE(Doxygen)

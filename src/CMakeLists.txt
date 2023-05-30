@@ -521,6 +521,13 @@ IF(ENABLE_HARU OR "${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick" 
   ENDIF()
 ENDIF()
 
+<<<<<<<
+
+=======
+if(WT_USE_OPENGL)
+  list(APPEND libsources Wt/WServerGLWidget.h Wt/WServerGLWidget.C)
+endif()
+>>>>>>>
 
 IF(WIN32)
   IF(SHARED_LIBS)
@@ -548,9 +555,62 @@ ELSE(WT_WITH_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
 ENDIF(WT_WITH_SSL)
 
+<<<<<<<
 
+=======
+if(HAVE_HARU)
+  # Even though WPdfImage.h exposes <hpdf.h>, we mark it as private here, because most users of Wt don't need it.
+  # We don't want to include it in the INTERFACE_LINK_LIBRARIES in the generated wt-target-wt.cmake file, since
+  # FindHPDF.cmake is not a standard find module.
+  target_link_libraries(wt PRIVATE HPDF::HPDF)
+else()
+  message("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")
+  if(ENABLE_HARU)
+    message("   Indicate the location of your haru library using -DHARU_PREFIX=...")
+  endif()
+endif()
+>>>>>>>
+
+<<<<<<<
 IF(ENABLE_UNWIND)
   target_compile_definitions(wt PRIVATE WT_WITH_UNWIND)
+=======
+IF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${GM_LIBRARIES})
+  INCLUDE_DIRECTORIES(${GM_INCLUDE_DIRS})
+  ADD_DEFINITIONS(-DHAVE_GRAPHICSMAGICK)
+ELSEIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "Direct2D")
+  TARGET_LINK_LIBRARIES(wt PRIVATE d2d1 dwrite windowscodecs shlwapi)
+ELSE("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
+  MESSAGE("** Disabling raster image support (WRasterImage): set WT_WRASTERIMAGE_IMPLEMENTATION to GraphicsMagick or Direct2D.")
+ENDIF("${WT_WRASTERIMAGE_IMPLEMENTATION}" STREQUAL "GraphicsMagick")
+
+if(WT_USE_OPENGL)
+  target_link_libraries(wt PRIVATE OpenGL::GL GLEW::GLEW)
+else()
+  MESSAGE("** Disabling server-side opengl rendering for WGLWidget: requires gl, glew and WRasterImage (GraphicsMagick or Direct2D).")
+endif()
+
+IF(WT_FONTSUPPORT_SIMPLE)
+  ADD_DEFINITIONS(-DWT_FONTSUPPORT_SIMPLE)
+  MESSAGE("** Disabling advanced font rendering support: requires libpango.")
+  IF(ENABLE_PANGO)
+    MESSAGE("   Wt will use pkg-config to retrieve your libpango installation location.")
+  ENDIF(ENABLE_PANGO)
+ELSEIF(WT_FONTSUPPORT_PANGO)
+  TARGET_LINK_LIBRARIES(wt PRIVATE ${PANGO_FT2_LIBRARIES})
+  INCLUDE_DIRECTORIES(${PANGO_FT2_INCLUDE_DIRS})
+  ADD_DEFINITIONS(-DWT_FONTSUPPORT_PANGO)
+  MESSAGE("** Enabling advanced font support using libpango")
+ELSEIF(WT_FONTSUPPORT_DIRECTWRITE)
+  TARGET_LINK_LIBRARIES(wt PRIVATE dwrite)
+  ADD_DEFINITIONS(-DWT_FONTSUPPORT_DIRECTWRITE)
+  MESSAGE("** Enabling advanced font support using DirectWrite")
+ENDIF(WT_FONTSUPPORT_SIMPLE)
+
+IF(HAVE_UNWIND)
+  ADD_DEFINITIONS(-DWT_WITH_UNWIND)
+>>>>>>>
   TARGET_LINK_LIBRARIES(wt PRIVATE ${UNWIND_LIBRARIES})
   INCLUDE_DIRECTORIES(${UNWIND_INCLUDE_DIRS})
   MESSAGE("** Enabling stacktrace prints using libunwind")
