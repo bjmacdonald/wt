@@ -34,6 +34,9 @@ std::unique_ptr<WApplication> createApplication(const Wt::WEnvironment& env)
 
   // app->setLayoutDirection(LayoutDirection::RightToLeft);
 
+  auto bootstrapTheme = std::make_shared<WBootstrap5Theme>();
+  app->setTheme(bootstrapTheme);
+#if 0
   // Choice of theme: defaults to bootstrap3 but can be overridden using
   // a theme parameter (for testing)
   const std::string *themePtr = env.getParameter("theme");
@@ -62,7 +65,7 @@ std::unique_ptr<WApplication> createApplication(const Wt::WEnvironment& env)
     app->setTheme(bootstrapTheme);
   } else
     app->setTheme(std::make_shared<WCssTheme>(theme));
-
+#endif
 
   // load text bundles (for the tr() function)
   app->messageResourceBundle().use(app->appRoot() + "report");

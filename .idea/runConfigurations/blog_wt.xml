@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="blog.wt" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--docroot . --http-address 0.0.0.0 --http-port 8080 --resources-dir=../../resources" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$/examples/blog" PASS_PARENT_ENVS_2="true" PROJECT_NAME="WT" TARGET_NAME="blog.wt" CONFIG_NAME="linux-cfg-dbg - linux-build-dbg" RUN_TARGET_PROJECT_NAME="WT" RUN_TARGET_NAME="blog.wt">
+  <configuration default="false" name="blog.wt" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--docroot . --http-address 0.0.0.0 --http-port 8080 --resources-dir=../../resources" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$/examples/blog" PASS_PARENT_ENVS_2="true" PROJECT_NAME="WT" TARGET_NAME="blog.wt" CONFIG_NAME="w64-cfg-dbg - w64-build-dbg" RUN_TARGET_PROJECT_NAME="WT" RUN_TARGET_NAME="blog.wt">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

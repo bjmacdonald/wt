@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<messages>
+<messages xmlns:if="Wt.WTemplate.conditions">
   <message id="tpl:widget-gallery">
     <div class="wg-wrapper">
       <div class="wg-sidebar">

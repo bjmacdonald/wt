@@ -319,33 +319,12 @@ IF(ENABLE_SSL)
 ENDIF(ENABLE_SSL)
 
 
-<<<<<<<
+find_package(Asciidoctor)
+
 #
 # SAML
 #
-=======
-set(ZLIB_ROOT ${ZLIB_PREFIX})
-find_package(ZLIB)
 
-INCLUDE(cmake/WtFindBoost.txt)
-INCLUDE(cmake/WtFindFcgi.txt)
-INCLUDE(cmake/WtFindMysql.txt)
-INCLUDE(cmake/WtFindPostgresql.txt)
-INCLUDE(cmake/WtFindOdbc.txt)
-INCLUDE(cmake/WtFindGm.txt)
-
-find_package(OpenGL)
-find_package(GLEW)
-
-find_package(Asciidoctor)
-
-set(HPDF_ROOT ${HARU_PREFIX})
-find_package(HPDF)
-
-set(OPENSSL_ROOT_DIR ${SSL_PREFIX})
-find_package(OpenSSL)
-
->>>>>>>
 IF (ENABLE_SAML)
   find_package(OpenSAML)
   if(OpenSAML_FOUND)
@@ -453,48 +432,6 @@ SET(WT_DATE_TZ_USE_STD ON)
 #INCLUDE(cmake/WtFindSystemLibraries.txt)
 
 
-<<<<<<<
-
-=======
-IF(WT_ASIO_IS_STANDALONE_ASIO)
-IF(NOT EXISTS "${ASIO_PREFIX}/include/asio.hpp")
-MESSAGE(FATAL_ERROR "WT_ASIO_IMPLEMENTATION is set to standalone, but Asio was not found in ASIO_PREFIX")
-ENDIF(NOT EXISTS "${ASIO_PREFIX}/include/asio.hpp")
-INCLUDE_DIRECTORIES("${ASIO_PREFIX}/include")
-ENDIF(WT_ASIO_IS_STANDALONE_ASIO)
-
-FIND_PACKAGE(Doxygen)
-
-# Boost is used nearly everywhere, so we can put these here
-INCLUDE_DIRECTORIES(${BOOST_INCLUDE_DIRS})
-LINK_DIRECTORIES(${BOOST_LIB_DIRS})
-IF(WIN32)
-  IF(BOOST_DYNAMIC)
-    ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
-  ELSE(BOOST_DYNAMIC)
-    # You could expect that this is the default when BOOST_ALL_DYN_LINK
-    # is not set, but this is problematic for cygwin
-    ADD_DEFINITIONS(-DBOOST_THREAD_USE_LIB)
-  ENDIF(BOOST_DYNAMIC)
-  ADD_DEFINITIONS(
-      -D_CRT_SECURE_NO_WARNINGS
-      -D_SCL_SECURE_NO_WARNINGS
-      )
-ENDIF(WIN32)
-
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
-
-IF(DEBUG)
-  SET(WT_DEBUG_ENABLED 1)
-ELSE(DEBUG)
-  SET(WT_DEBUG_ENABLED 0)
-ENDIF(DEBUG)
-
->>>>>>>
 IF(INSTALL_DOCUMENTATION)
   ADD_CUSTOM_TARGET(doc ALL)
 ELSE(INSTALL_DOCUMENTATION)

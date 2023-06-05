@@ -52,6 +52,7 @@ WidgetGallery::WidgetGallery()
 
   addToMenu(menu, "Layout", std::make_unique<Layout>());
   addToMenu(menu, "Forms", std::make_unique<FormWidgets>());
+  menu->addSeparator();
   addToMenu(menu, "Navigation", std::make_unique<Navigation>());
   addToMenu(menu, "Trees & Tables", std::make_unique<TreesTables>())
     ->setPathComponent("trees-tables");
@@ -74,6 +75,7 @@ Wt::WMenuItem *WidgetGallery::addToMenu(Wt::WMenu *menu,
 #else // WT_TARGET_JAVA
   auto topic = topicPtr.release();
 #endif // WT_TARGET_JAVA
+#if 0
   auto result = std::make_unique<Wt::WContainerWidget>();
 
   auto subMenuPtr = std::make_unique<Wt::WMenu>(contentsStack_);
@@ -91,6 +93,18 @@ Wt::WMenuItem *WidgetGallery::addToMenu(Wt::WMenu *menu,
   topic->populateSubMenu(subMenu);
 
   return item;
+#else
+  auto subMenuPtr = std::make_unique<Wt::WMenu>(contentsStack_);
+  auto subMenu = subMenuPtr.get();
+  subMenu->addStyleClass("nav-stacked submenu");
+  subMenu->itemSelected().connect(this, &WidgetGallery::closeMenu);
+  topic->populateSubMenu(subMenu);
+
+  auto menuItem = menu->addMenu(name, std::move(subMenuPtr));
+  subMenu->setInternalPathEnabled("/" + menuItem->pathComponent());
+
+  return menuItem;
+#endif
 }
 
 void WidgetGallery::toggleMenu()
