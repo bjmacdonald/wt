@@ -57,12 +57,12 @@ SET(VERSION_MINOR 0)
 # Global CMAKE settings
 #
 OPTION(BUILD_EXAMPLES "Build examples" ON)
-OPTION(INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" ON)
+OPTION(INSTALL_DOCUMENTATION "Install documentation (tutorials and reference)" OFF)
 OPTION(INSTALL_EXAMPLES "Install examples (binaries and source)" OFF)
 OPTION(INSTALL_RESOURCES "Install resources directory" ON)
 option(INSTALL_THEMES "Install the source files for Wt's themes" ON)
 OPTION(ENABLE_SSL "Enable cryptography functions, using OpenSSL" ON)
-OPTION(ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" OFF)
+OPTION(ENABLE_HARU "Enable Haru Free PDF Library, which is used to provide support for painting to PDF (WPdfImage)" ON)
 OPTION(ENABLE_PANGO "Enable Pango Library, which is used for improved font support (WPdfImage and WRasterImage)" OFF)
 OPTION(ENABLE_SQLITE "Build SQLite3 backend for Wt::Dbo" ON)
 OPTION(ENABLE_POSTGRES "Build PostgreSQL backend for Wt::Dbo" OFF)
@@ -345,7 +345,8 @@ endif()
 #
 # ToDo: Haru requires porting libharu which requires libpng as well.
 IF(ENABLE_HARU)
-  INCLUDE(cmake/WtFindHaru.txt)
+  find_package(libharu REQUIRED)
+  #INCLUDE(cmake/WtFindHaru.txt)
   SET(WT_HAS_WPDFIMAGE true)
 
   IF(WIN32)
