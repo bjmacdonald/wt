@@ -17,7 +17,7 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 #
 SET(VERSION_SERIES 4)
 SET(VERSION_MAJOR 10)
-SET(VERSION_MINOR 0)
+SET(VERSION_MINOR 1)
 
 # Renamed and reorganised options, added WT prefix to all.
 # Removed DEBUG_LIB_POSTFIX and use global CMAKE_DEBUG_POSTFIX.
