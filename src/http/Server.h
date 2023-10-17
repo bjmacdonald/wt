@@ -165,7 +165,7 @@ private:
 
   /// Handle completion of an asynchronous SSL accept operation.
   void handleSslAccept(const std::weak_ptr<SslListener>& listener, const Wt::AsioWrapper::error_code& e);
-#endif // HTTP_WITH_SSL
+#endif // WT_WITH_SSL
 
   void handleTimeout(asio::steady_timer *timer,
                      const std::function<void ()>& function,

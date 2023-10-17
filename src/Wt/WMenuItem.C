@@ -388,8 +388,8 @@ void WMenuItem::renderSelected(bool selected)
     addStyleClass(selected ? "itemselected" : "item", true);
   } else {
     if (bs5Theme) {
-      auto a = anchor();
-      a->toggleStyleClass(active, selected, true);
+      if (auto a = anchor(); a != nullptr)
+        a->toggleStyleClass(active, selected, true);
     }
     toggleStyleClass(active, selected, true);
   }

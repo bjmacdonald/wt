@@ -482,7 +482,7 @@ int Server::httpPort() const
       return -1;
     else
       return ssl_listeners_.front()->acceptor.local_endpoint().port();
-#else // HTTP_WITH_SSL
+#else // WT_WITH_SSL
     return -1;
 #endif // WT_WITH_SSL
   }
@@ -630,7 +630,7 @@ void Server::handleTcpAccept(const std::weak_ptr<TcpListener>& listener, const W
                                        listener, std::placeholders::_1)));
 }
 
-#ifdef HTTP_WITH_SSL
+#ifdef WT_WITH_SSL
 void Server::handleSslAccept(const std::weak_ptr<SslListener>& listener, const Wt::AsioWrapper::error_code& e)
 {
   auto l = listener.lock();
