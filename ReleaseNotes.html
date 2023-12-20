@@ -20,6 +20,53 @@ newer version of Wt. It lists changes in the library that may break
 the way you build Wt, the way you configure Wt or the Wt API and
 behaviour.
 
+<h2>Release 4.10.3 (December 20, 2023)</h2>
+
+<p>
+  Wt 4.10.3 is a patch release that addresses the following issues:
+</p>
+
+<ul>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/12158">Issue #12158</a>:
+    this corrects a mistake in <a href="https://redmine.webtoolkit.eu/issues/7814">Issue #7814</a>, where the cookie path was not correctly set.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11934">Issue #11934</a>:
+    this corrects the rendering of a vertical <a href="classWt_1_1WSlider.html">WSlider</a> for all themes. Additionally an improvement was made that introduces <a href="classWt_1_1WSlider.html#a0405e2a5aeb71db1b112fa2ca1428cdc">WSlider::setTickLength</a>, that allows users to set the length (width or height of the line, depending on whether the <code>WSlider</code> is <code>Orientation::Horizontal</code> or <code>Orientation::Vertical</code>) of the ticks.
+    For the native slider, ticks have also been enabled. Although both the positioning (the side on which ticks are placed) and their length cannot be changed. Only their interval can be manipulated through <a href="classWt_1_1WSlider.html#a3497303ace2820b3bd457119cec35411">WSlider::setTickInterval</a>.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/12005">Issues #12005</a>:
+    a step value can now be set on a <a href="classWt_1_1WSlider.html">WSlider</a>, using <a href="classWt_1_1WSlider.html#a6f09f1de583156a361a090abc5ec6427">WSlider::setStep</a>.
+    This functions for both the native and non-native sliders. By default the step value is set to 1.
+  </li>
+  <li>
+    <a href="https://redmine.emweb.be/issues/12022">Issue #12022</a>:
+    solves a case where a JavaScript error can occur if an invisible element on the page receives an update. This is related to <a href="https://redmine.emweb.be/issues/11669">Issue #11669</a>.
+  </li>
+  <li>
+    <a href="https://redmine.emweb.be/issues/12148">Issue #12148</a>:
+    attributes on the main page's &lt;html&gt; and &lt;body&gt; tags can now be specified. The new functions are:
+    <ul>
+      <li><a href="classWt_1_1WApplication.html#adc77a51995fb3e8224f8bd3cbb5fab86">WApplication::setHtmlAttribute</a></li>
+      <li><a href="classWt_1_1WApplication.html#a555b48a49d202f1db80abc9dad91b61c">WApplication::setBodyAttribute</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="https://redmine.emweb.be/issues/12143">Issue #12143</a>:
+    covered an edge case of <a href="https://redmine.webtoolkit.eu/issues/12006">Issue #12006</a>, that caused JavaScript errors.
+  </li>
+  <li>
+    <a href="https://redmine.emweb.be/issues/12036">Issue #12036</a>:
+    ensures that if a <a href="classWt_1_1WCheckBox.html">WCheckBox</a> and <a href="classWt_1_1WRadioButton.html">WRadioButton</a> have a custom style class, it remains in place after applying the <a href="classWt_1_1WBootstrap5Theme.html">WBootstrap5Theme</a>.
+  </li>
+  <li>
+    <a href="https://redmine.webtoolkit.eu/issues/11960">Issue #11960</a>:
+    remove an <a href="https://ibpp.sourceforge.io/">IBPP</a> deprecation warning.
+  </li>
+</ul>
+
 <h2>Release 4.10.2 (November 8, 2023)</h2>
 
 <p>

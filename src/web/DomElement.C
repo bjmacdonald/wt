@@ -42,7 +42,9 @@ std::string elementNames_[] =
 
     "audio", "video", "source",
 
-    "b", "strong", "em", "i", "hr"
+    "b", "strong", "em", "i", "hr",
+
+    "datalist"
   };
 
 bool defaultInline_[] =
@@ -67,7 +69,9 @@ bool defaultInline_[] =
 
     false, false, false,
 
-    true, true, true, true, false
+    true, true, true, true, false,
+
+    false
   };
 
 std::string cssNames_[] =
@@ -101,42 +105,44 @@ std::string cssNames_[] =
     "border-collapse",
     "page-break-before", "page-break-after",
     "zoom", "visibility", "display",
+    "-webkit-appearance",
     "box-sizing", "flex", "flex-direction", "flex-flow", "align-self", "justify-content"};
 
 std::string cssCamelNames_[] =
-  { "cssText", "width", "position",
-    "zIndex", "cssFloat", "clear",
-    "width", "height", "lineHeight",
-    "minWidth", "minHeight",
-    "maxWidth", "maxHeight",
-    "left", "right", "top", "bottom",
-    "verticalAlign", "textAlign",
-    "padding",
-    "paddingTop", "paddingRight",
-    "paddingBottom", "paddingLeft",
-    "margin",
-    "marginTop", "marginRight",
-    "marginBottom", "marginLeft",
-    "cursor",
-    "borderTop", "borderRight",
-    "borderBottom", "borderLeft",
-    "borderColorTop", "borderColorRight",
-    "borderColorBottom", "borderColorLeft",
-    "borderWidthTop", "borderWidthRight",
-    "borderWidthBottom", "borderWidthLeft",
-    "color", "overflowX", "overflowY",
-    "opacity",
-    "fontFamily", "fontStyle", "fontVariant",
-    "fontWeight", "fontSize",
-    "backgroundColor", "backgroundImage", "backgroundRepeat",
-    "backgroundAttachment", "backgroundPosition",
-    "textDecoration", "whiteSpace",
-    "tableLayout", "borderSpacing",
-    "border-collapse",
-    "pageBreakBefore", "pageBreakAfter",
-    "zoom", "visibility", "display",
-    "boxSizing", "flex", "flexFlow", "alignSelf", "justifyContent"
-  };
+{ "cssText", "width", "position",
+  "zIndex", "cssFloat", "clear",
+  "width", "height", "lineHeight",
+  "minWidth", "minHeight",
+  "maxWidth", "maxHeight",
+  "left", "right", "top", "bottom",
+  "verticalAlign", "textAlign",
+  "padding",
+  "paddingTop", "paddingRight",
+  "paddingBottom", "paddingLeft",
+  "margin",
+  "marginTop", "marginRight",
+  "marginBottom", "marginLeft",
+  "cursor",
+  "borderTop", "borderRight",
+  "borderBottom", "borderLeft",
+  "borderColorTop", "borderColorRight",
+  "borderColorBottom", "borderColorLeft",
+  "borderWidthTop", "borderWidthRight",
+  "borderWidthBottom", "borderWidthLeft",
+  "color", "overflowX", "overflowY",
+  "opacity",
+  "fontFamily", "fontStyle", "fontVariant",
+  "fontWeight", "fontSize",
+  "backgroundColor", "backgroundImage", "backgroundRepeat",
+  "backgroundAttachment", "backgroundPosition",
+  "textDecoration", "whiteSpace",
+  "tableLayout", "borderSpacing",
+  "border-collapse",
+  "pageBreakBefore", "pageBreakAfter",
+  "zoom", "visibility", "display",
+  "webKitAppearance", // Not functional
+  "boxSizing", "flex", "flexFlow", "alignSelf", "justifyContent"
+};
 
 const std::string unsafeChars_ = " $&+,:;=?@'\"<>#%{}|\\^~[]`/";
 
@@ -305,7 +311,8 @@ void DomElement::addChild(DomElement *child)
   if (child->mode() == Mode::Create) {
     numManipulations_ += 2; // cannot be short-cutted
 
-    if (wasEmpty_ && canWriteInnerHTML(WApplication::instance())) {
+    // Omit self closing tags from adding immediate HTML children, add them later
+    if (wasEmpty_ && canWriteInnerHTML(WApplication::instance()) && !isSelfClosingTag(type())) {
       child->asHTML(childrenHtml_, javaScript_, timeouts_);
       delete child;
     } else {
@@ -1059,6 +1066,10 @@ void DomElement::asHTML(EscapeOStream& out,
       out << " placeholder=";
       fastHtmlAttributeValue(out, attributeValues, i->second);
       break;
+    case Property::Orient:
+      out << " orient=";
+      fastHtmlAttributeValue(out, attributeValues, i->second);
+      break;
     default:
       break;
     }
@@ -1085,8 +1096,13 @@ void DomElement::asHTML(EscapeOStream& out,
      * XHTML recommendation, back-wards compatibility with HTML: C.2, C.3:
      * do not use minimized forms when content is empty like <p />, and use
      * minimized forms for certain elements like <br />
+     *
+     * The additional case is for the native WSlider, which requires the
+     * `datalist` element to be present. This is "forcibly" added, since
+     * normally an `input` is selfclosing.
      */
-    if (!isSelfClosingTag(renderedType)) {
+    if (!isSelfClosingTag(renderedType)
+        || renderedType == DomElementType::INPUT && !childrenToAdd_.empty() && childrenToAdd_[0].child->type() == DomElementType::DATALIST) {
       out << '>';
       for (unsigned i = 0; i < childrenToAdd_.size(); ++i)
         childrenToAdd_[i].child->asHTML(out, javaScript, timeouts);
