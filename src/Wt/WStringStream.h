@@ -117,7 +117,7 @@ public:
    */
   WStringStream& operator<< (const char *s)
   {
-    append(s, std::strlen(s));
+    append(s, static_cast<int>(std::strlen(s)));
 
     return *this;
   }

@@ -478,7 +478,7 @@ target_sources(wt PRIVATE
 
 IF(ENABLE_HARU)
   target_sources(wt PRIVATE Wt/WPdfImage.h Wt/WPdfImage.C Wt/Render/WPdfRenderer.h Wt/Render/WPdfRenderer.C)
-  TARGET_LINK_LIBRARIES(wt PRIVATE libharu::libharu)
+  TARGET_LINK_LIBRARIES(wt PUBLIC libharu::libharu)
   #INCLUDE_DIRECTORIES(${HARU_INCLUDE_DIRS})
 ELSE(ENABLE_HARU)
   MESSAGE("** Disabling PDF support (WPdfImage, WPdfRenderer): requires libharu.")

@@ -350,7 +350,7 @@ endif()
 #
 # ToDo: Haru requires porting libharu which requires libpng as well.
 IF(ENABLE_HARU)
-  find_package(libharu REQUIRED)
+  find_package(libharu REQUIRED CONFIG)
   #INCLUDE(cmake/WtFindHaru.txt)
   SET(WT_HAS_WPDFIMAGE true)
 
