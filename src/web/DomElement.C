@@ -514,6 +514,10 @@ void DomElement::setTimeout(int delay, int interval)
 void DomElement::callJavaScript(const std::string& jsCode,
                                 bool evenWhenDeleted)
 {
+  // Bug #12283: Ignore empty jsCode (otherwise jsCode.back() throws)
+  if (jsCode.empty())
+    return;
+
   ++numManipulations_;
   // Bug #12006: For safety always append semicolon
   std::string terminatedJsCode = jsCode;
