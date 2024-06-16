@@ -11,25 +11,23 @@
       "description": "Sets generator and build directories.",
       "hidden": true,
       "binaryDir": "${sourceDir}/build/${presetName}",
-      "generator": "Ninja",
-      "warnings": {
-        "dev": true,
-        "deprecated": false,
-        "uninitialized": false,
-        "unusedCli": false,
-        "systemVars": false
-      }
+      "generator": "Ninja"
     },
     {
       "name": "w64",
       "inherits": "default",
-      "description": "Sets install directories.",
+      "description": "Sets install directories, compiler.",
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl"
       },
       "installDir": "c:/app/local/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "vendor": {
         "jetbrains.com/clion": {
           "toolchain": "Visual Studio"
@@ -67,150 +65,121 @@
       }
     },
     {
-      "name": "linux-cfg-dbg",
-      "description": "Linux Debug",
-      "inherits": [ "linux" ],
+      "name": "cfg-dbg",
+      "hidden": true,
+      "description": "Config Debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
       }
+    },
+    {
+      "name": "cfg-rel",
+      "hidden": true,
+      "description": "Config Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "cfg-rdb",
+      "hidden": true,
+      "description": "Config RelWithDebInfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "linux-cfg-dbg",
+      "description": "Config Linux Debug",
+      "inherits": [ "linux", "cfg-dbg" ]
     },
     {
       "name": "linux-cfg-rel",
-      "description": "Linux Release",
-      "inherits": [ "linux" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "description": "Config Linux Release",
+      "inherits": [ "linux", "cfg-rel" ]
     },
     {
       "name": "linux-cfg-rdb",
-      "description": "Linux RelWithDebInfo",
-      "inherits": [ "linux" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "description": "Config Linux RelWithDebInfo",
+      "inherits": [ "linux", "cfg-rdb" ]
     },
     {
       "name": "w64-cfg-dbg",
-      "description": "Windows Debug",
-      "inherits": [ "w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "description": "Config Windows Debug",
+      "inherits": [ "w64", "cfg-dbg" ]
     },
     {
       "name": "w64-cfg-rel",
-      "description": "Windows Release",
-      "inherits": [ "w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "description": "Config Windows Release",
+      "inherits": [ "w64", "cfg-rel" ]
     },
     {
       "name": "w64-cfg-rdb",
-      "description": "Windows RelWithDebInfo",
-      "inherits": [ "w64" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "description": "Config Windows RelWithDebInfo",
+      "inherits": [ "w64", "cfg-rdb" ]
     }
   ],
   "buildPresets": [
     {
-      "name": "w64-build-dbg",
-      "configurePreset": "w64-cfg-dbg",
-      "description": "Windows x64 Debug Build",
+      "name": "build-default",
       "nativeToolOptions": [ "-k 0" ],
+      "hidden": true
+    },
+    {
+      "name": "build-w64",
+      "inherits": "build-default",
+      "hidden": true,
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       }
+    },
+    {
+      "name": "build-linux",
+      "inherits": "build-default",
+      "hidden": true,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "w64-build-dbg",
+      "description": "Windows x64 Debug Build",
+      "configurePreset": "w64-cfg-dbg",
+      "inherits": "build-w64"
     },
     {
       "name": "w64-build-rel",
-      "configurePreset": "w64-cfg-rel",
       "description": "Windows x64 Release Build",
-      "nativeToolOptions": [ "-k 0" ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "configurePreset": "w64-cfg-rel",
+      "inherits": "build-w64"
     },
     {
       "name": "w64-build-rdb",
-      "configurePreset": "w64-cfg-rdb",
       "description": "Windows x64 RelWithDebInfo Build",
-      "nativeToolOptions": [ "-k 0" ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "configurePreset": "w64-cfg-rdb",
+      "inherits": "build-w64"
     },
     {
       "name": "linux-build-dbg",
+      "description": "Linux Debug Build",
       "configurePreset": "linux-cfg-dbg",
-      "description": "Linux x64 Debug Build",
-      "nativeToolOptions": [ "-k 0" ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "inherits": "build-linux"
     },
     {
       "name": "linux-build-rel",
+      "description": "Linux Release Build",
       "configurePreset": "linux-cfg-rel",
-      "description": "Linux x64 Release Build",
-      "nativeToolOptions": [ "-k 0" ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "inherits": "build-linux"
     },
     {
       "name": "linux-build-rdb",
+      "description": "Linux RelWithDebInfo Build",
       "configurePreset": "linux-cfg-rdb",
-      "description": "Linux x64 RelWithDebInfo Build",
-      "nativeToolOptions": [ "-k 0" ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "inherits": "build-linux"
     }
   ]
 }
