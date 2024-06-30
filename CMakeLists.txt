@@ -5,12 +5,10 @@ cmake_policy(VERSION 3.20)
 #cmake_policy(SET CMP0077 NEW)
 include(CMakePrintHelpers)
 
-PROJECT(WT LANGUAGES C CXX)
+# Configure with Conan
+include(cmake/conan.cmake)
 
-# Was min 14, now set to 20 and use std::any
-SET(CMAKE_CXX_STANDARD 20)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_EXTENSIONS OFF)
+PROJECT(WT LANGUAGES C CXX)
 
 #
 # Version Settings
@@ -113,51 +111,6 @@ IF(NOT CMAKE_CXX_STANDARD)
 ENDIF(NOT CMAKE_CXX_STANDARD)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
-
-#########################################################################################
-#  Configure with Conan
-#
-if (CMAKE_BUILD_TYPE)
-  set(CONAN_BUILD_TYPES ${CMAKE_BUILD_TYPE})
-  message(STATUS "Single Config CMAKE_BUILD_TYPE ${CONAN_BUILD_TYPES}")
-else()
-  set(CONAN_BUILD_TYPES ${CMAKE_CONFIGURATION_TYPES})
-  message(STATUS "Multi Config CMAKE_CONFIGURATION_TYPES ${CONAN_BUILD_TYPES}")
-endif()
-
-find_program(CONAN_CMD conan)
-if(NOT CONAN_CMD)
-    message(FATAL_ERROR "Conan executable not found! Please install conan.")
-endif()
-
-file(TO_NATIVE_PATH "${CONAN_CMD}" CONAN_CMD)
-file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}" CONAN_SOURCE_FOLDER)
-file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}" CONAN_INSTALL_FOLDER)
-
-foreach(CONAN_BUILD_TYPE IN LISTS CONAN_BUILD_TYPES)
-    set(CONAN_ARGS "install")
-    list(APPEND CONAN_ARGS "-if=${CONAN_INSTALL_FOLDER}")
-    list(APPEND CONAN_ARGS "--build" "outdated")
-    list(APPEND CONAN_ARGS "-s" "build_type=${CONAN_BUILD_TYPE}")
-    list(APPEND CONAN_ARGS "${CONAN_SOURCE_FOLDER}")
-
-    execute_process(COMMAND ${CONAN_CMD} ${CONAN_ARGS}
-                    COMMAND_ECHO STDOUT
-                    RESULT_VARIABLE return_code
-                    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-
-    if(NOT "${return_code}" STREQUAL "0")
-        message(FATAL_ERROR "Conan install failed='${return_code}'")
-    endif()
-endforeach()
-
-# Add conan paths
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-
-# grab Ctl module from ctl-cmake conan package
-#include(CtlDefaults)
-#
-#########################################################################################
 
 
 SET(CMAKE_MODULE_PATH

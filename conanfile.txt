@@ -1,8 +1,8 @@
 [generators]
-cmake_paths
-cmake_find_package_multi
+CMakeDeps
+CMakeToolchain
 
 [requires]
-boost/1.82.0
-openssl/1.1.1k
-libharu/2.4.3
+boost/1.83.0
+openssl/1.1.1w
+libharu/2.4.4

@@ -543,7 +543,7 @@ endif()
 #    )
 
 IF(WT_WITH_SSL)
-  target_link_libraries(wt PRIVATE OpenSSL::OpenSSL)
+  target_link_libraries(wt PRIVATE OpenSSL::SSL)
 ELSE(WT_WITH_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
 ENDIF(WT_WITH_SSL)

@@ -54,7 +54,7 @@ target_link_libraries(wthttp PRIVATE Boost::date_time Boost::filesystem Boost::p
 
 # SSL
 IF(WT_WITH_SSL)
-  target_link_libraries(wthttp PRIVATE OpenSSL::OpenSSL)
+  target_link_libraries(wthttp PRIVATE OpenSSL::SSL)
 ELSE(WT_WITH_SSL)
   MESSAGE("** Disabling crypto support (Auth::SHA1HashFunction, HTTPS support): requires OpenSSL.")
 ENDIF(WT_WITH_SSL)
