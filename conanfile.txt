@@ -6,3 +6,4 @@ CMakeToolchain
 boost/1.83.0
 openssl/1.1.1w
 libharu/2.4.4
+zlib/1.2.13
